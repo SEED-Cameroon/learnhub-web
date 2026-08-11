@@ -1,0 +1,418 @@
+
+
+* {
+  box-sizing: border-box;
+}
+
+.mentors-page {
+  min-height: 100vh;
+  width: 100%;
+
+  background: #f8f8fc;
+
+  padding: 27px 0 40px;
+}
+
+.mentors-container {
+  width: 100%;
+  max-width: 1180px;
+
+  margin: 0 auto;
+
+  padding: 0 8px;
+}
+
+
+/* ========================================
+   TITLE
+======================================== */
+
+.mentors-title {
+  margin: 0 0 14px;
+
+  color: #08296f;
+
+  font-family: Arial, Helvetica, sans-serif;
+
+  font-size: 25px;
+  font-weight: 800;
+
+  line-height: 1.2;
+}
+
+
+/* ========================================
+   SEARCH
+======================================== */
+
+.search-box {
+  position: relative;
+
+  width: 310px;
+  height: 30px;
+
+  margin-bottom: 21px;
+}
+
+.search-box input {
+  width: 100%;
+  height: 100%;
+
+  padding: 0 15px 0 30px;
+
+  border: 1px solid #d7dbe5;
+
+  border-radius: 20px;
+
+  outline: none;
+
+  background: #ffffff;
+
+  color: #333;
+
+  font-size: 8px;
+
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.search-box input::placeholder {
+  color: #777e8c;
+}
+
+.search-icon {
+  position: absolute;
+
+  left: 10px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  color: #667080;
+
+  font-size: 14px;
+
+  z-index: 2;
+}
+
+
+/* ========================================
+   CATEGORIES
+======================================== */
+
+.categories {
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  margin-bottom: 29px;
+}
+
+.category {
+  height: 20px;
+
+  padding: 0 12px;
+
+  border: 1px solid #d7dbe4;
+
+  border-radius: 15px;
+
+  background: white;
+
+  color: #4d5360;
+
+  font-size: 7px;
+
+  font-family: Arial, Helvetica, sans-serif;
+
+  white-space: nowrap;
+}
+
+.category.active {
+  border-color: #123b91;
+
+  background: #123b91;
+
+  color: white;
+}
+
+
+/* ========================================
+   MENTOR GRID
+======================================== */
+
+.mentor-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, 1fr);
+
+  gap: 11px;
+}
+
+
+/* ========================================
+   CARD
+======================================== */
+
+.mentor-card {
+  position: relative;
+
+  height: 159px;
+
+  overflow: hidden;
+
+  background: white;
+
+  border-radius: 6px;
+
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.07);
+}
+
+
+/* ========================================
+   CARD TOP
+======================================== */
+
+.card-top {
+  width: 100%;
+
+  height: 44px;
+}
+
+.card-top.blue {
+  background: #27459a;
+}
+
+.card-top.light-blue {
+  background: #4862b2;
+}
+
+.card-top.green {
+  background: #00665d;
+}
+
+
+/* ========================================
+   PROFILE IMAGE
+======================================== */
+
+.profile-image {
+  position: absolute;
+
+  top: 22px;
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  width: 43px;
+  height: 43px;
+
+  padding: 3px;
+
+  background: white;
+
+  border-radius: 50%;
+
+  box-shadow:
+    0 1px 5px rgba(0, 0, 0, 0.12);
+}
+
+.profile-image img {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  border-radius: 50%;
+}
+
+
+/* ========================================
+   CARD CONTENT
+======================================== */
+
+.card-content {
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  padding-top: 29px;
+}
+
+.card-content h3 {
+  display: flex;
+
+  align-items: center;
+
+  gap: 3px;
+
+  margin: 0;
+
+  color: #123d91;
+
+  font-family: Arial, Helvetica, sans-serif;
+
+  font-size: 10px;
+
+  font-weight: 700;
+}
+
+.verified {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  width: 9px;
+  height: 9px;
+
+  border-radius: 50%;
+
+  background: #123d91;
+
+  color: white;
+
+  font-size: 6px;
+
+  font-weight: bold;
+}
+
+
+/* ========================================
+   SUBJECT
+======================================== */
+
+.subject {
+  margin: 4px 0 3px;
+
+  color: #5f6673;
+
+  font-family: Arial, Helvetica, sans-serif;
+
+  font-size: 7px;
+}
+
+
+/* ========================================
+   FOLLOWERS
+======================================== */
+
+.followers {
+  margin: 0 0 11px;
+
+  color: #888d97;
+
+  font-size: 6px;
+
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+
+/* ========================================
+   FOLLOW BUTTON
+======================================== */
+
+.follow-button {
+  width: 108px;
+
+  height: 21px;
+
+  border: none;
+
+  border-radius: 14px;
+
+  background: #ffab18;
+
+  color: white;
+
+  font-family: Arial, Helvetica, sans-serif;
+
+  font-size: 7px;
+
+  font-weight: 600;
+}
+
+.follow-button.outline {
+  background: white;
+
+  border: 1px solid #123d91;
+
+  color: #123d91;
+}
+
+
+/* ========================================
+   LOAD MORE
+======================================== */
+
+.load-more {
+  display: block;
+
+  margin: 22px auto 0;
+
+  height: 23px;
+
+  padding: 0 18px;
+
+  border: 1px solid #123d91;
+
+  border-radius: 15px;
+
+  background: white;
+
+  color: #123d91;
+
+  font-family: Arial, Helvetica, sans-serif;
+
+  font-size: 7px;
+
+  font-weight: 600;
+}
+
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+
+@media (max-width: 850px) {
+
+  .mentor-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+}
+
+@media (max-width: 550px) {
+
+  .mentors-container {
+    padding: 0 16px;
+  }
+
+  .search-box {
+    width: 100%;
+  }
+
+  .categories {
+    flex-wrap: wrap;
+  }
+
+  .mentor-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mentor-card {
+    max-width: 300px;
+
+    margin: 0 auto;
+
+    width: 100%;
+  }
+
+}

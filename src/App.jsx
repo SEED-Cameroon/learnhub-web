@@ -1,16 +1,12 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import Layout from './components/Layout'
-import Home from './pages/Home'
+import React from 'react'
+import Mentors from './components/mentors/Mentors'
+import LandingPage from './pages/LandingPage'
 
-function App() {
+const App = () => {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route path="/" element={<Home />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <div>
+     <LandingPage />
+    </div>
   )
 }
 
