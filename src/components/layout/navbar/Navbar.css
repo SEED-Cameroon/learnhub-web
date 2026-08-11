@@ -1,0 +1,72 @@
+.navbar {
+  height: 80px;
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 45px;
+
+  background-color: white;
+  border-bottom: 1px solid #eeeeee;
+
+  font-family: Arial, sans-serif;
+}
+
+/* Logo */
+
+.logo {
+  color: #073b85;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+/* Center navigation */
+
+.nav-links {
+  display: flex;
+  gap: 38px;
+  margin-left: 120px;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #444;
+  font-size: 16px;
+}
+
+.nav-links a:hover {
+  color: #073b85;
+}
+
+/* Login and Sign Up */
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 25px;
+}
+
+.login {
+  text-decoration: none;
+  color: #222;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.signup {
+  text-decoration: none;
+  color: white;
+  background-color: #073b85;
+
+  padding: 13px 25px;
+  border-radius: 30px;
+
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.signup:hover {
+  background-color: #052e68;
+}
