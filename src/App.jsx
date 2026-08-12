@@ -1,16 +1,18 @@
+import React from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import Layout from './components/Layout'
-import Home from './pages/Home'
+import LandingPage from './pages/LandingPage'
+import AllTutors from './components/mentors/AllTutors'
 
-function App() {
+const App = () => {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route element={<Layout />}>
-          <Route path="/" element={<Home />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+   <BrowserRouter>
+   <Routes>
+    <Route path="/" element={<LandingPage />} 
+    />
+    <Route path="/mentors/all" element={<AllTutors />} 
+    />
+   </Routes>
+   </BrowserRouter>
   )
 }
 
