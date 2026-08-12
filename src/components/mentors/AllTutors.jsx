@@ -1,81 +1,46 @@
 import "./mentors.css";
-import { Link } from "react-router-dom";
 
-function Mentors() {
+export default function AllTutors() {
   return (
-    <div className="mentors-page">
+    <section className="mentors-section">
 
       <div className="mentors-container">
 
-        {/* Page Title */}
         <h1 className="mentors-title">
-          Find Your Mentor
+          All Tutors
         </h1>
 
-        {/* Search Bar */}
-        <div className="search-box">
-          <span className="search-icon">⌕</span>
+        <p className="all-tutors-description">
+          Explore more tutors and find the right mentor for your learning journey.
+        </p>
 
-          <input
-            type="text"
-            placeholder="Search by subject, name, or skill..."
-          />
-        </div>
-
-        {/* Categories */}
-        <div className="categories">
-
-          <button className="category active">
-            All Subjects
-          </button>
-
-          <button className="category">
-            Mathematics
-          </button>
-
-          <button className="category">
-            Computer Science
-          </button>
-
-          <button className="category">
-            Business & Finance
-          </button>
-
-          <button className="category">
-            Languages
-          </button>
-
-        </div>
-
-
-        {/* Mentor Cards */}
         <div className="mentor-grid">
 
-          {/* Card 1 */}
+          {/* Tutor 1 */}
           <div className="mentor-card">
 
             <div className="card-top blue"></div>
 
             <div className="profile-image">
               <img
-                src=""
-                alt="Dr. Foning"
+                src="https://randomuser.me/api/portraits/men/52.jpg"
+                alt="Mr. Emmanuel"
               />
             </div>
 
             <div className="card-content">
 
               <h3>
-                Dr. Foning
+                Mr. Emmanuel
                 <span className="verified">✓</span>
               </h3>
 
               <p className="subject">
-                Advanced Mathematics
+                Physics
               </p>
 
               <p className="followers">
-                 &nbsp; 12k Followers
+                ♟ &nbsp; 10k Followers
               </p>
 
               <button className="follow-button">
@@ -87,31 +52,31 @@ function Mentors() {
           </div>
 
 
-          {/* Card 2 */}
+          {/* Tutor 2 */}
           <div className="mentor-card">
 
             <div className="card-top light-blue"></div>
 
             <div className="profile-image">
               <img
-                src=""
-                alt="Sarah N."
+                src="https://randomuser.me/api/portraits/women/49.jpg"
+                alt="Ms. Grace"
               />
             </div>
 
             <div className="card-content">
 
               <h3>
-                Sarah N.
+                Ms. Grace
                 <span className="verified">✓</span>
               </h3>
 
               <p className="subject">
-                Full-Stack Development
+                Biology
               </p>
 
               <p className="followers">
-                 &nbsp; 8.5k Followers
+                ♟ &nbsp; 7.8k Followers
               </p>
 
               <button className="follow-button">
@@ -123,33 +88,33 @@ function Mentors() {
           </div>
 
 
-          {/* Card 3 */}
+          {/* Tutor 3 */}
           <div className="mentor-card">
 
             <div className="card-top green"></div>
 
             <div className="profile-image">
               <img
-                src=""
-                alt="Mr. Kamga"
+                src="https://randomuser.me/api/portraits/men/61.jpg"
+                alt="Mr. Collins"
               />
             </div>
 
             <div className="card-content">
 
               <h3>
-                Mr. Kamga
+                Mr. Collins
               </h3>
 
               <p className="subject">
-                Corporate Finance
+                Economics
               </p>
 
               <p className="followers">
-                 &nbsp; 5.2k Followers
+                ♟ &nbsp; 6.4k Followers
               </p>
 
-              <button className="follow-button outline">
+              <button className="follow-button">
                 Follow
               </button>
 
@@ -158,31 +123,31 @@ function Mentors() {
           </div>
 
 
-          
+          {/* Tutor 4 */}
           <div className="mentor-card">
 
             <div className="card-top blue"></div>
 
             <div className="profile-image">
               <img
-                src=""
-                alt="Mme. Bella"
+                src="https://randomuser.me/api/portraits/women/68.jpg"
+                alt="Mme. Claire"
               />
             </div>
 
             <div className="card-content">
 
               <h3>
-                Mme. Bella
+                Mme. Claire
                 <span className="verified">✓</span>
               </h3>
 
               <p className="subject">
-                French Literature
+                English Literature
               </p>
 
               <p className="followers">
-                 &nbsp; 15k Followers
+                ♟ &nbsp; 11k Followers
               </p>
 
               <button className="follow-button">
@@ -195,16 +160,8 @@ function Mentors() {
 
         </div>
 
-
-       
-        <Link to="/mentors/all" className="load-more"> 
-          Load More Tutors
-        </Link>
-
       </div>
 
-    </div>
+    </section>
   );
 }
-
-export default Mentors;

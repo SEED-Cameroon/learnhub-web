@@ -1,0 +1,41 @@
+.all-tutors-description {
+  margin: -5px 0 25px;
+
+  color: #666d7a;
+
+  font-size: 12px;
+
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.load-more {
+  display: block;
+
+  width: fit-content;
+
+  margin: 22px auto 0;
+
+  padding: 6px 18px;
+
+  border: 1px solid #123d91;
+
+  border-radius: 15px;
+
+  background: white;
+
+  color: #123d91;
+
+  font-family: Arial, Helvetica, sans-serif;
+
+  font-size: 8px;
+
+  font-weight: 600;
+
+  text-decoration: none;
+}
+
+.load-more:hover {
+  background: #123d91;
+
+  color: white;
+}
