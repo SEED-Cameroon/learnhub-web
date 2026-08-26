@@ -1,5 +1,6 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import Footer from './footer/Footer'
 
 function Layout() {
   const { user, logout } = useAuth()
@@ -20,6 +21,7 @@ function Layout() {
 
         <nav className="flex gap-4 text-sm">
           <Link to="/" className="hover:underline">Home</Link>
+          <Link to="/mentors" className="hover:underline">Tutors</Link>
 
           {user && (
             <>
@@ -66,6 +68,8 @@ function Layout() {
       <main className="flex-1">
         <Outlet />
       </main>
+
+      <Footer />
     </div>
   )
 }
