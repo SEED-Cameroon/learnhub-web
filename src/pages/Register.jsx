@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { apiFetch } from '../lib/api'
+import { authApi } from '../services/api'
+import { ApiError } from '../services/apiClient'
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -25,10 +26,7 @@ export default function Register() {
     setLoading(true)
 
     try {
-      const data = await apiFetch('/auth/register', {
-        method: 'POST',
-        body: JSON.stringify(form),
-      })
+      const data = await authApi.register(form)
 
       // Auto-login after successful registration
       login(data.user, data.token)
@@ -40,7 +38,11 @@ export default function Register() {
         navigate('/courses', { replace: true })
       }
     } catch (err) {
-      setError('Registration failed. Email may already be in use.')
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : 'Registration failed. Email may already be in use.'
+      )
     } finally {
       setLoading(false)
     }

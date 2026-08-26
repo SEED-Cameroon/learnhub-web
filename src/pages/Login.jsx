@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { apiFetch } from '../lib/api'
+import { authApi } from '../services/api'
+import { ApiError } from '../services/apiClient'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -17,13 +18,10 @@ export default function Login() {
     setLoading(true)
 
     try {
-      const data = await apiFetch('/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ email, password }),
-      })
-
       // Expected API response:
       // { token: "...", user: { id, name, email, role: "student" | "tutor" } }
+      const data = await authApi.login({ email, password })
+
       login(data.user, data.token)
 
       // Redirect based on role (Acceptance Criteria)
@@ -33,7 +31,7 @@ export default function Login() {
         navigate('/courses', { replace: true })
       }
     } catch (err) {
-      setError('Invalid email or password')
+      setError(err instanceof ApiError ? err.message : 'Invalid email or password')
     } finally {
       setLoading(false)
     }
