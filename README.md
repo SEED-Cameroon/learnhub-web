@@ -23,6 +23,10 @@ npm run dev
 
 Read [CONTRIBUTING.md](./CONTRIBUTING.md) before your first commit. Short version: never push to `main`, branch per feature, small PRs, one review required.
 
+## New intern? Start here
+
+If you're on the One-Month React Track, your daily lessons and tasks live in the [`curriculum`](https://github.com/SEED-Cameroon/curriculum) repo under `onemonth-react-track` — every task this month is built directly in this repo.
+
 ## Team
 
 | Role | Name | GitHub |
