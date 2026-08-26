@@ -15,23 +15,24 @@ function Layout() {
     <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950">
       {/* Header */}
       <header className="border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex items-center gap-6">
-        <Link to="/" className="text-xl font-semibold text-slate-900 dark:text-slate-100">
-          LearnHub
+        <Link
+          to="/"
+          className="text-xl font-bold text-[#123263] dark:text-slate-100"
+        >
+          LearnHub Cameroon
         </Link>
 
-        <nav className="flex gap-4 text-sm">
-          <Link to="/" className="hover:underline">Home</Link>
-          <Link to="/mentors" className="hover:underline">Tutors</Link>
+        <nav className="flex gap-6 text-sm text-slate-600 dark:text-slate-300">
+          <Link to="/courses" className="hover:text-[#123263] dark:hover:text-white">Courses</Link>
+          <Link to="/mentors" className="hover:text-[#123263] dark:hover:text-white">Tutors</Link>
+          <a href="/#why" className="hover:text-[#123263] dark:hover:text-white">About</a>
 
           {user && (
-            <>
-              <Link to="/courses" className="hover:underline">Courses</Link>
-              <Link to="/account" className="hover:underline">Account</Link>
-            </>
+            <Link to="/account" className="hover:text-[#123263] dark:hover:text-white">Account</Link>
           )}
 
           {user?.role === 'tutor' && (
-            <Link to="/dashboard" className="hover:underline font-medium text-blue-600">
+            <Link to="/dashboard" className="font-medium text-[#123263] dark:text-white hover:underline">
               Dashboard
             </Link>
           )}
@@ -40,7 +41,7 @@ function Layout() {
         <div className="ml-auto flex items-center gap-4">
           {user ? (
             <>
-              <span className="text-sm text-slate-600">
+              <span className="text-sm text-slate-600 dark:text-slate-300">
                 {user.name} ({user.role})
               </span>
               <button
@@ -52,12 +53,14 @@ function Layout() {
             </>
           ) : (
             <>
-              <Link to="/login" className="text-sm hover:underline">Login</Link>
+              <Link to="/login" className="text-sm font-semibold text-slate-800 dark:text-slate-100 hover:underline">
+                Login
+              </Link>
               <Link
                 to="/register"
-                className="text-sm bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700"
+                className="text-sm bg-[#123263] text-white px-5 py-2 rounded-full hover:bg-[#0d2549] transition"
               >
-                Register
+                Sign Up
               </Link>
             </>
           )}

@@ -58,7 +58,7 @@ function Mentors() {
 
             <div className="profile-image">
               <img
-                src=""
+                src="https://randomuser.me/api/portraits/men/32.jpg"
                 alt="Dr. Foning"
               />
             </div>
@@ -94,7 +94,7 @@ function Mentors() {
 
             <div className="profile-image">
               <img
-                src=""
+                src="https://randomuser.me/api/portraits/women/44.jpg"
                 alt="Sarah N."
               />
             </div>
@@ -130,7 +130,7 @@ function Mentors() {
 
             <div className="profile-image">
               <img
-                src=""
+                src="https://randomuser.me/api/portraits/men/60.jpg"
                 alt="Mr. Kamga"
               />
             </div>
@@ -165,7 +165,7 @@ function Mentors() {
 
             <div className="profile-image">
               <img
-                src=""
+                src="https://randomuser.me/api/portraits/women/68.jpg"
                 alt="Mme. Bella"
               />
             </div>
