@@ -53,7 +53,7 @@ function Layout() {
             </>
           ) : (
             <>
-              <Link to="/login" className="text-sm font-semibold text-slate-800 dark:text-slate-100 hover:underline">
+              <Link to="/login" className="text-sm font-semibold text-[#123263] dark:text-slate-100 hover:underline">
                 Login
               </Link>
               <Link

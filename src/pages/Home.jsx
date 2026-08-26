@@ -70,64 +70,63 @@ const FEATURED_EDUCATORS = [
 export default function Home() {
   return (
     <div>
-      {/* Hero + Why LearnHub share one soft background band */}
-      <div className="bg-[#f0f2ff] dark:bg-slate-900">
-        {/* Hero */}
-        <section className="max-w-6xl mx-auto px-6 py-20 grid md:grid-cols-2 gap-12 items-center">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-slate-100 leading-tight">
-              Empowering Cameroon&apos;s Future Through Knowledge.
-            </h1>
-            <p className="mt-5 text-slate-600 dark:text-slate-400 max-w-lg">
-              Join the premier platform connecting local expertise with ambitious learners. Build
-              your skills, advance your career, and support local creators.
+      {/* Hero */}
+      <section className="bg-white dark:bg-slate-950 max-w-6xl mx-auto px-6 py-20 grid md:grid-cols-2 gap-12 items-center">
+        <div>
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-slate-100 leading-tight">
+            Empowering Cameroon&apos;s Future Through Knowledge.
+          </h1>
+          <p className="mt-5 text-slate-600 dark:text-slate-400 max-w-lg">
+            Join the premier platform connecting local expertise with ambitious learners. Build
+            your skills, advance your career, and support local creators.
+          </p>
+
+          <div className="mt-8 flex flex-wrap gap-4">
+            <Link
+              to="/courses"
+              className="bg-[#123263] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#0d2549] transition"
+            >
+              Browse Courses
+            </Link>
+            <Link
+              to="/register"
+              className="bg-[#f5a623] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#e0951a] transition"
+            >
+              Become a Tutor
+            </Link>
+          </div>
+        </div>
+
+        <div className="relative">
+          <div className="rounded-3xl bg-gradient-to-br from-[#123263] to-[#2f5aa8] p-8 shadow-lg overflow-hidden">
+            <div className="flex -space-x-3">
+              {FEATURED_EDUCATORS.slice(0, 3).map((educator) => (
+                <img
+                  key={educator.name}
+                  src={educator.avatar}
+                  alt={educator.name}
+                  className="w-14 h-14 rounded-full border-2 border-white object-cover"
+                />
+              ))}
+            </div>
+            <p className="mt-6 text-white/90 text-sm">
+              Live cohorts running across Douala, Yaoundé & Buea
             </p>
-
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Link
-                to="/courses"
-                className="bg-[#123263] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#0d2549] transition"
-              >
-                Browse Courses
-              </Link>
-              <Link
-                to="/register"
-                className="bg-[#f5a623] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#e0951a] transition"
-              >
-                Become a Tutor
-              </Link>
+            <div className="mt-4 h-2 rounded-full bg-white/20 overflow-hidden">
+              <div className="h-full w-3/4 rounded-full bg-[#f5a623]" />
             </div>
           </div>
 
-          <div className="relative">
-            <div className="rounded-3xl bg-gradient-to-br from-[#123263] to-[#2f5aa8] p-8 shadow-lg overflow-hidden">
-              <div className="flex -space-x-3">
-                {FEATURED_EDUCATORS.slice(0, 3).map((educator) => (
-                  <img
-                    key={educator.name}
-                    src={educator.avatar}
-                    alt={educator.name}
-                    className="w-14 h-14 rounded-full border-2 border-white object-cover"
-                  />
-                ))}
-              </div>
-              <p className="mt-6 text-white/90 text-sm">
-                Live cohorts running across Douala, Yaoundé & Buea
-              </p>
-              <div className="mt-4 h-2 rounded-full bg-white/20 overflow-hidden">
-                <div className="h-full w-3/4 rounded-full bg-[#f5a623]" />
-              </div>
-            </div>
-
-            <div className="absolute -bottom-6 -left-6 bg-white dark:bg-slate-800 rounded-xl shadow-md px-5 py-3">
-              <p className="text-xs text-slate-500 dark:text-slate-400">Course completion</p>
-              <p className="text-lg font-bold text-[#123263] dark:text-slate-100">92%</p>
-            </div>
+          <div className="absolute -bottom-6 -left-6 bg-white dark:bg-slate-800 rounded-xl shadow-md px-5 py-3">
+            <p className="text-xs text-slate-500 dark:text-slate-400">Course completion</p>
+            <p className="text-lg font-bold text-[#123263] dark:text-slate-100">92%</p>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Why LearnHub Cameroon */}
-        <section id="why" className="max-w-6xl mx-auto px-6 pb-20">
+      {/* Why LearnHub Cameroon */}
+      <section id="why" className="bg-[#f0f2ff] dark:bg-slate-900">
+        <div className="max-w-6xl mx-auto px-6 py-20">
           <h2 className="text-2xl font-bold text-center text-slate-900 dark:text-slate-100">
             Why LearnHub Cameroon?
           </h2>
@@ -150,11 +149,11 @@ export default function Home() {
               </div>
             ))}
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
 
       {/* Featured Educators */}
-      <section className="max-w-6xl mx-auto px-6 py-20">
+      <section className="bg-white dark:bg-slate-950 max-w-6xl mx-auto px-6 py-20">
         <div className="flex items-end justify-between">
           <div>
             <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
@@ -176,28 +175,31 @@ export default function Home() {
           {FEATURED_EDUCATORS.map((educator) => (
             <div
               key={educator.name}
-              className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl p-6 text-center shadow-sm"
+              className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm"
             >
-              <img
-                src={educator.avatar}
-                alt={educator.name}
-                className="w-16 h-16 rounded-full mx-auto object-cover"
-              />
-              <h3 className="mt-4 font-semibold text-slate-900 dark:text-slate-100 flex items-center justify-center gap-1">
-                {educator.name}
-                {educator.verified && (
-                  <span
-                    title="Verified"
-                    className="inline-flex w-4 h-4 rounded-full bg-blue-500 text-white text-[10px] items-center justify-center"
-                  >
-                    &#10003;
-                  </span>
-                )}
-              </h3>
-              <p className="text-sm text-[#123263] dark:text-slate-300">{educator.subject}</p>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                {educator.followers} Followers
-              </p>
+              <div className="h-20 bg-[#eef0fb] dark:bg-slate-700" />
+              <div className="px-6 pb-6 text-center">
+                <img
+                  src={educator.avatar}
+                  alt={educator.name}
+                  className="w-16 h-16 rounded-full mx-auto -mt-8 border-4 border-white dark:border-slate-800 object-cover"
+                />
+                <h3 className="mt-3 font-semibold text-slate-900 dark:text-slate-100 flex items-center justify-center gap-1">
+                  {educator.name}
+                  {educator.verified && (
+                    <span
+                      title="Verified"
+                      className="inline-flex w-4 h-4 rounded-full bg-blue-500 text-white text-[10px] items-center justify-center"
+                    >
+                      &#10003;
+                    </span>
+                  )}
+                </h3>
+                <p className="text-sm font-medium text-[#f5a623]">{educator.subject}</p>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                  {educator.followers} Followers
+                </p>
+              </div>
             </div>
           ))}
         </div>
