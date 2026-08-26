@@ -12,27 +12,27 @@ function Layout() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-slate-950">
+    <div className="min-h-screen flex flex-col bg-white">
       {/* Header */}
-      <header className="border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex items-center gap-6">
+      <header className="border-b border-slate-200 px-6 py-4 flex items-center gap-6">
         <Link
           to="/"
-          className="text-xl font-bold text-[#123263] dark:text-slate-100"
+          className="text-xl font-bold text-[#123263]"
         >
           LearnHub Cameroon
         </Link>
 
-        <nav className="flex gap-6 text-sm text-slate-600 dark:text-slate-300">
-          <Link to="/courses" className="hover:text-[#123263] dark:hover:text-white">Courses</Link>
-          <Link to="/mentors" className="hover:text-[#123263] dark:hover:text-white">Tutors</Link>
-          <a href="/#why" className="hover:text-[#123263] dark:hover:text-white">About</a>
+        <nav className="flex gap-6 text-sm text-slate-600">
+          <Link to="/courses" className="hover:text-[#123263]">Courses</Link>
+          <Link to="/mentors" className="hover:text-[#123263]">Tutors</Link>
+          <a href="/#why" className="hover:text-[#123263]">About</a>
 
           {user && (
-            <Link to="/account" className="hover:text-[#123263] dark:hover:text-white">Account</Link>
+            <Link to="/account" className="hover:text-[#123263]">Account</Link>
           )}
 
           {user?.role === 'tutor' && (
-            <Link to="/dashboard" className="font-medium text-[#123263] dark:text-white hover:underline">
+            <Link to="/dashboard" className="font-medium text-[#123263] hover:underline">
               Dashboard
             </Link>
           )}
@@ -41,7 +41,7 @@ function Layout() {
         <div className="ml-auto flex items-center gap-4">
           {user ? (
             <>
-              <span className="text-sm text-slate-600 dark:text-slate-300">
+              <span className="text-sm text-slate-600">
                 {user.name} ({user.role})
               </span>
               <button
@@ -53,7 +53,7 @@ function Layout() {
             </>
           ) : (
             <>
-              <Link to="/login" className="text-sm font-semibold text-[#123263] dark:text-slate-100 hover:underline">
+              <Link to="/login" className="text-sm font-semibold text-[#123263] hover:underline">
                 Login
               </Link>
               <Link

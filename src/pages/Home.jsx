@@ -71,12 +71,12 @@ export default function Home() {
   return (
     <div>
       {/* Hero */}
-      <section className="bg-white dark:bg-slate-950 max-w-6xl mx-auto px-6 py-20 grid md:grid-cols-2 gap-12 items-center">
+      <section className="bg-white max-w-6xl mx-auto px-6 py-20 grid md:grid-cols-2 gap-12 items-center">
         <div>
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-slate-100 leading-tight">
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 leading-tight">
             Empowering Cameroon&apos;s Future Through Knowledge.
           </h1>
-          <p className="mt-5 text-slate-600 dark:text-slate-400 max-w-lg">
+          <p className="mt-5 text-slate-600 max-w-lg">
             Join the premier platform connecting local expertise with ambitious learners. Build
             your skills, advance your career, and support local creators.
           </p>
@@ -117,17 +117,17 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="absolute -bottom-6 -left-6 bg-white dark:bg-slate-800 rounded-xl shadow-md px-5 py-3">
-            <p className="text-xs text-slate-500 dark:text-slate-400">Course completion</p>
-            <p className="text-lg font-bold text-[#123263] dark:text-slate-100">92%</p>
+          <div className="absolute -bottom-6 -left-6 bg-white rounded-xl shadow-md px-5 py-3">
+            <p className="text-xs text-slate-500">Course completion</p>
+            <p className="text-lg font-bold text-[#123263]">92%</p>
           </div>
         </div>
       </section>
 
       {/* Why LearnHub Cameroon */}
-      <section id="why" className="bg-[#f0f2ff] dark:bg-slate-900">
+      <section id="why" className="bg-[#f0f2ff]">
         <div className="max-w-6xl mx-auto px-6 py-20">
-          <h2 className="text-2xl font-bold text-center text-slate-900 dark:text-slate-100">
+          <h2 className="text-2xl font-bold text-center text-slate-900">
             Why LearnHub Cameroon?
           </h2>
 
@@ -135,15 +135,15 @@ export default function Home() {
             {FEATURES.map((feature) => (
               <div
                 key={feature.title}
-                className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-sm"
+                className="bg-white rounded-xl p-6 shadow-sm"
               >
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${feature.badgeClass}`}>
                   {feature.icon}
                 </div>
-                <h3 className="mt-4 font-semibold text-slate-900 dark:text-slate-100">
+                <h3 className="mt-4 font-semibold text-slate-900">
                   {feature.title}
                 </h3>
-                <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+                <p className="mt-2 text-sm text-slate-600">
                   {feature.description}
                 </p>
               </div>
@@ -153,19 +153,19 @@ export default function Home() {
       </section>
 
       {/* Featured Educators */}
-      <section className="bg-white dark:bg-slate-950 max-w-6xl mx-auto px-6 py-20">
+      <section className="bg-white max-w-6xl mx-auto px-6 py-20">
         <div className="flex items-end justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+            <h2 className="text-2xl font-bold text-slate-900">
               Featured Educators
             </h2>
-            <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            <p className="mt-1 text-sm text-slate-500">
               Learn from our top-rated local experts.
             </p>
           </div>
           <Link
             to="/mentors/all"
-            className="text-sm font-medium text-[#123263] dark:text-slate-100 hover:underline whitespace-nowrap"
+            className="text-sm font-medium text-[#123263] hover:underline whitespace-nowrap"
           >
             View All &rarr;
           </Link>
@@ -175,16 +175,16 @@ export default function Home() {
           {FEATURED_EDUCATORS.map((educator) => (
             <div
               key={educator.name}
-              className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm"
+              className="bg-white border border-slate-100 rounded-xl overflow-hidden shadow-sm"
             >
-              <div className="h-20 bg-[#eef0fb] dark:bg-slate-700" />
+              <div className="h-20 bg-[#eef0fb]" />
               <div className="px-6 pb-6 text-center">
                 <img
                   src={educator.avatar}
                   alt={educator.name}
-                  className="w-16 h-16 rounded-full mx-auto -mt-8 border-4 border-white dark:border-slate-800 object-cover"
+                  className="w-16 h-16 rounded-full mx-auto -mt-8 border-4 border-white object-cover"
                 />
-                <h3 className="mt-3 font-semibold text-slate-900 dark:text-slate-100 flex items-center justify-center gap-1">
+                <h3 className="mt-3 font-semibold text-slate-900 flex items-center justify-center gap-1">
                   {educator.name}
                   {educator.verified && (
                     <span
@@ -196,7 +196,7 @@ export default function Home() {
                   )}
                 </h3>
                 <p className="text-sm font-medium text-[#f5a623]">{educator.subject}</p>
-                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                <p className="mt-1 text-xs text-slate-500">
                   {educator.followers} Followers
                 </p>
               </div>
