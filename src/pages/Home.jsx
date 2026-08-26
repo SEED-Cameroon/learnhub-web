@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import heroImage from '../assets/hero.jpg'
 
 const FEATURES = [
   {
@@ -71,7 +72,7 @@ export default function Home() {
   return (
     <div>
       {/* Hero */}
-      <section className="bg-white max-w-6xl mx-auto px-6 py-20 grid md:grid-cols-2 gap-12 items-center">
+      <section className="bg-[#f8f8ff] max-w-6xl mx-auto px-6 py-20 grid md:grid-cols-2 gap-12 items-center">
         <div>
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 leading-tight">
             Empowering Cameroon&apos;s Future Through Knowledge.
@@ -84,44 +85,24 @@ export default function Home() {
           <div className="mt-8 flex flex-wrap gap-4">
             <Link
               to="/courses"
-              className="bg-[#123263] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#0d2549] transition"
+              className="bg-[#123263] text-white px-7 py-3 rounded-full font-medium hover:bg-[#0d2549] transition"
             >
               Browse Courses
             </Link>
             <Link
               to="/register"
-              className="bg-[#f5a623] text-white px-6 py-3 rounded-lg font-medium hover:bg-[#e0951a] transition"
+              className="bg-[#f5a623] text-white px-7 py-3 rounded-full font-medium hover:bg-[#e0951a] transition"
             >
               Become a Tutor
             </Link>
           </div>
         </div>
 
-        <div className="relative">
-          <div className="rounded-3xl bg-gradient-to-br from-[#123263] to-[#2f5aa8] p-8 shadow-lg overflow-hidden">
-            <div className="flex -space-x-3">
-              {FEATURED_EDUCATORS.slice(0, 3).map((educator) => (
-                <img
-                  key={educator.name}
-                  src={educator.avatar}
-                  alt={educator.name}
-                  className="w-14 h-14 rounded-full border-2 border-white object-cover"
-                />
-              ))}
-            </div>
-            <p className="mt-6 text-white/90 text-sm">
-              Live cohorts running across Douala, Yaoundé & Buea
-            </p>
-            <div className="mt-4 h-2 rounded-full bg-white/20 overflow-hidden">
-              <div className="h-full w-3/4 rounded-full bg-[#f5a623]" />
-            </div>
-          </div>
-
-          <div className="absolute -bottom-6 -left-6 bg-white rounded-xl shadow-md px-5 py-3">
-            <p className="text-xs text-slate-500">Course completion</p>
-            <p className="text-lg font-bold text-[#123263]">92%</p>
-          </div>
-        </div>
+        <img
+          src={heroImage}
+          alt="LearnHub Cameroon tutors and students reviewing coursework together"
+          className="rounded-2xl shadow-xl w-full h-auto object-cover"
+        />
       </section>
 
       {/* Why LearnHub Cameroon */}
