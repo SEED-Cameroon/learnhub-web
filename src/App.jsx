@@ -10,6 +10,8 @@ import Courses from './pages/Courses'
 import Account from './pages/Account'
 import Dashboard from './pages/Dashboard'
 import DashboardCourses from './pages/DashboardCourses'
+import Mentors from './components/mentors/Mentors'
+import AllTutors from './components/mentors/AllTutors'
 
 function App() {
   return (
@@ -19,6 +21,8 @@ function App() {
           <Route element={<Layout />}>
             {/* Public */}
             <Route path="/" element={<Home />} />
+            <Route path="/mentors" element={<Mentors />} />
+            <Route path="/mentors/all" element={<AllTutors />} />
 
             {/* Guest only */}
             <Route
