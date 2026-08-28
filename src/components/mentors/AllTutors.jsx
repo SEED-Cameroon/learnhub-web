@@ -1,168 +1,31 @@
-import "./Mentors.css";
-import "./AllTutors.css";
+import { Link } from 'react-router-dom'
+import MaterialIcon from '../icons/MaterialIcon'
+import TutorCard from './TutorCard'
+import { MORE_TUTORS } from './tutorsData'
 
 export default function AllTutors() {
   return (
-    <section className="mentors-section">
+    <div className="max-w-[1280px] mx-auto px-4 md:px-10 py-12">
+      <Link
+        to="/mentors"
+        className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline mb-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded"
+      >
+        <MaterialIcon name="arrow_back" className="text-base" />
+        Back to Tutors
+      </Link>
 
-      <div className="mentors-container">
-
-        <h1 className="mentors-title">
-          All Tutors
-        </h1>
-
-        <p className="all-tutors-description">
+      <section className="mb-12">
+        <h1 className="text-[32px] leading-[40px] font-bold text-primary mb-2">All Tutors</h1>
+        <p className="text-base text-on-surface-variant">
           Explore more tutors and find the right mentor for your learning journey.
         </p>
+      </section>
 
-        <div className="mentor-grid">
-
-          {/* Tutor 1 */}
-          <div className="mentor-card">
-
-            <div className="card-top blue"></div>
-
-            <div className="profile-image">
-              <img
-                src="https://randomuser.me/api/portraits/men/52.jpg"
-                alt="Mr. Emmanuel"
-              />
-            </div>
-
-            <div className="card-content">
-
-              <h3>
-                Mr. Emmanuel
-                <span className="verified">✓</span>
-              </h3>
-
-              <p className="subject">
-                Physics
-              </p>
-
-              <p className="followers">
-                ♟ &nbsp; 10k Followers
-              </p>
-
-              <button className="follow-button">
-                Follow
-              </button>
-
-            </div>
-
-          </div>
-
-
-          {/* Tutor 2 */}
-          <div className="mentor-card">
-
-            <div className="card-top light-blue"></div>
-
-            <div className="profile-image">
-              <img
-                src="https://randomuser.me/api/portraits/women/49.jpg"
-                alt="Ms. Grace"
-              />
-            </div>
-
-            <div className="card-content">
-
-              <h3>
-                Ms. Grace
-                <span className="verified">✓</span>
-              </h3>
-
-              <p className="subject">
-                Biology
-              </p>
-
-              <p className="followers">
-                ♟ &nbsp; 7.8k Followers
-              </p>
-
-              <button className="follow-button">
-                Follow
-              </button>
-
-            </div>
-
-          </div>
-
-
-          {/* Tutor 3 */}
-          <div className="mentor-card">
-
-            <div className="card-top green"></div>
-
-            <div className="profile-image">
-              <img
-                src="https://randomuser.me/api/portraits/men/61.jpg"
-                alt="Mr. Collins"
-              />
-            </div>
-
-            <div className="card-content">
-
-              <h3>
-                Mr. Collins
-              </h3>
-
-              <p className="subject">
-                Economics
-              </p>
-
-              <p className="followers">
-                ♟ &nbsp; 6.4k Followers
-              </p>
-
-              <button className="follow-button">
-                Follow
-              </button>
-
-            </div>
-
-          </div>
-
-
-          {/* Tutor 4 */}
-          <div className="mentor-card">
-
-            <div className="card-top blue"></div>
-
-            <div className="profile-image">
-              <img
-                src="https://randomuser.me/api/portraits/women/68.jpg"
-                alt="Mme. Claire"
-              />
-            </div>
-
-            <div className="card-content">
-
-              <h3>
-                Mme. Claire
-                <span className="verified">✓</span>
-              </h3>
-
-              <p className="subject">
-                English Literature
-              </p>
-
-              <p className="followers">
-                ♟ &nbsp; 11k Followers
-              </p>
-
-              <button className="follow-button">
-                Follow
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </section>
-  );
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {MORE_TUTORS.map((tutor) => (
+          <TutorCard key={tutor.id} tutor={tutor} />
+        ))}
+      </section>
+    </div>
+  )
 }
