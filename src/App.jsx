@@ -85,7 +85,7 @@ function App() {
           <Route
             path="*"
             element={
-              <div className="p-8 text-center text-slate-600">
+              <div className="p-8 text-center text-on-surface-variant">
                 404 – Page not found
               </div>
             }
