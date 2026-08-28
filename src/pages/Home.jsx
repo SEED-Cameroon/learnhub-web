@@ -139,7 +139,7 @@ export default function Home() {
             </p>
           </div>
           <Link
-            to="/mentors/all"
+            to="/tutors/all"
             className="hidden md:flex text-primary text-sm font-semibold items-center gap-1 hover:underline whitespace-nowrap"
           >
             View All <MaterialIcon name="arrow_forward" className="text-[16px]" />
@@ -180,7 +180,7 @@ export default function Home() {
 
         <div className="mt-8 text-center md:hidden">
           <Link
-            to="/mentors/all"
+            to="/tutors/all"
             className="inline-block bg-surface-variant text-on-surface-variant text-sm font-semibold px-6 py-2 rounded-full hover:bg-surface-dim transition-colors"
           >
             View All Tutors

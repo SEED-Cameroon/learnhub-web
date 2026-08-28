@@ -1,9 +1,13 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import { authApi } from '../services/api'
-import { ApiError } from '../services/apiClient'
-import MaterialIcon from '../components/icons/MaterialIcon'
+import { useAuth } from '@/context/AuthContext'
+import { authApi } from '@/services/api'
+import { ApiError } from '@/services/apiClient'
+import MaterialIcon from '@/components/icons/MaterialIcon'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent } from '@/components/ui/card'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -48,89 +52,91 @@ export default function Login() {
       </div>
 
       <main className="w-full max-w-md z-10 relative">
-        <div className="bg-surface-container-lowest rounded-xl shadow-[0px_12px_32px_rgba(0,0,0,0.1)] p-8 relative overflow-hidden border border-surface-variant">
+        <Card className="rounded-xl shadow-[0px_12px_32px_rgba(0,0,0,0.1)] relative overflow-hidden border-surface-variant py-0">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-tertiary" />
 
-          <div className="text-center mb-8">
-            <Link to="/" className="text-[32px] leading-10 font-bold text-primary hover:text-primary-container transition-colors">
-              LearnHub Cameroon
-            </Link>
-            <p className="mt-2 text-base text-on-surface-variant">
-              Welcome back. Please enter your details.
-            </p>
-          </div>
-
-          {error && (
-            <div className="bg-error-container text-on-error-container p-3 rounded mb-6 text-sm">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-semibold tracking-wide text-on-surface mb-1" htmlFor="email">
-                Email
-              </label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-on-surface-variant">
-                  <MaterialIcon name="mail" />
-                </span>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  className="w-full pl-10 pr-3 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors placeholder-on-surface-variant/50"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold tracking-wide text-on-surface mb-1" htmlFor="password">
-                Password
-              </label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-on-surface-variant">
-                  <MaterialIcon name="lock" />
-                </span>
-                <input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full pl-10 pr-3 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors placeholder-on-surface-variant/50"
-                  required
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-primary text-on-primary text-sm font-semibold tracking-wide py-3 rounded-full hover:bg-primary-container transition-colors shadow-sm hover:shadow-md disabled:opacity-50 flex items-center justify-center gap-2 group"
-            >
-              <span>{loading ? 'Logging in...' : 'Login'}</span>
-              {!loading && (
-                <MaterialIcon name="arrow_forward" className="group-hover:translate-x-1 transition-transform" />
-              )}
-            </button>
-          </form>
-
-          <div className="mt-8 text-center">
-            <p className="text-sm text-on-surface-variant">
-              Don&apos;t have an account?{' '}
-              <Link
-                to="/register"
-                className="font-semibold text-secondary hover:text-secondary-container transition-colors underline-offset-4 hover:underline"
-              >
-                Sign up
+          <CardContent className="p-8">
+            <div className="text-center mb-8">
+              <Link to="/" className="text-[32px] leading-10 font-bold text-primary hover:text-primary-container transition-colors">
+                LearnHub Cameroon
               </Link>
-            </p>
-          </div>
-        </div>
+              <p className="mt-2 text-base text-on-surface-variant">
+                Welcome back. Please enter your details.
+              </p>
+            </div>
+
+            {error && (
+              <div role="alert" className="bg-error-container text-on-error-container p-3 rounded mb-6 text-sm">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-1">
+                <Label htmlFor="email" className="text-sm font-semibold tracking-wide text-on-surface">
+                  Email
+                </Label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-on-surface-variant">
+                    <MaterialIcon name="mail" />
+                  </span>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    className="h-auto pl-10 pr-3 py-3 rounded-lg border-outline-variant focus-visible:border-primary focus-visible:ring-primary"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="password" className="text-sm font-semibold tracking-wide text-on-surface">
+                  Password
+                </Label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-on-surface-variant">
+                    <MaterialIcon name="lock" />
+                  </span>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="h-auto pl-10 pr-3 py-3 rounded-lg border-outline-variant focus-visible:border-primary focus-visible:ring-primary"
+                    required
+                  />
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full h-auto text-sm tracking-wide py-3 rounded-full shadow-sm hover:shadow-md hover:bg-primary-container group"
+              >
+                <span>{loading ? 'Logging in...' : 'Login'}</span>
+                {!loading && (
+                  <MaterialIcon name="arrow_forward" className="group-hover:translate-x-1 transition-transform" />
+                )}
+              </Button>
+            </form>
+
+            <div className="mt-8 text-center">
+              <p className="text-sm text-on-surface-variant">
+                Don&apos;t have an account?{' '}
+                <Link
+                  to="/register"
+                  className="font-semibold text-secondary hover:text-secondary-container transition-colors underline-offset-4 hover:underline"
+                >
+                  Sign up
+                </Link>
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       </main>
     </div>
   )

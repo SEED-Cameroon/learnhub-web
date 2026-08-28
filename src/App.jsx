@@ -1,18 +1,18 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { AuthProvider } from './context/AuthContext'
-import { RequireAuth, RequireTutor, GuestOnly } from './components/ProtectedRoute'
-import Layout from './components/Layout'
+import { AuthProvider } from '@/context/AuthContext'
+import { RequireAuth, RequireTutor, GuestOnly } from '@/components/auth/ProtectedRoute'
+import Layout from '@/components/layout/Layout'
 
-import Home from './pages/Home'
-import About from './pages/About'
-import Login from './pages/Login'
-import Register from './pages/Register'
-import Courses from './pages/Courses'
-import Account from './pages/Account'
-import Dashboard from './pages/Dashboard'
-import DashboardCourses from './pages/DashboardCourses'
-import Mentors from './components/mentors/Mentors'
-import AllTutors from './components/mentors/AllTutors'
+import Home from '@/pages/Home'
+import About from '@/pages/About'
+import Login from '@/pages/Login'
+import Register from '@/pages/Register'
+import Courses from '@/pages/Courses'
+import Account from '@/pages/Account'
+import Dashboard from '@/pages/Dashboard'
+import DashboardCourses from '@/pages/DashboardCourses'
+import Tutors from '@/pages/Tutors'
+import AllTutors from '@/pages/AllTutors'
 
 function App() {
   return (
@@ -23,8 +23,8 @@ function App() {
             {/* Public */}
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
-            <Route path="/mentors" element={<Mentors />} />
-            <Route path="/mentors/all" element={<AllTutors />} />
+            <Route path="/tutors" element={<Tutors />} />
+            <Route path="/tutors/all" element={<AllTutors />} />
 
             {/* Guest only */}
             <Route

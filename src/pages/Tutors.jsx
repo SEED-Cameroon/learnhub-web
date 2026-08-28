@@ -1,8 +1,8 @@
 import { useId, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import MaterialIcon from '../icons/MaterialIcon'
-import TutorCard from './TutorCard'
-import { CATEGORIES, FEATURED_TUTORS } from './tutorsData'
+import MaterialIcon from '@/components/icons/MaterialIcon'
+import TutorCard from '@/components/tutors/TutorCard'
+import { CATEGORIES, FEATURED_TUTORS } from '@/components/tutors/tutorsData'
 
 function matchesCategory(subject, category) {
   if (category === 'All Subjects') return true
@@ -14,7 +14,7 @@ function matchesCategory(subject, category) {
   return keywords.some((keyword) => subjectLower.includes(keyword))
 }
 
-function Mentors() {
+function Tutors() {
   const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0])
   const [searchQuery, setSearchQuery] = useState('')
   const searchId = useId()
@@ -114,7 +114,7 @@ function Mentors() {
 
       <div className="mt-12 flex justify-center">
         <Link
-          to="/mentors/all"
+          to="/tutors/all"
           className="border-2 border-primary text-primary text-sm font-semibold px-8 py-3 rounded-full shadow-sm transition-colors duration-200 hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         >
           View All Tutors
@@ -124,4 +124,4 @@ function Mentors() {
   )
 }
 
-export default Mentors
+export default Tutors

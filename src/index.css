@@ -35,6 +35,33 @@
   --color-on-error: #ffffff;
   --color-error-container: #ffdad6;
   --color-on-error-container: #93000a;
+
+  /* shadcn/ui semantic aliases — mapped onto the palette above so every
+     shadcn primitive (Button, Input, Card, ...) inherits the brand
+     colors instead of shadcn's own default theme. */
+  --color-background: var(--color-surface);
+  --color-foreground: var(--color-on-surface);
+  --color-card: var(--color-surface-container-lowest);
+  --color-card-foreground: var(--color-on-surface);
+  --color-popover: var(--color-surface-container-lowest);
+  --color-popover-foreground: var(--color-on-surface);
+  --color-primary-foreground: var(--color-on-primary);
+  --color-secondary-foreground: var(--color-on-secondary);
+  --color-muted: var(--color-surface-container-low);
+  --color-muted-foreground: var(--color-on-surface-variant);
+  --color-accent: var(--color-surface-container);
+  --color-accent-foreground: var(--color-on-surface);
+  --color-destructive: var(--color-error);
+  --color-destructive-foreground: var(--color-on-error);
+  --color-border: var(--color-outline-variant);
+  --color-input: var(--color-outline-variant);
+  --color-ring: var(--color-primary);
+
+  --radius: 0.75rem;
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
 .material-symbols-outlined {

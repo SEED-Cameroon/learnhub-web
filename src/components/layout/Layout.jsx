@@ -1,6 +1,6 @@
 import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import Footer from './footer/Footer'
+import { useAuth } from '@/context/AuthContext'
+import Footer from './Footer'
 
 function Layout() {
   const { user, logout } = useAuth()
@@ -34,7 +34,7 @@ function Layout() {
             Courses
           </NavLink>
           <NavLink
-            to="/mentors"
+            to="/tutors"
             className={({ isActive }) =>
               isActive
                 ? 'text-primary font-bold border-b-2 border-primary pb-1'

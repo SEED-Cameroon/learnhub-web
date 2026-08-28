@@ -1,9 +1,13 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import { authApi } from '../services/api'
-import { ApiError } from '../services/apiClient'
-import MaterialIcon from '../components/icons/MaterialIcon'
+import { useAuth } from '@/context/AuthContext'
+import { authApi } from '@/services/api'
+import { ApiError } from '@/services/apiClient'
+import MaterialIcon from '@/components/icons/MaterialIcon'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Card, CardContent } from '@/components/ui/card'
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -65,131 +69,133 @@ export default function Register() {
           <p className="mt-2 text-base text-on-surface-variant">Join the learning community</p>
         </div>
 
-        <div className="bg-surface-container-lowest/80 backdrop-blur-lg border border-white/30 rounded-xl shadow-[0_8px_32px_0_rgba(0,35,111,0.05)] p-8">
-          {error && (
-            <div className="bg-error-container text-on-error-container p-3 rounded mb-6 text-sm">
-              {error}
-            </div>
-          )}
+        <Card className="bg-surface-container-lowest/80 backdrop-blur-lg border-white/30 shadow-[0_8px_32px_0_rgba(0,35,111,0.05)] py-0">
+          <CardContent className="p-8">
+            {error && (
+              <div role="alert" className="bg-error-container text-on-error-container p-3 rounded mb-6 text-sm">
+                {error}
+              </div>
+            )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Role toggle */}
-            <div className="flex items-center justify-center bg-surface-container-low p-1 rounded-full">
-              <label className="cursor-pointer relative w-1/2 text-center">
-                <input
-                  type="radio"
-                  name="role"
-                  value="student"
-                  checked={form.role === 'student'}
-                  onChange={handleChange}
-                  className="peer sr-only"
-                />
-                <span className="block py-2 px-4 rounded-full text-sm font-semibold tracking-wide transition-all duration-200 peer-checked:bg-primary peer-checked:text-on-primary text-on-surface-variant hover:text-primary">
-                  I am a Student
-                </span>
-              </label>
-              <label className="cursor-pointer relative w-1/2 text-center">
-                <input
-                  type="radio"
-                  name="role"
-                  value="tutor"
-                  checked={form.role === 'tutor'}
-                  onChange={handleChange}
-                  className="peer sr-only"
-                />
-                <span className="block py-2 px-4 rounded-full text-sm font-semibold tracking-wide transition-all duration-200 peer-checked:bg-secondary peer-checked:text-on-secondary text-on-surface-variant hover:text-secondary">
-                  I am a Tutor
-                </span>
-              </label>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold tracking-wide text-on-surface mb-1" htmlFor="name">
-                  Full Name
-                </label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-outline">
-                    <MaterialIcon name="person" />
-                  </span>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Role toggle */}
+              <div className="flex items-center justify-center bg-surface-container-low p-1 rounded-full">
+                <label className="cursor-pointer relative w-1/2 text-center">
                   <input
-                    id="name"
-                    name="name"
-                    type="text"
-                    value={form.name}
+                    type="radio"
+                    name="role"
+                    value="student"
+                    checked={form.role === 'student'}
                     onChange={handleChange}
-                    placeholder="John Doe"
-                    className="w-full pl-10 pr-3 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors placeholder-on-surface-variant/50"
-                    required
+                    className="peer sr-only"
                   />
+                  <span className="block py-2 px-4 rounded-full text-sm font-semibold tracking-wide transition-all duration-200 peer-checked:bg-primary peer-checked:text-on-primary text-on-surface-variant hover:text-primary peer-focus-visible:ring-2 peer-focus-visible:ring-primary peer-focus-visible:ring-offset-2">
+                    I am a Student
+                  </span>
+                </label>
+                <label className="cursor-pointer relative w-1/2 text-center">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="tutor"
+                    checked={form.role === 'tutor'}
+                    onChange={handleChange}
+                    className="peer sr-only"
+                  />
+                  <span className="block py-2 px-4 rounded-full text-sm font-semibold tracking-wide transition-all duration-200 peer-checked:bg-secondary peer-checked:text-on-secondary text-on-surface-variant hover:text-secondary peer-focus-visible:ring-2 peer-focus-visible:ring-secondary peer-focus-visible:ring-offset-2">
+                    I am a Tutor
+                  </span>
+                </label>
+              </div>
+
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <Label htmlFor="name" className="text-sm font-semibold tracking-wide text-on-surface">
+                    Full Name
+                  </Label>
+                  <div className="relative">
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-outline">
+                      <MaterialIcon name="person" />
+                    </span>
+                    <Input
+                      id="name"
+                      name="name"
+                      type="text"
+                      value={form.name}
+                      onChange={handleChange}
+                      placeholder="John Doe"
+                      className="h-auto pl-10 pr-3 py-3 rounded-lg border-outline-variant focus-visible:border-primary focus-visible:ring-primary"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <Label htmlFor="email" className="text-sm font-semibold tracking-wide text-on-surface">
+                    Email
+                  </Label>
+                  <div className="relative">
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-outline">
+                      <MaterialIcon name="mail" />
+                    </span>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={form.email}
+                      onChange={handleChange}
+                      placeholder="john@example.com"
+                      className="h-auto pl-10 pr-3 py-3 rounded-lg border-outline-variant focus-visible:border-primary focus-visible:ring-primary"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <Label htmlFor="password" className="text-sm font-semibold tracking-wide text-on-surface">
+                    Password
+                  </Label>
+                  <div className="relative">
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-outline">
+                      <MaterialIcon name="lock" />
+                    </span>
+                    <Input
+                      id="password"
+                      name="password"
+                      type="password"
+                      value={form.password}
+                      onChange={handleChange}
+                      placeholder="••••••••"
+                      className="h-auto pl-10 pr-3 py-3 rounded-lg border-outline-variant focus-visible:border-primary focus-visible:ring-primary"
+                      required
+                      minLength={6}
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-semibold tracking-wide text-on-surface mb-1" htmlFor="email">
-                  Email
-                </label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-outline">
-                    <MaterialIcon name="mail" />
-                  </span>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={form.email}
-                    onChange={handleChange}
-                    placeholder="john@example.com"
-                    className="w-full pl-10 pr-3 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors placeholder-on-surface-variant/50"
-                    required
-                  />
-                </div>
-              </div>
+              <Button
+                type="submit"
+                disabled={loading}
+                className="w-full h-auto py-3 rounded-full text-sm tracking-wide hover:bg-primary-container hover:shadow-md active:scale-95 group"
+              >
+                <span>{loading ? 'Creating account...' : 'Create Account'}</span>
+                {!loading && (
+                  <MaterialIcon name="arrow_forward" className="group-hover:translate-x-1 transition-transform" />
+                )}
+              </Button>
+            </form>
 
-              <div>
-                <label className="block text-sm font-semibold tracking-wide text-on-surface mb-1" htmlFor="password">
-                  Password
-                </label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-outline">
-                    <MaterialIcon name="lock" />
-                  </span>
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    value={form.password}
-                    onChange={handleChange}
-                    placeholder="••••••••"
-                    className="w-full pl-10 pr-3 py-3 bg-surface-container-lowest border border-outline-variant rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors placeholder-on-surface-variant/50"
-                    required
-                    minLength={6}
-                  />
-                </div>
-              </div>
+            <div className="mt-6 text-center">
+              <p className="text-sm text-on-surface-variant">
+                Already have an account?{' '}
+                <Link to="/login" className="text-primary font-bold hover:underline decoration-2 underline-offset-4">
+                  Login
+                </Link>
+              </p>
             </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 px-4 bg-primary text-on-primary rounded-full text-sm font-semibold tracking-wide hover:bg-primary-container hover:shadow-md transition-all duration-150 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 group"
-            >
-              <span>{loading ? 'Creating account...' : 'Create Account'}</span>
-              {!loading && (
-                <MaterialIcon name="arrow_forward" className="group-hover:translate-x-1 transition-transform" />
-              )}
-            </button>
-          </form>
-
-          <div className="mt-6 text-center">
-            <p className="text-sm text-on-surface-variant">
-              Already have an account?{' '}
-              <Link to="/login" className="text-primary font-bold hover:underline decoration-2 underline-offset-4">
-                Login
-              </Link>
-            </p>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </main>
     </div>
   )

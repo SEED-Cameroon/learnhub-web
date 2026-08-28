@@ -1,13 +1,13 @@
 import { Link } from 'react-router-dom'
-import MaterialIcon from '../icons/MaterialIcon'
-import TutorCard from './TutorCard'
-import { MORE_TUTORS } from './tutorsData'
+import MaterialIcon from '@/components/icons/MaterialIcon'
+import TutorCard from '@/components/tutors/TutorCard'
+import { MORE_TUTORS } from '@/components/tutors/tutorsData'
 
 export default function AllTutors() {
   return (
     <div className="max-w-[1280px] mx-auto px-4 md:px-10 py-12">
       <Link
-        to="/mentors"
+        to="/tutors"
         className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline mb-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 rounded"
       >
         <MaterialIcon name="arrow_back" className="text-base" />
