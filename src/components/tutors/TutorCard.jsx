@@ -1,14 +1,15 @@
 import { useState } from 'react'
 import MaterialIcon from '../icons/MaterialIcon'
+import { Button } from '@/components/ui/button'
 
 export default function TutorCard({ tutor }) {
   const [followed, setFollowed] = useState(false)
 
   const followButtonClass = followed
-    ? 'border border-outline-variant bg-surface-container-low text-on-surface-variant'
+    ? 'border border-outline-variant bg-surface-container-low text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface-variant'
     : tutor.verified
       ? 'bg-secondary-container text-on-secondary-container hover:bg-secondary hover:text-white'
-      : 'border-2 border-primary text-primary hover:bg-surface-container-low'
+      : 'border-2 border-primary text-primary bg-transparent hover:bg-surface-container-low hover:text-primary'
 
   return (
     <article className="bg-surface-container-lowest rounded-xl elevation-1 interactive-card overflow-hidden flex flex-col relative">
@@ -33,16 +34,16 @@ export default function TutorCard({ tutor }) {
           <MaterialIcon name="group" className="text-sm" />
           <span>{tutor.followers} Followers</span>
         </div>
-        <button
+        <Button
           type="button"
           onClick={() => setFollowed((prev) => !prev)}
           aria-pressed={followed}
           aria-label={`${followed ? 'Unfollow' : 'Follow'} ${tutor.name}`}
-          className={`w-full mt-auto flex items-center justify-center gap-1.5 text-sm font-semibold py-3 rounded-full transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 ${followButtonClass}`}
+          className={`w-full mt-auto h-auto py-3 rounded-full shadow-none ${followButtonClass}`}
         >
           {followed && <MaterialIcon name="check" className="text-base" />}
           {followed ? 'Following' : 'Follow'}
-        </button>
+        </Button>
       </div>
     </article>
   )

@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import MaterialIcon from '@/components/icons/MaterialIcon'
 import TutorCard from '@/components/tutors/TutorCard'
 import { CATEGORIES, FEATURED_TUTORS } from '@/components/tutors/tutorsData'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 function matchesCategory(subject, category) {
   if (category === 'All Subjects') return true
@@ -48,23 +50,25 @@ function Tutors() {
           <label htmlFor={searchId} className="sr-only">
             Search tutors by subject, name, or skill
           </label>
-          <input
+          <Input
             id={searchId}
             type="search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by subject, name, or skill..."
-            className="w-full bg-surface-container-lowest border border-outline-variant hover:border-outline focus:border-primary rounded-full py-4 pl-12 pr-12 text-lg text-on-surface focus:ring-2 focus:ring-primary-container outline-none transition-colors shadow-sm"
+            className="h-auto rounded-full py-4 pl-12 pr-12 text-lg border-outline-variant hover:border-outline focus-visible:border-primary focus-visible:ring-primary-container shadow-sm"
           />
           {searchQuery && (
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
               onClick={() => setSearchQuery('')}
               aria-label="Clear search"
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface-variant transition-colors rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="absolute right-2 top-1/2 -translate-y-1/2 size-8 text-outline hover:text-on-surface-variant hover:bg-transparent"
             >
               <MaterialIcon name="close" className="text-lg" />
-            </button>
+            </Button>
           )}
         </div>
       </section>
@@ -75,19 +79,20 @@ function Tutors() {
           {CATEGORIES.map((category) => {
             const isSelected = category === selectedCategory
             return (
-              <button
+              <Button
                 key={category}
                 type="button"
+                variant={isSelected ? 'default' : 'outline'}
                 aria-pressed={isSelected}
                 onClick={() => setSelectedCategory(category)}
                 className={
                   isSelected
-                    ? 'bg-primary text-on-primary text-sm font-semibold px-6 py-2 rounded-full shadow-sm transition-colors duration-200 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
-                    : 'bg-surface-container-lowest text-on-surface-variant border border-outline-variant text-sm font-semibold px-6 py-2 rounded-full transition-colors duration-200 hover:bg-surface-container-low hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2'
+                    ? 'h-auto px-6 py-2 rounded-full shadow-sm hover:-translate-y-0.5 hover:bg-primary'
+                    : 'h-auto px-6 py-2 rounded-full shadow-none hover:bg-surface-container-low hover:text-on-surface-variant hover:-translate-y-0.5'
                 }
               >
                 {category}
-              </button>
+              </Button>
             )
           })}
         </div>
@@ -113,12 +118,13 @@ function Tutors() {
       )}
 
       <div className="mt-12 flex justify-center">
-        <Link
-          to="/tutors/all"
-          className="border-2 border-primary text-primary text-sm font-semibold px-8 py-3 rounded-full shadow-sm transition-colors duration-200 hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+        <Button
+          asChild
+          variant="outline"
+          className="h-auto border-2 border-primary text-primary px-8 py-3 rounded-full shadow-sm hover:bg-surface-container-low hover:text-primary"
         >
-          View All Tutors
-        </Link>
+          <Link to="/tutors/all">View All Tutors</Link>
+        </Button>
       </div>
     </div>
   )
