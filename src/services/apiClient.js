@@ -1,7 +1,7 @@
 const BASE_URL = import.meta.env.VITE_API_URL || "";
 
 function getToken() {
-  return localStorage.getItem("lhc_token");
+  return localStorage.getItem("token");
 }
 
 export class ApiError extends Error {
