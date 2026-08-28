@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import heroImage from '../assets/hero.jpg'
 import MaterialIcon from '../components/icons/MaterialIcon'
+import { Button } from '@/components/ui/button'
 
 const FEATURES = [
   {
@@ -75,18 +76,18 @@ export default function Home() {
           </p>
 
           <div className="flex flex-wrap gap-4 mt-4">
-            <Link
-              to="/courses"
-              className="bg-primary text-on-primary text-sm font-semibold tracking-wide px-8 py-3 rounded-full hover:opacity-90 transition-opacity"
+            <Button
+              asChild
+              className="h-auto text-sm px-8 py-3 rounded-full hover:bg-primary hover:opacity-90 shadow-none"
             >
-              Browse Courses
-            </Link>
-            <Link
-              to="/register"
-              className="bg-secondary-container text-on-secondary-container text-sm font-semibold tracking-wide px-8 py-3 rounded-full hover:opacity-90 transition-opacity"
+              <Link to="/courses">Browse Courses</Link>
+            </Button>
+            <Button
+              asChild
+              className="h-auto bg-secondary-container text-on-secondary-container text-sm px-8 py-3 rounded-full hover:bg-secondary-container hover:opacity-90 shadow-none"
             >
-              Become a Tutor
-            </Link>
+              <Link to="/register">Become a Tutor</Link>
+            </Button>
           </div>
         </div>
 
@@ -179,12 +180,13 @@ export default function Home() {
         </div>
 
         <div className="mt-8 text-center md:hidden">
-          <Link
-            to="/tutors/all"
-            className="inline-block bg-surface-variant text-on-surface-variant text-sm font-semibold px-6 py-2 rounded-full hover:bg-surface-dim transition-colors"
+          <Button
+            asChild
+            variant="secondary"
+            className="h-auto bg-surface-variant text-on-surface-variant text-sm px-6 py-2 rounded-full hover:bg-surface-dim shadow-none"
           >
-            View All Tutors
-          </Link>
+            <Link to="/tutors/all">View All Tutors</Link>
+          </Button>
         </div>
       </section>
     </div>

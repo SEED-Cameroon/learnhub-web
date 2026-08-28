@@ -1,5 +1,6 @@
 import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
+import { Button } from '@/components/ui/button'
 import Footer from './Footer'
 
 function Layout() {
@@ -71,12 +72,13 @@ function Layout() {
               <span className="text-sm text-on-surface-variant whitespace-nowrap">
                 {user.name} ({user.role})
               </span>
-              <button
+              <Button
+                variant="link"
                 onClick={handleLogout}
-                className="text-sm text-red-600 hover:underline whitespace-nowrap"
+                className="h-auto p-0 text-sm text-destructive whitespace-nowrap"
               >
                 Logout
-              </button>
+              </Button>
             </>
           ) : (
             <>
@@ -86,12 +88,12 @@ function Layout() {
               >
                 Login
               </Link>
-              <Link
-                to="/register"
-                className="text-sm font-semibold bg-primary text-on-primary px-6 py-2.5 rounded-full hover:opacity-90 transition-opacity whitespace-nowrap"
+              <Button
+                asChild
+                className="h-auto text-sm px-6 py-2.5 rounded-full hover:opacity-90 hover:bg-primary shadow-none whitespace-nowrap"
               >
-                Sign Up
-              </Link>
+                <Link to="/register">Sign Up</Link>
+              </Button>
             </>
           )}
         </div>

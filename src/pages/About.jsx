@@ -1,5 +1,6 @@
 import heroImage from '../assets/hero.jpg'
 import MaterialIcon from '../components/icons/MaterialIcon'
+import { Button } from '@/components/ui/button'
 
 const HOW_IT_WORKS = [
   {
@@ -72,12 +73,12 @@ export default function About() {
             resources to the next generation of Cameroonian leaders and innovators. We bridge the
             gap between education and industry.
           </p>
-          <a
-            href="#how-it-works"
-            className="self-start bg-primary text-on-primary text-sm font-semibold tracking-wide px-8 py-3 rounded-full hover:opacity-90 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          <Button
+            asChild
+            className="self-start h-auto text-sm px-8 py-3 rounded-full hover:bg-primary hover:opacity-90 shadow-none"
           >
-            See How It Works
-          </a>
+            <a href="#how-it-works">See How It Works</a>
+          </Button>
         </div>
       </section>
 
