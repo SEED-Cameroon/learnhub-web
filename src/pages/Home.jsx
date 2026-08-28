@@ -1,39 +1,31 @@
 import { Link } from 'react-router-dom'
 import heroImage from '../assets/hero.jpg'
+import MaterialIcon from '../components/icons/MaterialIcon'
 
 const FEATURES = [
   {
     title: 'Local Tutors',
     description:
       'Learn from experts who understand your context, local industries, and specific career challenges in Cameroon.',
-    badgeClass: 'bg-purple-100 text-purple-600',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" stroke="currentColor" className="w-5 h-5">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 12c2.485 0 4.5-2.015 4.5-4.5S14.485 3 12 3 7.5 5.015 7.5 7.5 9.515 12 12 12Zm0 0c-4.142 0-7.5 2.239-7.5 5v1.5h15V17c0-2.761-3.358-5-7.5-5Z" />
-      </svg>
-    ),
+    iconBgClass: 'bg-primary-fixed',
+    iconColorClass: 'text-primary-fixed-dim',
+    icon: 'person_raised_hand',
   },
   {
     title: 'Community First',
     description:
       'Support creators directly via seamless Mobile Money integration. Build the local creator economy together.',
-    badgeClass: 'bg-orange-100 text-orange-600',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" stroke="currentColor" className="w-5 h-5">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75a4.5 4.5 0 0 0-9 0M12 11.25a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm7.5 7.5a3.75 3.75 0 0 0-6-3M4.5 18.75a3.75 3.75 0 0 1 6-3M18 8.25a2.25 2.25 0 1 0 0-4.5 2.25 2.25 0 0 0 0 4.5ZM6 8.25a2.25 2.25 0 1 0 0-4.5 2.25 2.25 0 0 0 0 4.5Z" />
-      </svg>
-    ),
+    iconBgClass: 'bg-secondary-fixed',
+    iconColorClass: 'text-secondary',
+    icon: 'payments',
   },
   {
     title: 'Accessible Learning',
     description:
       'Watch high-quality course previews, join vibrant discussions, and learn at your own pace on any device.',
-    badgeClass: 'bg-teal-100 text-teal-600',
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" strokeWidth="1.8" stroke="currentColor" className="w-5 h-5">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25a8.987 8.987 0 0 0-3-.512 8.966 8.966 0 0 0-6 2.292m0-14.25v14.25" />
-      </svg>
-    ),
+    iconBgClass: 'bg-tertiary-fixed',
+    iconColorClass: 'text-tertiary',
+    icon: 'devices',
   },
 ]
 
@@ -48,7 +40,7 @@ const FEATURED_EDUCATORS = [
   {
     name: 'Mbah Junior',
     subject: 'Web Development',
-    followers: '8.6k',
+    followers: '8.5k',
     verified: true,
     avatar: 'https://randomuser.me/api/portraits/men/45.jpg',
   },
@@ -72,61 +64,63 @@ export default function Home() {
   return (
     <div>
       {/* Hero */}
-      <section className="bg-[#f8f8ff] max-w-6xl mx-auto px-6 py-20 grid md:grid-cols-2 gap-12 items-center">
-        <div>
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 leading-tight">
+      <section className="max-w-[1280px] mx-auto px-4 md:px-10 py-16 md:py-24 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+        <div className="md:col-span-6 flex flex-col gap-6">
+          <h1 className="text-[28px] leading-[36px] md:text-[48px] md:leading-[56px] font-extrabold tracking-tight text-on-surface">
             Empowering Cameroon&apos;s Future Through Knowledge.
           </h1>
-          <p className="mt-5 text-slate-600 max-w-lg">
+          <p className="text-lg leading-7 text-on-surface-variant max-w-lg">
             Join the premier platform connecting local expertise with ambitious learners. Build
             your skills, advance your career, and support local creators.
           </p>
 
-          <div className="mt-8 flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-4 mt-4">
             <Link
               to="/courses"
-              className="bg-[#123263] text-white px-7 py-3 rounded-full font-medium hover:bg-[#0d2549] transition"
+              className="bg-primary text-on-primary text-sm font-semibold tracking-wide px-8 py-3 rounded-full hover:opacity-90 transition-opacity"
             >
               Browse Courses
             </Link>
             <Link
               to="/register"
-              className="bg-[#f5a623] text-white px-7 py-3 rounded-full font-medium hover:bg-[#e0951a] transition"
+              className="bg-secondary-container text-on-secondary-container text-sm font-semibold tracking-wide px-8 py-3 rounded-full hover:opacity-90 transition-opacity"
             >
               Become a Tutor
             </Link>
           </div>
         </div>
 
-        <img
-          src={heroImage}
-          alt="LearnHub Cameroon tutors and students reviewing coursework together"
-          className="rounded-2xl shadow-xl w-full h-auto object-cover"
-        />
+        <div className="md:col-span-6 mt-8 md:mt-0 relative h-[400px] md:h-[500px] rounded-xl overflow-hidden elevation-1">
+          <img
+            src={heroImage}
+            alt="LearnHub Cameroon tutors and students reviewing coursework together"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        </div>
       </section>
 
       {/* Why LearnHub Cameroon */}
-      <section id="why" className="bg-[#f0f2ff]">
-        <div className="max-w-6xl mx-auto px-6 py-20">
-          <h2 className="text-2xl font-bold text-center text-slate-900">
+      <section id="why" className="bg-surface-container-low">
+        <div className="max-w-[1280px] mx-auto px-4 md:px-10 py-16 md:py-24">
+          <h2 className="text-[32px] leading-[40px] font-bold text-center text-on-surface mb-12">
             Why LearnHub Cameroon?
           </h2>
 
-          <div className="mt-10 grid md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {FEATURES.map((feature) => (
               <div
                 key={feature.title}
-                className="bg-white rounded-xl p-6 shadow-sm"
+                className="bg-surface-container-lowest rounded-xl p-8 elevation-1 interactive-card flex flex-col items-start gap-4"
               >
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${feature.badgeClass}`}>
-                  {feature.icon}
+                <div
+                  className={`w-12 h-12 rounded-full flex items-center justify-center ${feature.iconBgClass} ${feature.iconColorClass}`}
+                >
+                  <MaterialIcon name={feature.icon} fill />
                 </div>
-                <h3 className="mt-4 font-semibold text-slate-900">
+                <h3 className="text-[24px] leading-8 font-semibold text-on-surface">
                   {feature.title}
                 </h3>
-                <p className="mt-2 text-sm text-slate-600">
-                  {feature.description}
-                </p>
+                <p className="text-base text-on-surface-variant">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -134,55 +128,63 @@ export default function Home() {
       </section>
 
       {/* Featured Educators */}
-      <section className="bg-white max-w-6xl mx-auto px-6 py-20">
-        <div className="flex items-end justify-between">
+      <section className="max-w-[1280px] mx-auto px-4 md:px-10 py-16 md:py-24">
+        <div className="flex justify-between items-end mb-12">
           <div>
-            <h2 className="text-2xl font-bold text-slate-900">
+            <h2 className="text-[32px] leading-[40px] font-bold text-on-surface">
               Featured Educators
             </h2>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-2 text-base text-on-surface-variant">
               Learn from our top-rated local experts.
             </p>
           </div>
           <Link
             to="/mentors/all"
-            className="text-sm font-medium text-[#123263] hover:underline whitespace-nowrap"
+            className="hidden md:flex text-primary text-sm font-semibold items-center gap-1 hover:underline whitespace-nowrap"
           >
-            View All &rarr;
+            View All <MaterialIcon name="arrow_forward" className="text-[16px]" />
           </Link>
         </div>
 
-        <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
           {FEATURED_EDUCATORS.map((educator) => (
             <div
               key={educator.name}
-              className="bg-white border border-slate-100 rounded-xl overflow-hidden shadow-sm"
+              className="bg-surface-container-lowest rounded-xl overflow-hidden elevation-1 interactive-card flex flex-col relative"
             >
-              <div className="h-20 bg-[#eef0fb]" />
-              <div className="px-6 pb-6 text-center">
-                <img
-                  src={educator.avatar}
-                  alt={educator.name}
-                  className="w-16 h-16 rounded-full mx-auto -mt-8 border-4 border-white object-cover"
-                />
-                <h3 className="mt-3 font-semibold text-slate-900 flex items-center justify-center gap-1">
+              <div className="h-24 bg-surface-variant w-full" />
+              <div className="px-6 pb-6 pt-0 flex flex-col items-center text-center -mt-12 relative z-10">
+                <div className="w-24 h-24 rounded-full border-4 border-surface-container-lowest overflow-hidden mb-4 relative">
+                  <img
+                    src={educator.avatar}
+                    alt={educator.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <h3 className="text-[24px] leading-8 font-semibold text-on-surface flex items-center justify-center gap-1">
                   {educator.name}
                   {educator.verified && (
-                    <span
-                      title="Verified"
-                      className="inline-flex w-4 h-4 rounded-full bg-blue-500 text-white text-[10px] items-center justify-center"
-                    >
-                      &#10003;
-                    </span>
+                    <MaterialIcon name="verified" className="text-primary text-[18px]" fill />
                   )}
                 </h3>
-                <p className="text-sm font-medium text-[#f5a623]">{educator.subject}</p>
-                <p className="mt-1 text-xs text-slate-500">
+                <p className="text-xs font-medium tracking-wide text-primary-container mt-1">
+                  {educator.subject}
+                </p>
+                <p className="text-xs text-on-surface-variant mt-2">
                   {educator.followers} Followers
                 </p>
               </div>
             </div>
           ))}
+        </div>
+
+        <div className="mt-8 text-center md:hidden">
+          <Link
+            to="/mentors/all"
+            className="inline-block bg-surface-variant text-on-surface-variant text-sm font-semibold px-6 py-2 rounded-full hover:bg-surface-dim transition-colors"
+          >
+            View All Tutors
+          </Link>
         </div>
       </section>
     </div>
