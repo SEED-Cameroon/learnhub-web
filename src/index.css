@@ -30,6 +30,11 @@
   --color-outline: #757682;
   --color-outline-variant: #c5c5d3;
   --color-surface-tint: #4059aa;
+
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
 }
 
 .material-symbols-outlined {
