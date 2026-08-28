@@ -4,6 +4,7 @@ import { RequireAuth, RequireTutor, GuestOnly } from './components/ProtectedRout
 import Layout from './components/Layout'
 
 import Home from './pages/Home'
+import About from './pages/About'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Courses from './pages/Courses'
@@ -21,6 +22,7 @@ function App() {
           <Route element={<Layout />}>
             {/* Public */}
             <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
             <Route path="/mentors" element={<Mentors />} />
             <Route path="/mentors/all" element={<AllTutors />} />
 
