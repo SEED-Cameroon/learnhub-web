@@ -1,25 +1,24 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useParams } from "react-router-dom";
+import CourseDiscovery from "./pages/CourseDiscovery";
+import CourseDetail from "./pages/CourseDetail";
+import { MOCK_COURSES, COURSE_DETAILS, MOCK_COURSE } from "./data/mockCourses";
 
-import Login from "./pages/auth/Login";
-import Signup from "./pages/auth/Signup";
+// Resolves the current course from the URL param.
+// Replace the COURSE_DETAILS lookup with a real fetch/query keyed on courseId
+// once your API is wired up.
+function CourseDetailRoute() {
+  const { courseId } = useParams();
+  const course = COURSE_DETAILS[courseId] || MOCK_COURSE;
+  return <CourseDetail course={course} key={courseId} />;
+}
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route
-          path="/"
-          element={<Navigate to="/login" replace />}
-        />
-
-        <Route path="/login" element={<Login />} />
-
-        <Route path="/signup" element={<Signup />} />
-
-        <Route
-          path="*"
-          element={<Navigate to="/login" replace />}
-        />
+        <Route path="/" element={<CourseDiscovery courses={MOCK_COURSES} />} />
+        <Route path="/courses" element={<CourseDiscovery courses={MOCK_COURSES} />} />
+        <Route path="/courses/:courseId" element={<CourseDetailRoute />} />
       </Routes>
     </BrowserRouter>
   );
