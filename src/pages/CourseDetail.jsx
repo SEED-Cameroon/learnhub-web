@@ -1,17 +1,49 @@
 import { useRef, useState } from "react";
-import { Play, ThumbsUp, Share2, CheckCircle2, Lock, PlayCircle } from "lucide-react";
+import { Play, ThumbsUp, Share2, CheckCircle2, Lock, PlayCircle, Loader2, AlertCircle } from "lucide-react";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 import CourseComments from "../components/comments/CourseComments";
+import { useToggleInteraction } from "../hooks/useToggleInteraction";
+import {
+  getCourseLikeStatus,
+  likeCourse,
+  unlikeCourse,
+  getTutorFollowStatus,
+  followTutor,
+  unfollowTutor,
+} from "../services/courseInteractionsApi";
 import { MOCK_COURSE } from "../data/mockCourses";
 
 const TABS = ["Description", "Comments", "Resources"];
 
-export default function CourseDetail({ course = MOCK_COURSE, onSupportTutor, onFollow }) {
+export default function CourseDetail({ course = MOCK_COURSE, onSupportTutor }) {
   const [activeTab, setActiveTab] = useState("Description");
   const [isPlaying, setIsPlaying] = useState(false);
   const [commentCount, setCommentCount] = useState(0);
   const discussionRef = useRef(null);
+
+  const courseLike = useToggleInteraction({
+    id: course.id,
+    initialCount: course.likes,
+    countKey: "likeCount",
+    activeKey: "likedByCurrentUser",
+    getStatus: ({ id, initialCount }) => getCourseLikeStatus({ courseId: id, initialLikeCount: initialCount }),
+    onAction: ({ id, initialCount, token }) => likeCourse({ courseId: id, initialLikeCount: initialCount, token }),
+    offAction: ({ id, initialCount, token }) => unlikeCourse({ courseId: id, initialLikeCount: initialCount, token }),
+  });
+
+  const tutorFollow = useToggleInteraction({
+    id: course.tutor.id,
+    initialCount: course.tutor.followerCount,
+    countKey: "followerCount",
+    activeKey: "followedByCurrentUser",
+    getStatus: ({ id, initialCount }) =>
+      getTutorFollowStatus({ tutorId: id, initialFollowerCount: initialCount }),
+    onAction: ({ id, initialCount, token }) =>
+      followTutor({ tutorId: id, initialFollowerCount: initialCount, token }),
+    offAction: ({ id, initialCount, token }) =>
+      unfollowTutor({ tutorId: id, initialFollowerCount: initialCount, token }),
+  });
 
   const handleTabClick = (tab) => {
     setActiveTab(tab);
@@ -92,20 +124,48 @@ export default function CourseDetail({ course = MOCK_COURSE, onSupportTutor, onF
                   {course.tutor.name}
                   {course.tutor.verified && <CheckCircle2 className="h-3.5 w-3.5 text-[#12234F]" />}
                 </p>
-                <p className="text-xs text-slate-500">{course.tutor.students} Students</p>
+                <p className="text-xs text-slate-500">
+                  {course.tutor.students} Students · {tutorFollow.loading ? "…" : tutorFollow.count.toLocaleString()} Followers
+                </p>
               </div>
               <button
-                onClick={onFollow}
-                className="ml-2 rounded-full border border-slate-300 px-4 py-1 text-xs font-medium text-slate-700 hover:border-[#12234F] hover:text-[#12234F] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#12234F]"
+                type="button"
+                onClick={tutorFollow.toggle}
+                disabled={tutorFollow.loading || tutorFollow.pending}
+                aria-pressed={tutorFollow.active}
+                aria-label={tutorFollow.active ? `Unfollow ${course.tutor.name}` : `Follow ${course.tutor.name}`}
+                className={
+                  "ml-2 flex items-center gap-1 rounded-full border px-4 py-1 text-xs font-medium transition-colors " +
+                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-[#12234F] " +
+                  "disabled:cursor-not-allowed disabled:opacity-60 " +
+                  (tutorFollow.active
+                    ? "border-[#12234F] bg-[#12234F] text-white"
+                    : "border-slate-300 text-slate-700 hover:border-[#12234F] hover:text-[#12234F]")
+                }
               >
-                Follow
+                {(tutorFollow.loading || tutorFollow.pending) && <Loader2 className="h-3 w-3 animate-spin" />}
+                {tutorFollow.loading ? "..." : tutorFollow.active ? "Following" : "Follow"}
               </button>
             </div>
 
             <div className="flex items-center gap-2">
-              <button className="flex items-center gap-1 rounded-full border border-slate-300 px-3 py-1 text-xs text-slate-600 hover:border-[#12234F] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#12234F]">
-                <ThumbsUp className="h-3.5 w-3.5" />
-                {course.likes}
+              <button
+                type="button"
+                onClick={courseLike.toggle}
+                disabled={courseLike.loading || courseLike.pending}
+                aria-pressed={courseLike.active}
+                aria-label={courseLike.active ? "Unlike this course" : "Like this course"}
+                className={
+                  "flex items-center gap-1 rounded-full border px-3 py-1 text-xs transition-colors " +
+                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-[#12234F] " +
+                  "disabled:cursor-not-allowed disabled:opacity-60 " +
+                  (courseLike.active
+                    ? "border-[#12234F] text-[#12234F] font-medium"
+                    : "border-slate-300 text-slate-600 hover:border-[#12234F]")
+                }
+              >
+                <ThumbsUp className={"h-3.5 w-3.5 " + (courseLike.active ? "fill-[#12234F]" : "")} />
+                {courseLike.loading ? "..." : courseLike.count.toLocaleString()}
               </button>
               <button className="flex items-center gap-1 rounded-full border border-slate-300 px-3 py-1 text-xs text-slate-600 hover:border-[#12234F] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#12234F]">
                 <Share2 className="h-3.5 w-3.5" />
@@ -119,6 +179,13 @@ export default function CourseDetail({ course = MOCK_COURSE, onSupportTutor, onF
               </button>
             </div>
           </div>
+
+          {(courseLike.error || tutorFollow.error) && (
+            <p role="alert" className="mt-2 flex items-center gap-1 text-xs text-red-600">
+              <AlertCircle className="h-3.5 w-3.5" />
+              {courseLike.error || tutorFollow.error}
+            </p>
+          )}
 
           {/* Tabs */}
           <div className="mt-4 flex gap-6 border-b border-slate-200">
