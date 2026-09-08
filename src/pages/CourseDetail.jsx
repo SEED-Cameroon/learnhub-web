@@ -1,21 +1,23 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Play, ThumbsUp, Share2, CheckCircle2, Lock, PlayCircle } from "lucide-react";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
-import CommentRow from "../components/comments/CommentRow";
+import CourseComments from "../components/comments/CourseComments";
 import { MOCK_COURSE } from "../data/mockCourses";
 
 const TABS = ["Description", "Comments", "Resources"];
 
-export default function CourseDetail({ course = MOCK_COURSE, onSupportTutor, onFollow, onSubmitComment }) {
+export default function CourseDetail({ course = MOCK_COURSE, onSupportTutor, onFollow }) {
   const [activeTab, setActiveTab] = useState("Description");
-  const [comment, setComment] = useState("");
   const [isPlaying, setIsPlaying] = useState(false);
+  const [commentCount, setCommentCount] = useState(0);
+  const discussionRef = useRef(null);
 
-  const handleSubmit = () => {
-    if (!comment.trim()) return;
-    onSubmitComment?.(comment.trim());
-    setComment("");
+  const handleTabClick = (tab) => {
+    setActiveTab(tab);
+    if (tab === "Comments") {
+      discussionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   };
 
   return (
@@ -94,24 +96,24 @@ export default function CourseDetail({ course = MOCK_COURSE, onSupportTutor, onF
               </div>
               <button
                 onClick={onFollow}
-                className="ml-2 rounded-full border border-slate-300 px-4 py-1 text-xs font-medium text-slate-700 hover:border-[#12234F] hover:text-[#12234F]"
+                className="ml-2 rounded-full border border-slate-300 px-4 py-1 text-xs font-medium text-slate-700 hover:border-[#12234F] hover:text-[#12234F] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#12234F]"
               >
                 Follow
               </button>
             </div>
 
             <div className="flex items-center gap-2">
-              <button className="flex items-center gap-1 rounded-full border border-slate-300 px-3 py-1 text-xs text-slate-600 hover:border-[#12234F]">
+              <button className="flex items-center gap-1 rounded-full border border-slate-300 px-3 py-1 text-xs text-slate-600 hover:border-[#12234F] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#12234F]">
                 <ThumbsUp className="h-3.5 w-3.5" />
                 {course.likes}
               </button>
-              <button className="flex items-center gap-1 rounded-full border border-slate-300 px-3 py-1 text-xs text-slate-600 hover:border-[#12234F]">
+              <button className="flex items-center gap-1 rounded-full border border-slate-300 px-3 py-1 text-xs text-slate-600 hover:border-[#12234F] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#12234F]">
                 <Share2 className="h-3.5 w-3.5" />
                 Share
               </button>
               <button
                 onClick={onSupportTutor}
-                className="rounded-full bg-[#F0A93B] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#D9931E]"
+                className="rounded-full bg-[#F0A93B] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#D9931E] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F0A93B] focus-visible:ring-offset-2"
               >
                 Support Tutor
               </button>
@@ -123,16 +125,16 @@ export default function CourseDetail({ course = MOCK_COURSE, onSupportTutor, onF
             {TABS.map((tab) => (
               <button
                 key={tab}
-                onClick={() => setActiveTab(tab)}
+                onClick={() => handleTabClick(tab)}
                 className={
-                  "pb-2 text-sm font-medium " +
+                  "pb-2 text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-[#12234F] rounded-t " +
                   (activeTab === tab
                     ? "border-b-2 border-[#12234F] text-[#12234F]"
                     : "text-slate-500 hover:text-slate-700")
                 }
               >
                 {tab}
-                {tab === "Comments" && ` (${course.comments.length})`}
+                {tab === "Comments" && commentCount > 0 && ` (${commentCount})`}
               </button>
             ))}
           </div>
@@ -161,40 +163,11 @@ export default function CourseDetail({ course = MOCK_COURSE, onSupportTutor, onF
             <p className="mt-4 text-sm text-slate-500">No downloadable resources for this lesson yet.</p>
           )}
 
-          {activeTab === "Comments" && (
-            <div className="mt-4 space-y-4">
-              {course.comments.map((c) => (
-                <CommentRow key={c.id} comment={c} />
-              ))}
-            </div>
-          )}
+          {/* Comments tab body intentionally scrolls to the Discussion panel below,
+              which is the single source of truth for the comment list (see ref above) */}
 
-          {/* Discussion — always visible per design, independent of tab */}
-          <div className="mt-6 border-t border-slate-200 pt-4">
-            <h2 className="text-sm font-semibold text-slate-900">Discussion</h2>
-            <div className="mt-3 flex gap-2">
-              <input
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-                placeholder="Add a public comment..."
-                className="flex-1 rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:border-[#12234F]"
-              />
-              <button
-                onClick={handleSubmit}
-                className="rounded-md bg-[#12234F] px-4 py-2 text-sm font-semibold text-white hover:bg-[#0D1938]"
-              >
-                Comment
-              </button>
-            </div>
-
-            {activeTab !== "Comments" && (
-              <div className="mt-4 space-y-4">
-                {course.comments.map((c) => (
-                  <CommentRow key={c.id} comment={c} />
-                ))}
-              </div>
-            )}
+          <div ref={discussionRef}>
+            <CourseComments courseId={course.id} onCountChange={setCommentCount} />
           </div>
         </div>
 
