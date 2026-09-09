@@ -1,9 +1,13 @@
 import { apiClient } from "./apiClient";
 
-export const authApi = {
-  register: (payload) => apiClient.post("/auth/register", payload),
+export const api = {
+  get: (endpoint) => apiClient.get(endpoint),
 
-  login: (payload) => apiClient.post("/auth/login", payload),
+  post: (endpoint, body) => apiClient.post(endpoint, body),
 
-  me: () => apiClient.get("/me"),
+  put: (endpoint, body) => apiClient.put(endpoint, body),
+
+  patch: (endpoint, body) => apiClient.patch(endpoint, body),
+
+  delete: (endpoint) => apiClient.delete(endpoint),
 };

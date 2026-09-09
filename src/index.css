@@ -1,1 +1,137 @@
 @import "tailwindcss";
+@import "tailwindcss";
+
+/* =========================================
+   LEARNHUB RESPONSIVE DESIGN
+   ========================================= */
+
+/* Prevent horizontal scrolling */
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Make sizing predictable */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Images and media should never overflow */
+img,
+video,
+svg,
+canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Inputs, buttons and textareas should fit mobile screens */
+input,
+textarea,
+select,
+button {
+  max-width: 100%;
+}
+
+/* Improve mobile typography */
+@media (max-width: 640px) {
+  body {
+    font-size: 15px;
+  }
+
+  h1 {
+    font-size: 2rem !important;
+    line-height: 1.15;
+  }
+
+  h2 {
+    font-size: 1.5rem !important;
+    line-height: 1.2;
+  }
+
+  h3 {
+    font-size: 1.25rem !important;
+  }
+
+  p {
+    line-height: 1.6;
+  }
+
+  /* Smaller page padding on phones */
+  main {
+    width: 100%;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  /* Prevent long text from breaking layouts */
+  p,
+  h1,
+  h2,
+  h3,
+  h4,
+  span,
+  a {
+    overflow-wrap: anywhere;
+  }
+
+  /* Make cards comfortable on mobile */
+  .rounded-2xl {
+    max-width: 100%;
+  }
+
+  /* Buttons become easier to tap */
+  button {
+    min-height: 44px;
+  }
+
+  /* Form fields */
+  input,
+  textarea,
+  select {
+    width: 100%;
+    font-size: 16px;
+  }
+}
+
+/* =========================================
+   TABLETS
+   ========================================= */
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  main {
+    width: 100%;
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+  }
+
+  h1 {
+    line-height: 1.15;
+  }
+}
+
+/* =========================================
+   SMALL MOBILE DEVICES
+   ========================================= */
+
+@media (max-width: 400px) {
+  h1 {
+    font-size: 1.75rem !important;
+  }
+
+  h2 {
+    font-size: 1.35rem !important;
+  }
+
+  p {
+    font-size: 0.95rem;
+  }
+
+  button {
+    width: 100%;
+  }
+}

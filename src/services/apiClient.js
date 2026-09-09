@@ -31,7 +31,7 @@ async function request(endpoint, options = {}) {
       headers,
     });
   } catch {
-    throw new ApiError("Network error — check your connection.", {
+    throw new ApiError("Network error - check your connection.", {
       status: 0,
     });
   }
@@ -66,16 +66,22 @@ function fallbackMessageForStatus(status) {
   switch (status) {
     case 400:
       return "Invalid request.";
+
     case 401:
       return "You need to log in to continue.";
+
     case 403:
       return "You don't have permission to do that.";
+
     case 404:
       return "Resource not found.";
+
     case 409:
       return "That already exists.";
+
     case 500:
       return "Something went wrong on our end. Please try again.";
+
     default:
       return "Request failed. Please try again.";
   }
