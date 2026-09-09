@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Play, ThumbsUp, Share2, CheckCircle2, Lock, PlayCircle, Loader2, AlertCircle } from "lucide-react";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
@@ -17,6 +18,7 @@ import { MOCK_COURSE } from "../data/mockCourses";
 const TABS = ["Description", "Comments", "Resources"];
 
 export default function CourseDetail({ course = MOCK_COURSE, onSupportTutor }) {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("Description");
   const [isPlaying, setIsPlaying] = useState(false);
   const [commentCount, setCommentCount] = useState(0);
@@ -172,7 +174,7 @@ export default function CourseDetail({ course = MOCK_COURSE, onSupportTutor }) {
                 Share
               </button>
               <button
-                onClick={onSupportTutor}
+                onClick={() => (onSupportTutor ? onSupportTutor() : navigate(`/tutors/${course.tutor.id}/support`))}
                 className="rounded-full bg-[#F0A93B] px-4 py-1.5 text-xs font-semibold text-white hover:bg-[#D9931E] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F0A93B] focus-visible:ring-offset-2"
               >
                 Support Tutor

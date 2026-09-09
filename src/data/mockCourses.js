@@ -396,3 +396,13 @@ export const MOCK_COURSE = COURSE_DETAILS["gce-alevel-physics-mechanics"];
 export function formatPrice(fcfa) {
   return fcfa === 0 ? "Free" : `FCFA ${fcfa.toLocaleString()}`;
 }
+
+// Flat, de-duplicated list of tutors pulled from COURSE_DETAILS — used by the
+// Support Tutor flow's tutor selector. Swap for a real /tutors API once available.
+export const MOCK_TUTORS = Object.values(COURSE_DETAILS).map((c) => ({
+  id: c.tutor.id,
+  name: c.tutor.name,
+  subject: c.category,
+  courseTitle: c.title,
+  avatarUrl: null,
+}));
