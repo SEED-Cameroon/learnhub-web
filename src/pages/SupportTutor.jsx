@@ -73,6 +73,7 @@ export default function SupportTutor() {
     try {
       const result = await createSubscription({
         tutorId: selectedTutorId,
+        tutorName: selectedTutor?.name,
         amountFcfa: effectiveAmount,
         provider,
         phoneNumber: phoneNumber.replace(/\s+/g, ""),
@@ -282,6 +283,13 @@ export default function SupportTutor() {
               className="mt-3 rounded-md bg-[#12234F] px-5 py-2 text-sm font-semibold text-white hover:bg-[#0D1938] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#12234F] focus-visible:ring-offset-2"
             >
               Back to Courses
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate("/subscriptions")}
+              className="mt-2 text-xs font-medium text-slate-500 hover:text-[#12234F]"
+            >
+              View My Subscriptions
             </button>
           </div>
         )}

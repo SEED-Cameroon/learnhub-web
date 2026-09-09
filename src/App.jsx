@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, useParams } from "react-router-dom";
 import CourseDiscovery from "./pages/CourseDiscovery";
 import CourseDetail from "./pages/CourseDetail";
 import SupportTutor from "./pages/SupportTutor";
+import MySubscriptions from "./pages/MySubscriptions";
 import { MOCK_COURSES, COURSE_DETAILS, MOCK_COURSE } from "./data/mockCourses";
 
 // Resolves the current course from the URL param.
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="/courses/:courseId" element={<CourseDetailRoute />} />
         <Route path="/support" element={<SupportTutor />} />
         <Route path="/tutors/:tutorId/support" element={<SupportTutor />} />
+        <Route path="/subscriptions" element={<MySubscriptions />} />
       </Routes>
     </BrowserRouter>
   );
