@@ -1,1 +1,18 @@
-import "../learnhub-web/src/main.jsx";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+
+import App from "./App";
+import { AuthProvider } from "../learnhub-web/src/context/AuthContext";
+import "./index.css";
+import "../learnhub-web/src/index.css";
+
+createRoot(document.getElementById("root")).render(
+	<StrictMode>
+		<BrowserRouter>
+			<AuthProvider>
+				<App />
+			</AuthProvider>
+		</BrowserRouter>
+	</StrictMode>,
+);
