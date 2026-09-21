@@ -15,7 +15,7 @@ function Tutors() {
 
     try {
       const response = await apiClient.get("/tutors");
-      setTutors(Array.isArray(response) ? response : []);
+      setTutors(Array.isArray(response?.tutors) ? response.tutors : []);
     } catch (error) {
       if (error instanceof ApiError) {
         setError(error.message);
