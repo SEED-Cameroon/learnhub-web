@@ -110,3 +110,44 @@ export const apiClient = {
       method: "DELETE",
     }),
 };
+
+/**
+ * Lower-level fetch that returns the full response envelope
+ * ({ success, data, message }) instead of unwrapping `data`.
+ * Shares the base URL, token and ApiError handling with apiClient.
+ */
+export async function apiFetch(endpoint, options = {}) {
+  const token = getToken();
+
+  let response;
+
+  try {
+    response = await fetch(`${BASE_URL}${endpoint}`, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
+        ...options.headers,
+      },
+    });
+  } catch {
+    throw new ApiError("Network error — check your connection.", {
+      status: 0,
+    });
+  }
+
+  const body = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new ApiError(
+      body?.message || fallbackMessageForStatus(response.status),
+      {
+        status: response.status,
+        code: body?.code,
+        fieldErrors: body?.errors,
+      }
+    );
+  }
+
+  return body;
+}

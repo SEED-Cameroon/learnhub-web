@@ -22,8 +22,9 @@ export function AuthProvider({ children }) {
     setLoading(false)
   }, [])
 
+  // token is optional so callers can refresh the stored user after a profile update
   const login = (userData, token) => {
-    localStorage.setItem('token', token)
+    if (token) localStorage.setItem('token', token)
     localStorage.setItem('user', JSON.stringify(userData))
     setUser(userData)
   }

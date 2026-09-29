@@ -13,6 +13,15 @@ import Dashboard from '@/pages/Dashboard'
 import DashboardCourses from '@/pages/DashboardCourses'
 import Tutors from '@/pages/Tutors'
 import AllTutors from '@/pages/AllTutors'
+import CourseDetails from '@/pages/CourseDetails'
+import TutorProfile from '@/pages/TutorProfile'
+import SupportTutor from '@/pages/SupportTutor'
+import AccountSettings from '@/pages/AccountSettings'
+import Subscriptions from '@/pages/Subscriptions'
+import CreateCourse from '@/pages/CreateCourse'
+import EditCourse from '@/pages/EditCourse'
+import Earnings from '@/pages/Earnings'
+import TutorProfileEdit from '@/pages/TutorProfileEdit'
 
 function App() {
   return (
@@ -25,6 +34,7 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/tutors" element={<Tutors />} />
             <Route path="/tutors/all" element={<AllTutors />} />
+            <Route path="/tutors/:id" element={<TutorProfile />} />
 
             {/* Guest only */}
             <Route
@@ -62,6 +72,39 @@ function App() {
               }
             />
 
+            <Route
+              path="/courses/:id"
+              element={
+                <RequireAuth>
+                  <CourseDetails />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/tutors/:id/support"
+              element={
+                <RequireAuth>
+                  <SupportTutor />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/account/settings"
+              element={
+                <RequireAuth>
+                  <AccountSettings />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/account/subscriptions"
+              element={
+                <RequireAuth>
+                  <Subscriptions />
+                </RequireAuth>
+              }
+            />
+
             {/* Tutor only */}
             <Route
               path="/dashboard"
@@ -76,6 +119,38 @@ function App() {
               element={
                 <RequireTutor>
                   <DashboardCourses />
+                </RequireTutor>
+              }
+            />
+            <Route
+              path="/dashboard/courses/new"
+              element={
+                <RequireTutor>
+                  <CreateCourse />
+                </RequireTutor>
+              }
+            />
+            <Route
+              path="/dashboard/courses/:id/edit"
+              element={
+                <RequireTutor>
+                  <EditCourse />
+                </RequireTutor>
+              }
+            />
+            <Route
+              path="/dashboard/earnings"
+              element={
+                <RequireTutor>
+                  <Earnings />
+                </RequireTutor>
+              }
+            />
+            <Route
+              path="/dashboard/profile"
+              element={
+                <RequireTutor>
+                  <TutorProfileEdit />
                 </RequireTutor>
               }
             />
