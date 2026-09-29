@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, BadgeCheck, Check, Clock, LockOpen, Smartphone, UserX } from 'lucide-react'
+import { ArrowLeft, BadgeCheck, Check, CircleCheck, CircleX, Clock, FlaskConical, LockOpen, Smartphone, UserX } from 'lucide-react'
 import { useAsync } from '@/hooks/useAsync'
 import { getTutor } from '@/services/tutors'
-import { createSubscription, PHONE_PATTERN, PROVIDERS, SUPPORT_AMOUNTS_XAF } from '@/services/subscriptions'
-import { formatXaf } from '@/lib/format'
+import { createSubscription, getSubscription, PHONE_PATTERN, PROVIDERS, SUPPORT_AMOUNTS_XAF } from '@/services/subscriptions'
+import { formatDate, formatXaf } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -44,19 +44,91 @@ function TutorSummary({ tutor }) {
   )
 }
 
-function PendingView({ tutor, subscription, phone }) {
+const POLL_MS = 3000
+const POLL_LIMIT_MS = 3 * 60 * 1000
+
+/** Follows a new subscription until its payment is confirmed or fails. */
+function usePaymentStatus(initial) {
+  const [subscription, setSubscription] = useState(initial)
+  const [timedOut, setTimedOut] = useState(false)
+
+  useEffect(() => {
+    if (subscription.status !== 'pending') return
+    const started = Date.now()
+    let cancelled = false
+    const id = setInterval(async () => {
+      if (Date.now() - started > POLL_LIMIT_MS) {
+        clearInterval(id)
+        if (!cancelled) setTimedOut(true)
+        return
+      }
+      try {
+        const next = await getSubscription(subscription.id)
+        if (!cancelled && next.status !== 'pending') setSubscription((s) => ({ ...s, ...next }))
+      } catch {
+        // A failed check is retried on the next tick.
+      }
+    }, POLL_MS)
+    return () => {
+      cancelled = true
+      clearInterval(id)
+    }
+  }, [subscription.id, subscription.status])
+
+  return { subscription, timedOut }
+}
+
+function PendingView({ tutor, subscription: initial, phone, onRetry }) {
+  const { subscription, timedOut } = usePaymentStatus(initial)
   const provider = PROVIDERS.find((p) => p.value === subscription.provider)
+  const { status } = subscription
+
+  const heading = {
+    pending: 'Approve the payment on your phone',
+    active: `You’re now supporting ${tutor.name}`,
+    failed: 'The payment didn’t go through',
+    cancelled: 'This support was cancelled',
+  }[status]
+
+  const icon = {
+    pending: ['bg-secondary-fixed text-on-secondary-container', Smartphone],
+    active: ['bg-tertiary-fixed text-tertiary-container', CircleCheck],
+    failed: ['bg-error-container text-on-error-container', CircleX],
+    cancelled: ['bg-surface-container text-on-surface-variant', CircleX],
+  }[status]
+  const [iconTone, Icon] = icon
 
   return (
     <section aria-live="polite" className="rounded-xl bg-surface-container-lowest p-6 elevation-1 md:p-8">
-      <div className="flex size-12 items-center justify-center rounded-full bg-secondary-fixed text-on-secondary-container">
-        <Smartphone className="size-6" aria-hidden="true" />
+      <div className={cn('flex size-12 items-center justify-center rounded-full', iconTone)}>
+        <Icon className="size-6" aria-hidden="true" />
       </div>
-      <h1 className="mt-5 text-2xl font-bold tracking-tight text-primary">Approve the payment on your phone</h1>
-      <p className="mt-2 text-on-surface-variant">
-        {provider?.label} sent a payment request to +237 {formatPhone(phone)}. Enter your PIN to approve it. We’ll confirm your support once
-        your provider does, which usually takes a minute or two.
-      </p>
+      <h1 className="mt-5 text-2xl font-bold tracking-tight text-primary">{heading}</h1>
+
+      {status === 'pending' && (
+        <p className="mt-2 text-on-surface-variant">
+          {provider?.label} sent a payment request to +237 {formatPhone(phone)}. Enter your PIN to approve it. This page updates by
+          itself once your provider confirms, usually within a minute or two.
+        </p>
+      )}
+      {status === 'active' && (
+        <p className="mt-2 text-on-surface-variant">
+          {formatXaf(subscription.amountXaf)} goes to {tutor.name} each month through {provider?.label}. You can cancel any time from My
+          subscriptions, and every course stays free either way.
+        </p>
+      )}
+      {status === 'failed' && (
+        <p className="mt-2 text-on-surface-variant">
+          {provider?.label} declined the request or it expired. Nothing was charged. Check your balance and number, then try again.
+        </p>
+      )}
+
+      {subscription.testMode && (
+        <p className="mt-4 flex items-start gap-2 rounded-lg bg-secondary-fixed/60 px-3 py-2.5 text-sm text-on-secondary-container">
+          <FlaskConical className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          Test payment: Mobile Money isn’t connected yet, so LearnHub confirms this itself after a few seconds. No real money moves.
+        </p>
+      )}
 
       <dl className="mt-6 grid gap-3 rounded-lg bg-surface-container-low p-4 text-sm sm:grid-cols-2">
         <div>
@@ -69,25 +141,42 @@ function PendingView({ tutor, subscription, phone }) {
         </div>
         <div>
           <dt className="text-on-surface-variant">Status</dt>
-          <dd className="flex items-center gap-1.5 font-semibold text-on-secondary-container">
-            <Clock className="size-4" aria-hidden="true" />
-            Waiting for approval
+          <dd
+            className={cn(
+              'flex items-center gap-1.5 font-semibold',
+              status === 'active' ? 'text-tertiary-container' : status === 'failed' ? 'text-error' : 'text-on-secondary-container'
+            )}
+          >
+            {status === 'pending' && <Clock className="size-4" aria-hidden="true" />}
+            {status === 'active' && <Check className="size-4" aria-hidden="true" />}
+            {{ pending: 'Waiting for approval', active: 'Active', failed: 'Failed', cancelled: 'Cancelled' }[status]}
           </dd>
         </div>
         <div>
-          <dt className="text-on-surface-variant">Reference</dt>
-          <dd className="font-semibold text-on-surface">{subscription.id}</dd>
+          <dt className="text-on-surface-variant">{status === 'active' ? 'Next payment' : 'Reference'}</dt>
+          <dd className="font-semibold text-on-surface">
+            {status === 'active' && subscription.nextBillingAt ? formatDate(subscription.nextBillingAt) : subscription.id}
+          </dd>
         </div>
       </dl>
 
-      <p className="mt-4 text-sm text-on-surface-variant">
-        No request on your phone? Check that the number is right, then try again from My subscriptions.
-      </p>
+      {status === 'pending' && timedOut && (
+        <p className="mt-4 text-sm text-on-surface-variant">
+          Still waiting. If you approved the payment, it will show as active in My subscriptions once your provider confirms. No
+          request on your phone? Check the number and try again.
+        </p>
+      )}
 
       <div className="mt-6 flex flex-wrap gap-3">
-        <Button asChild className="h-auto rounded-full px-6 py-2.5 shadow-none">
-          <Link to="/account/subscriptions">Go to my subscriptions</Link>
-        </Button>
+        {status === 'failed' ? (
+          <Button type="button" onClick={onRetry} className="h-auto rounded-full px-6 py-2.5 shadow-none">
+            Try again
+          </Button>
+        ) : (
+          <Button asChild className="h-auto rounded-full px-6 py-2.5 shadow-none">
+            <Link to="/account/subscriptions">Go to my subscriptions</Link>
+          </Button>
+        )}
         <Button asChild variant="outline" className="h-auto rounded-full px-6 py-2.5">
           <Link to={`/tutors/${tutor.id}`}>Back to {tutor.name}</Link>
         </Button>
@@ -302,7 +391,7 @@ export default function SupportTutor() {
   } else if (error) {
     body = <ErrorState error={error} onRetry={reload} title="This tutor didn’t load" />
   } else if (pending) {
-    body = <PendingView tutor={tutor} subscription={pending.subscription} phone={pending.phone} />
+    body = <PendingView tutor={tutor} subscription={pending.subscription} phone={pending.phone} onRetry={() => setPending(null)} />
   } else {
     body = <SupportForm tutor={tutor} onPending={(subscription, phone) => setPending({ subscription, phone })} />
   }

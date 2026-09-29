@@ -25,6 +25,12 @@ export async function createSubscription({ tutorId, amountXaf, provider, phone }
   return toSubscription(subscription)
 }
 
+/** GET /subscriptions/:id — used to follow a payment until it is confirmed. */
+export async function getSubscription(id) {
+  const { subscription } = await apiClient.get(`/subscriptions/${id}`)
+  return toSubscription(subscription)
+}
+
 /** GET /subscriptions/me */
 export async function listMySubscriptions() {
   const { subscriptions } = await apiClient.get('/subscriptions/me')

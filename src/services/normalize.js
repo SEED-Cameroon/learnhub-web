@@ -81,6 +81,8 @@ export function toSubscription(s) {
     startedAt: s.startedAt ?? s.createdAt,
     nextBillingAt: s.nextBillingDate ?? null,
     cancelledAt: s.cancelledAt ?? null,
+    // "test" while no Mobile Money provider is connected: no real money moves.
+    testMode: s.paymentMode === 'test',
   }
 }
 

@@ -3,7 +3,6 @@ import { toCourse } from './normalize'
 
 // Earnings and payouts depend on Phase 2 backend endpoints (Frontend SRS
 // §4.5). Turn this on once /tutors/me/earnings and /tutors/me/payouts exist.
-export const EARNINGS_ENABLED = import.meta.env.VITE_ENABLE_EARNINGS === 'true'
 
 // The fields the API stores for a course.
 export const COURSE_FIELDS = ['title', 'description', 'category', 'priceXaf', 'thumbnailUrl', 'previewVideoUrl', 'status', 'level', 'outcomes', 'lessons']
@@ -84,11 +83,34 @@ export async function getStudioOverview() {
   }
 }
 
-/** GET /tutors/me/earnings + /tutors/me/payouts (Phase 2 — not in the API yet). */
+/**
+ * GET /tutors/me/earnings — successful support payments this month and last,
+ * active supporters and recent payments. Payments made in test mode are
+ * flagged so the page can say no real money moved.
+ */
 export async function getEarnings() {
-  const [earnings, payouts] = await Promise.all([
-    apiClient.get('/tutors/me/earnings'),
-    apiClient.get('/tutors/me/payouts'),
-  ])
-  return { ...earnings, payouts }
+  const data = await apiClient.get('/tutors/me/earnings')
+  const person = (p) => ({ name: p?.name ?? 'A student', avatarUrl: p?.avatarUrl || null })
+  return {
+    thisMonthXaf: data.thisMonthXaf ?? 0,
+    lastMonthXaf: data.lastMonthXaf ?? 0,
+    monthlySupportXaf: data.monthlySupportXaf ?? 0,
+    supporters: (data.supporters ?? []).map((s) => ({
+      id: String(s.id),
+      ...person(s.student),
+      amountXaf: s.amount,
+      provider: s.provider,
+      since: s.since,
+      testMode: s.paymentMode === 'test',
+    })),
+    payments: (data.payments ?? []).map((p) => ({
+      id: String(p.id),
+      ...person(p.student),
+      amountXaf: p.amount,
+      provider: p.provider,
+      status: p.status,
+      testMode: p.mode === 'test',
+      date: p.paidAt ?? p.createdAt,
+    })),
+  }
 }
