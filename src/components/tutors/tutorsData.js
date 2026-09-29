@@ -1,0 +1,85 @@
+export const CATEGORIES = [
+  'All Subjects',
+  'Mathematics',
+  'Computer Science',
+  'Business & Finance',
+  'Languages',
+]
+
+export const FEATURED_TUTORS = [
+  {
+    id: 'foning',
+    name: 'Dr. Foning',
+    subject: 'Advanced Mathematics',
+    followers: '12k',
+    verified: true,
+    topClass: 'bg-primary-container',
+    avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
+  },
+  {
+    id: 'sarah',
+    name: 'Sarah N.',
+    subject: 'Full-Stack Development',
+    followers: '8.5k',
+    verified: true,
+    topClass: 'bg-surface-tint',
+    avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
+  },
+  {
+    id: 'kamga',
+    name: 'Mr. Kamga',
+    subject: 'Corporate Finance',
+    followers: '5.2k',
+    verified: false,
+    topClass: 'bg-tertiary-container',
+    avatar: 'https://randomuser.me/api/portraits/men/60.jpg',
+  },
+  {
+    id: 'bella',
+    name: 'Mme. Bella',
+    subject: 'French Literature',
+    followers: '15k',
+    verified: true,
+    topClass: 'bg-primary-container',
+    avatar: 'https://randomuser.me/api/portraits/women/68.jpg',
+  },
+]
+
+export const MORE_TUTORS = [
+  {
+    id: 'emmanuel',
+    name: 'Mr. Emmanuel',
+    subject: 'Physics',
+    followers: '10k',
+    verified: true,
+    topClass: 'bg-primary-container',
+    avatar: 'https://randomuser.me/api/portraits/men/52.jpg',
+  },
+  {
+    id: 'grace',
+    name: 'Ms. Grace',
+    subject: 'Biology',
+    followers: '7.8k',
+    verified: true,
+    topClass: 'bg-surface-tint',
+    avatar: 'https://randomuser.me/api/portraits/women/49.jpg',
+  },
+  {
+    id: 'collins',
+    name: 'Mr. Collins',
+    subject: 'Economics',
+    followers: '6.4k',
+    verified: false,
+    topClass: 'bg-tertiary-container',
+    avatar: 'https://randomuser.me/api/portraits/men/61.jpg',
+  },
+  {
+    id: 'claire',
+    name: 'Mme. Claire',
+    subject: 'English Literature',
+    followers: '11k',
+    verified: true,
+    topClass: 'bg-primary-container',
+    avatar: 'https://randomuser.me/api/portraits/women/68.jpg',
+  },
+]
