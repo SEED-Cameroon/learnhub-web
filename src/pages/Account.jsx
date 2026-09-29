@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { useSeo } from '@/hooks/useSeo'
 import { Link } from 'react-router-dom'
 import { ChevronRight, CreditCard, Heart, LayoutDashboard, PencilLine, Users } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
@@ -90,6 +91,7 @@ function LikedPanel() {
 }
 
 export default function Account() {
+  useSeo({ title: 'My account', noindex: true })
   const { user } = useAuth()
   const [active, setActive] = useState(TABS[0].id)
   const tabRefs = useRef({})

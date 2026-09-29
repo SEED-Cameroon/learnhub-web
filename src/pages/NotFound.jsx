@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom'
+import { useSeo } from '@/hooks/useSeo'
 import { Compass } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Container from '@/components/common/Container'
 
 export default function NotFound() {
+  useSeo({ title: 'Page not found', noindex: true })
   return (
     <Container className="flex flex-col items-center py-24 text-center">
       <Compass className="mb-6 size-14 text-secondary-container" strokeWidth={1.5} aria-hidden="true" />

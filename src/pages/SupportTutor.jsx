@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useSeo } from '@/hooks/useSeo'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, BadgeCheck, Check, CircleCheck, CircleX, Clock, FlaskConical, LockOpen, Smartphone, UserX } from 'lucide-react'
 import { useAsync } from '@/hooks/useAsync'
@@ -361,6 +362,7 @@ function SupportForm({ tutor, onPending }) {
 }
 
 export default function SupportTutor() {
+  useSeo({ title: 'Support a tutor', noindex: true })
   const { id } = useParams()
   const { data: tutor, error, loading, reload } = useAsync(() => getTutor(id), [id])
   const [pending, setPending] = useState(null)

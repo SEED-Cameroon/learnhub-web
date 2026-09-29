@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /account
+Disallow: /dashboard
+Disallow: /login
+Disallow: /tutors/*/support
+
+Sitemap: https://learnhub-omega-one.vercel.app/sitemap.xml

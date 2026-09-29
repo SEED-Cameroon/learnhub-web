@@ -1,4 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
+import { useSeo } from '@/hooks/useSeo'
+import { SITE_URL } from '@/lib/site'
 import { Link, useParams } from 'react-router-dom'
 import { BadgeCheck, Check, HandCoins, LibraryBig, Plus, UserRoundX } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -275,6 +277,25 @@ function ProfileTabs({ tutor }) {
 export default function TutorProfile() {
   const { id } = useParams()
   const tutor = useAsync(() => getTutor(id), [id])
+  const seoTutor = tutor.data
+  useSeo({
+    title: seoTutor?.name ?? (tutor.error ? 'Tutor not found' : 'Tutor'),
+    description: seoTutor && [seoTutor.headline, seoTutor.city, seoTutor.bio].filter(Boolean).join(' · '),
+    image: seoTutor?.avatarUrl || undefined,
+    type: 'profile',
+    noindex: Boolean(tutor.error),
+    jsonLd: seoTutor && {
+      '@context': 'https://schema.org',
+      '@type': 'Person',
+      name: seoTutor.name,
+      url: `${SITE_URL}/tutors/${seoTutor.id}`,
+      ...(seoTutor.headline && { jobTitle: seoTutor.headline }),
+      ...(seoTutor.bio && { description: seoTutor.bio }),
+      ...(seoTutor.avatarUrl && { image: seoTutor.avatarUrl }),
+      ...(seoTutor.city && { homeLocation: { '@type': 'Place', name: `${seoTutor.city}, Cameroon` } }),
+      worksFor: { '@type': 'Organization', name: 'LearnHub Cameroon', url: SITE_URL },
+    },
+  })
 
   if (tutor.loading) {
     return (

@@ -1,4 +1,5 @@
 import { startTransition, useState } from 'react'
+import { useSeo } from '@/hooks/useSeo'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { Lock, Mail } from 'lucide-react'
 import { SESSION_EXPIRED_FLAG, useAuth } from '@/context/AuthContext'
@@ -36,6 +37,7 @@ function takeSessionExpired() {
 }
 
 export default function Login() {
+  useSeo({ title: 'Log in', noindex: true })
   const [sessionExpired] = useState(takeSessionExpired)
   const [form, setForm] = useState({ email: '', password: '' })
   const [errors, setErrors] = useState({})

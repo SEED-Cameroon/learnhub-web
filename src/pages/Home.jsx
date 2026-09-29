@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useSeo } from '@/hooks/useSeo'
 import { Link, useNavigate } from 'react-router-dom'
 import { HandCoins, MapPin, Search, Smartphone, Wallet } from 'lucide-react'
 import heroImage from '../assets/hero.jpg'
@@ -174,6 +175,7 @@ function HeroStage({ topCourse, topTutor, tutorCount }) {
 }
 
 export default function Home() {
+  useSeo()
   const courses = useAsync(() => listCourses({ sort: 'popular' }), [])
   const tutors = useAsync(() => listTutors(), [])
   const [category, setCategory] = useState(null)

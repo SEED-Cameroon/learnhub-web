@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useSeo } from '@/hooks/useSeo'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Camera } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
@@ -205,6 +206,7 @@ function PasswordForm() {
 }
 
 export default function AccountSettings() {
+  useSeo({ title: 'Settings', noindex: true })
   return (
     <Container className="py-10 md:py-12">
       <Link to="/account" className="mb-6 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline">

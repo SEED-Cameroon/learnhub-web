@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom'
-import { BookHeart } from 'lucide-react'
+import { LogoMark } from '@/components/brand/Logo'
 import AuthAside from '@/components/auth/AuthAside'
 
 // Split shell for Login / Signup: a focused form on the left, and on wide
@@ -13,7 +13,7 @@ export default function AuthLayout() {
       <div className="flex min-h-screen flex-col px-4 py-5 sm:px-8 md:px-12">
         <header className="flex items-center justify-between gap-4">
           <Link to="/" className="inline-flex items-center gap-2 text-lg font-bold text-primary sm:text-xl">
-            <BookHeart className="size-7 text-secondary-container" strokeWidth={2.25} aria-hidden="true" />
+            <LogoMark className="size-8" />
             LearnHub Cameroon
           </Link>
           <p className="hidden text-sm text-on-surface-variant sm:block">

@@ -1,4 +1,5 @@
 import { Link, useSearchParams } from 'react-router-dom'
+import { useSeo } from '@/hooks/useSeo'
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -128,6 +129,7 @@ function OverviewSkeleton() {
 }
 
 export default function Dashboard() {
+  useSeo({ title: 'Tutor studio', noindex: true })
   const { user } = useAuth()
   // `?preview=empty` forces the brand-new-tutor state so it can be reviewed
   // while the sample data has courses and subscribers.

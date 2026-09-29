@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSeo } from '@/hooks/useSeo'
 import { Link } from 'react-router-dom'
 import { HeartHandshake } from 'lucide-react'
 import { useAsync } from '@/hooks/useAsync'
@@ -64,6 +65,7 @@ function SubscriptionRow({ sub, onCancel }) {
 }
 
 export default function Subscriptions() {
+  useSeo({ title: 'My subscriptions', noindex: true })
   const { data, error, loading, reload, setData } = useAsync(listMySubscriptions)
   const [target, setTarget] = useState(null)
   const [notice, setNotice] = useState('')
