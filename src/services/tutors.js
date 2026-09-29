@@ -2,10 +2,19 @@ import { apiClient } from './apiClient'
 import { USE_MOCKS, mockResponse, MockNotFoundError } from './mock'
 import { COURSES, TUTORS } from '@/data/mock'
 
-const withCourseCount = (t) => ({
-  ...t,
-  coursesCount: COURSES.filter((c) => c.tutorId === t.id && c.status === 'published').length,
-})
+// Adds the published-course count and the two most-viewed course previews
+// ({ id, title, category, viewsCount }) for the tutor card.
+const withCourseCount = (t) => {
+  const published = COURSES.filter((c) => c.tutorId === t.id && c.status === 'published')
+  return {
+    ...t,
+    coursesCount: published.length,
+    recentCourses: [...published]
+      .sort((a, b) => b.viewsCount - a.viewsCount)
+      .slice(0, 2)
+      .map(({ id, title, category, viewsCount }) => ({ id, title, category, viewsCount })),
+  }
+}
 
 /** GET /tutors — optionally filtered by subject tag or search text. */
 export function listTutors({ subject, q } = {}) {

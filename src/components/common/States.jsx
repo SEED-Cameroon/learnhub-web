@@ -10,27 +10,40 @@ export function Skeleton({ className }) {
 export function CardGridSkeleton({ count = 6, variant = 'course', className }) {
   return (
     <div className={className} role="status" aria-label="Loading">
-      {Array.from({ length: count }, (_, i) => (
-        <div key={i} className="overflow-hidden rounded-xl bg-surface-container-lowest elevation-1">
-          {variant === 'course' ? (
-            <>
-              <Skeleton className="aspect-video w-full rounded-none" />
-              <div className="space-y-3 p-4">
+      {Array.from({ length: count }, (_, i) =>
+        variant === 'course' ? (
+          <div key={i}>
+            <Skeleton className="aspect-video w-full rounded-2xl" />
+            <div className="flex gap-3 pt-3.5">
+              <Skeleton className="size-9 shrink-0 rounded-full" />
+              <div className="flex-1 space-y-2.5 pt-1">
                 <Skeleton className="h-4 w-11/12" />
-                <Skeleton className="h-4 w-2/3" />
-                <Skeleton className="h-3 w-1/3" />
+                <Skeleton className="h-3.5 w-1/2" />
+                <Skeleton className="h-3.5 w-2/3" />
               </div>
-            </>
-          ) : (
-            <div className="flex flex-col items-center gap-3 p-6">
-              <Skeleton className="size-24 rounded-full" />
-              <Skeleton className="h-5 w-2/3" />
-              <Skeleton className="h-4 w-1/2" />
-              <Skeleton className="mt-3 h-10 w-full rounded-full" />
             </div>
-          )}
-        </div>
-      ))}
+          </div>
+        ) : (
+          <div key={i} className="rounded-2xl border border-outline-variant/70 bg-surface-container-lowest p-5">
+            <div className="flex gap-4">
+              <Skeleton className="size-14 shrink-0 rounded-full" />
+              <div className="flex-1 space-y-2.5 pt-1.5">
+                <Skeleton className="h-4 w-2/3" />
+                <Skeleton className="h-3.5 w-1/2" />
+              </div>
+            </div>
+            <div className="mt-5 space-y-2">
+              {[0, 1].map((n) => (
+                <Skeleton key={n} className="h-[61px] rounded-xl" />
+              ))}
+            </div>
+            <div className="mt-5 flex justify-between">
+              <Skeleton className="h-4 w-1/3" />
+              <Skeleton className="h-8 w-20 rounded-full" />
+            </div>
+          </div>
+        )
+      )}
     </div>
   )
 }
