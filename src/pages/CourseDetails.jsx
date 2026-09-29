@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { BadgeCheck, Check, Clock, HandCoins, Heart, Link2, ListVideo, MessageCircle, Play, Plus } from 'lucide-react'
+import { BadgeCheck, Check, ChevronDown, CircleCheck, HandCoins, Heart, Link2, ListVideo, MessageCircle, Play, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import Avatar from '@/components/common/Avatar'
@@ -14,9 +14,10 @@ import { useAuth } from '@/context/AuthContext'
 import { useAsync } from '@/hooks/useAsync'
 import { useAuthGate } from '@/hooks/useAuthGate'
 import { addComment, getCourse, listComments, listCourses, setCourseLiked } from '@/services/courses'
-import { setFollowing } from '@/services/tutors'
+import { getTutor, setFollowing } from '@/services/tutors'
 import { cn } from '@/lib/utils'
-import { formatCount, formatDate, formatDuration, formatRelative, formatXaf, totalMinutes } from '@/lib/format'
+import { formatCount, formatDate, formatDuration, formatRelative, formatXaf, countLabel, totalMinutes } from '@/lib/format'
+import VideoPlayer from '@/components/course/VideoPlayer'
 
 const COMMENT_MAX = 1000
 
@@ -60,7 +61,7 @@ function TutorRow({ tutor }) {
               <BadgeCheck className="size-4 shrink-0 fill-primary text-on-primary" aria-label="Verified tutor" />
             )}
           </p>
-          <p className="text-sm text-on-surface-variant">{formatCount(follow.count)} followers</p>
+          <p className="text-sm text-on-surface-variant">{countLabel(follow.count, "followers")}</p>
         </div>
       </Link>
       <div className="flex flex-wrap gap-2">
@@ -97,10 +98,31 @@ function TutorRow({ tutor }) {
   )
 }
 
+/**
+ * The course only carries the tutor's name and avatar, so the row loads the full tutor for follower count and follow state. TutorRow
+ * mounts once that's known, so its optimistic toggle starts from real values.
+ */
+function CourseTutor({ tutor }) {
+  const full = useAsync(() => getTutor(tutor.id), [tutor.id])
+
+  if (full.loading) {
+    return (
+      <div className="flex items-center gap-3" role="status" aria-label="Loading tutor">
+        <Skeleton className="size-12 rounded-full" />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-3.5 w-24" />
+        </div>
+      </div>
+    )
+  }
+  return <TutorRow tutor={full.data ?? tutor} />
+}
+
 function LikeButton({ course }) {
   const { gate } = useAuthGate()
   const request = useCallback((next) => setCourseLiked(course.id, next), [course.id])
-  const like = useOptimisticToggle({ initialOn: Boolean(course.isLiked), initialCount: course.likesCount, request })
+  const like = useOptimisticToggle({ initialOn: Boolean(course.likedByMe ?? course.isLiked), initialCount: course.likesCount ?? 0, request })
   usePendingAction({ like: () => like.toggle(true) })
 
   return (
@@ -161,7 +183,7 @@ function Comments({ courseId, initialCount }) {
   return (
     <section aria-labelledby="comments-heading" className="mt-10">
       <h2 id="comments-heading" className="mb-5 text-xl font-bold text-on-surface">
-        {formatCount(count)} comments
+        {countLabel(count, "comments")}
       </h2>
 
       {isAuthenticated ? (
@@ -321,81 +343,124 @@ function SupportAside({ tutor }) {
   )
 }
 
-/** Dark band that frames the player and the lesson list, like a cinema. */
-function Theatre({ course }) {
-  const [current, setCurrent] = useState(0)
-  const lessons = course.lessons ?? []
+function NoVideo({ course, label = 'No video yet' }) {
+  // No video: show the course art without a play button, so nothing looks playable.
+  return (
+    <div className="relative overflow-hidden rounded-2xl bg-primary-container ring-1 ring-white/10">
+      <CourseThumbnail course={course} />
+      <span className="absolute right-4 bottom-4 rounded-full bg-black/45 px-3 py-1 text-xs font-medium text-white backdrop-blur">
+        {label}
+      </span>
+    </div>
+  )
+}
+
+function LessonList({ lessons, current, onSelect }) {
   const minutes = totalMinutes(lessons)
+  // On phones the outline starts collapsed so the course title stays near the video.
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="flex h-full flex-col overflow-hidden rounded-2xl bg-white/[0.06] ring-1 ring-white/10">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        aria-controls="lesson-list"
+        className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left lg:pointer-events-none lg:border-b lg:border-white/10"
+      >
+        <span>
+          <span id="lessons-heading" className="block font-semibold">
+            Course outline
+          </span>
+          <span className="mt-0.5 flex items-center gap-1.5 text-sm text-primary-fixed">
+            <ListVideo className="size-4" aria-hidden="true" />
+            {lessons.length} {lessons.length === 1 ? 'lesson' : 'lessons'}
+            {minutes > 0 && ` · ${formatDuration(minutes)}`}
+          </span>
+        </span>
+        <ChevronDown className={cn('size-5 shrink-0 transition-transform lg:hidden', open && 'rotate-180')} aria-hidden="true" />
+      </button>
+      <ol
+        id="lesson-list"
+        className={cn('min-h-0 flex-1 overflow-y-auto border-t border-white/10 p-2 lg:block lg:border-t-0', !open && 'hidden')}
+        aria-labelledby="lessons-heading"
+      >
+        {lessons.map((lesson, i) => {
+          const active = i === current
+          return (
+            <li key={lesson.id}>
+              <button
+                type="button"
+                onClick={() => onSelect(i)}
+                aria-current={active ? 'true' : undefined}
+                className={cn(
+                  'flex w-full items-start gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors',
+                  active ? 'bg-surface-container-lowest text-on-surface' : 'text-primary-fixed hover:bg-white/10 hover:text-white'
+                )}
+              >
+                <span
+                  className={cn(
+                    'flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
+                    active ? 'bg-primary text-on-primary' : 'bg-white/10'
+                  )}
+                >
+                  {active ? <Play className="size-3 fill-current" aria-hidden="true" /> : i + 1}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="line-clamp-2 font-medium leading-6">{lesson.title}</span>
+                  {!lesson.videoUrl && <span className={cn('text-xs', active ? 'text-outline' : 'text-primary-fixed-dim')}>No video yet</span>}
+                </span>
+                {lesson.durationMin > 0 && (
+                  <span className={cn('shrink-0 text-xs leading-6', active ? 'text-on-surface-variant' : 'text-primary-fixed-dim')}>
+                    {formatDuration(lesson.durationMin)}
+                  </span>
+                )}
+              </button>
+            </li>
+          )
+        })}
+      </ol>
+    </div>
+  )
+}
+
+/** Dark band framing the video, with the course outline beside it. */
+function Theatre({ course }) {
+  const lessons = course.lessons ?? []
+  const [current, setCurrent] = useState(0)
   const lesson = lessons[current]
+  const videoUrl = lesson ? lesson.videoUrl : course.previewVideoUrl
+  const hasOutline = lessons.length > 0
 
   return (
-    <section aria-label="Course player" className="bg-primary text-on-primary">
-      <Container className="grid gap-5 py-5 md:py-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-6">
-        <div className="relative overflow-hidden rounded-2xl bg-primary-container ring-1 ring-white/10">
-          <CourseThumbnail course={course} showPlay />
+    <section aria-label="Course video" className="bg-primary text-on-primary">
+      <Container className={cn('grid gap-5 py-5 md:py-8', hasOutline && 'lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-6')}>
+        <div className={cn('min-w-0', !hasOutline && 'mx-auto w-full max-w-5xl')}>
+          {videoUrl ? (
+            <div className="overflow-hidden rounded-2xl bg-black ring-1 ring-white/10">
+              <VideoPlayer url={videoUrl} title={lesson?.title ?? course.title} poster={course.thumbnailUrl} />
+            </div>
+          ) : (
+            <NoVideo course={course} label={lesson ? 'This lesson has no video yet' : 'No video yet'} />
+          )}
           {lesson && (
-            <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-end justify-between gap-2 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
-              <p className="text-sm font-medium text-white">
-                <span className="text-white/70">Lesson {current + 1} · </span>
-                {lesson.title}
+            <div className="mt-4">
+              <p className="text-sm text-primary-fixed">
+                Lesson {current + 1} of {lessons.length}
               </p>
-              <span className="hidden rounded-full bg-white/15 px-2.5 py-1 text-xs text-white/85 backdrop-blur sm:inline-flex">
-                Video arrives when lessons are uploaded
-              </span>
+              <h2 className="mt-0.5 text-lg font-semibold">{lesson.title}</h2>
+              {lesson.summary && <p className="mt-1 max-w-[70ch] text-sm leading-relaxed text-primary-fixed">{lesson.summary}</p>}
+              {lesson.videoCredit && <p className="mt-2 text-xs text-primary-fixed-dim">Video: {lesson.videoCredit}</p>}
             </div>
           )}
         </div>
-
-        <aside aria-labelledby="lessons-heading" className="lg:relative">
-          <div className="flex flex-col overflow-hidden rounded-2xl bg-white/[0.06] ring-1 ring-white/10 lg:absolute lg:inset-0">
-            <div className="border-b border-white/10 px-5 py-4">
-              <h2 id="lessons-heading" className="font-semibold">
-                Lessons
-              </h2>
-              <p className="mt-0.5 flex items-center gap-1.5 text-sm text-primary-fixed-dim">
-                <Clock className="size-4" aria-hidden="true" />
-                {lessons.length} lessons · {formatDuration(minutes)}
-              </p>
+        {hasOutline && (
+          <aside aria-label="Course outline" className="lg:relative">
+            <div className="lg:absolute lg:inset-0">
+              <LessonList lessons={lessons} current={current} onSelect={setCurrent} />
             </div>
-            <ol className="max-h-[360px] flex-1 overflow-y-auto p-2 lg:max-h-none">
-              {lessons.map((l, i) => {
-                const active = i === current
-                return (
-                  <li key={l.id}>
-                    <button
-                      type="button"
-                      onClick={() => setCurrent(i)}
-                      aria-current={active ? 'true' : undefined}
-                      className={cn(
-                        'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors',
-                        active ? 'bg-white text-primary' : 'text-primary-fixed hover:bg-white/10 hover:text-white',
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          'flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold tabular-nums',
-                          active ? 'bg-primary text-on-primary' : 'bg-white/10',
-                        )}
-                      >
-                        {active ? <Play className="size-3 fill-current" aria-hidden="true" /> : i + 1}
-                      </span>
-                      <span className="min-w-0 flex-1 font-medium">{l.title}</span>
-                      <span className={cn('shrink-0 tabular-nums', active ? 'text-primary/70' : 'text-primary-fixed-dim')}>
-                        {l.durationMin} min
-                      </span>
-                    </button>
-                  </li>
-                )
-              })}
-            </ol>
-            <div className="flex items-center justify-between border-t border-white/10 px-5 py-3.5 text-sm">
-              <span className="text-primary-fixed-dim">Price</span>
-              <span className={course.priceXaf ? 'font-semibold text-white' : 'font-semibold text-tertiary-fixed'}>
-                {formatXaf(course.priceXaf, { free: true })}
-              </span>
-            </div>
-          </div>
-        </aside>
+          </aside>
+        )}
       </Container>
     </section>
   )
@@ -441,11 +506,24 @@ export default function CourseDetails() {
             <h1 className="text-[28px] font-bold leading-[1.15] tracking-[-0.015em] text-on-surface text-balance md:text-[36px]">
               {c.title}
             </h1>
-            <p className="mt-3 text-sm text-on-surface-variant">
-              {formatCount(c.viewsCount)} views · Published {formatDate(c.publishedAt)} · {c.category} · {c.level}
+            <p className="mt-3 flex flex-wrap gap-x-1.5 gap-y-1 text-sm text-on-surface-variant">
+              {[
+                c.publishedAt && `Published ${formatDate(c.publishedAt)}`,
+                c.category,
+                c.level,
+                c.viewsCount > 0 && countLabel(c.viewsCount, 'views'),
+                formatXaf(c.priceXaf, { free: true }),
+              ]
+                .filter(Boolean)
+                .map((item, i, items) => (
+                  <span key={item} className="whitespace-nowrap">
+                    {item}
+                    {i < items.length - 1 && <span aria-hidden="true"> ·</span>}
+                  </span>
+                ))}
             </p>
 
-            <div className="mt-6 border-y border-outline-variant py-5">{c.tutor && <TutorRow tutor={c.tutor} />}</div>
+            <div className="mt-6 border-y border-outline-variant py-5">{c.tutor && <CourseTutor tutor={c.tutor} />}</div>
 
             <div className="mt-5 flex flex-wrap items-center gap-3">
               <LikeButton course={c} />
@@ -455,9 +533,23 @@ export default function CourseDetails() {
                 className="flex items-center gap-1.5 rounded-full px-3 py-2.5 text-sm text-on-surface-variant hover:text-primary"
               >
                 <MessageCircle className="size-4" aria-hidden="true" />
-                {formatCount(c.commentsCount)} comments
+                {countLabel(c.commentsCount, "comments")}
               </a>
             </div>
+
+            {c.outcomes?.length > 0 && (
+              <div className="mt-6 rounded-2xl border border-outline-variant/70 p-5 md:p-6">
+                <h2 className="font-semibold text-on-surface">What you’ll learn</h2>
+                <ul className="mt-3 grid gap-x-6 gap-y-2.5 sm:grid-cols-2">
+                  {c.outcomes.map((o) => (
+                    <li key={o} className="flex gap-2.5 text-sm leading-relaxed text-on-surface">
+                      <CircleCheck className="mt-0.5 size-4 shrink-0 text-tertiary-container" aria-hidden="true" />
+                      {o}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             <div className="mt-6 rounded-2xl bg-surface-container-low p-5 md:p-6">
               <h2 className="text-sm font-semibold text-on-surface">About this course</h2>

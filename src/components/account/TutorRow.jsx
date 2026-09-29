@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { BadgeCheck } from 'lucide-react'
 import Avatar from '@/components/common/Avatar'
-import { formatCount } from '@/lib/format'
+import { countLabel } from '@/lib/format'
 
 /** Compact followed-tutor row: avatar, name, headline, followers. The row is one link. */
 export default function TutorRow({ tutor }) {
@@ -22,7 +22,7 @@ export default function TutorRow({ tutor }) {
         </p>
         <p className="truncate text-sm text-on-surface-variant">{tutor.headline}</p>
       </div>
-      <span className="shrink-0 text-sm text-on-surface-variant">{formatCount(tutor.followersCount)} followers</span>
+      <span className="shrink-0 text-sm text-on-surface-variant">{countLabel(tutor.followersCount, "followers")}</span>
     </li>
   )
 }

@@ -19,7 +19,7 @@ import { Button } from '@/components/ui/button'
 import PageHeader from '@/components/common/PageHeader'
 import { ErrorState, Skeleton } from '@/components/common/States'
 import { Panel } from '@/components/studio/Field'
-import { formatCount, formatRelative, formatXaf } from '@/lib/format'
+import { formatCount, formatRelative, formatXaf, countLabel } from '@/lib/format'
 
 const ACTIVITY_ICONS = {
   support: Wallet,
@@ -47,6 +47,8 @@ function StatTile({ icon: Icon, label, value, detail }) {
 }
 
 function EarningsChange({ current, previous }) {
+  // null: the API doesn't report last month, so there's nothing to compare against.
+  if (previous == null) return <span>From your active supporters</span>
   if (!previous) return <span>First month of earnings</span>
   const change = Math.round(((current - previous) / previous) * 100)
   const up = change >= 0
@@ -139,6 +141,45 @@ export default function Dashboard() {
 
   const isNew = forceEmpty || (data && data.courses.length === 0 && data.stats.subscribers === 0)
 
+  // Only the numbers the data source actually reports get a tile (the API has no views or ratings).
+  const tiles = data
+    ? [
+        { icon: Users, label: 'Supporters', value: formatCount(data.stats.subscribers), detail: 'Paying you each month' },
+        {
+          icon: Wallet,
+          label: data.stats.earningsLastMonthXaf === null ? 'Monthly support' : 'Earnings this month',
+          value: <span className="text-tertiary-container">{formatXaf(data.stats.earningsXaf)}</span>,
+          detail: <EarningsChange current={data.stats.earningsXaf} previous={data.stats.earningsLastMonthXaf} />,
+        },
+        data.stats.views != null && {
+          icon: Eye,
+          label: 'Course views',
+          value: formatCount(data.stats.views),
+          detail: `Across ${countLabel(data.courses.length, "courses")}`,
+        },
+        data.stats.rating != null && {
+          icon: Star,
+          label: 'Average rating',
+          value: `${data.stats.rating.toFixed(1)} / 5`,
+          detail: 'From student reviews',
+        },
+        data.stats.followers != null && {
+          icon: UserPlus,
+          label: 'Followers',
+          value: formatCount(data.stats.followers),
+          detail: `Across ${data.courses.length} ${data.courses.length === 1 ? 'course' : 'courses'}`,
+        },
+        data.stats.likes != null && {
+          icon: Heart,
+          label: 'Likes',
+          value: formatCount(data.stats.likes),
+          detail: `${countLabel(data.stats.comments ?? 0, "comments")}`,
+        },
+      ]
+        .filter(Boolean)
+        .slice(0, 4)
+    : []
+
   return (
     <>
       <PageHeader
@@ -155,15 +196,9 @@ export default function Dashboard() {
       {data && !isNew && (
         <div className="space-y-8">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <StatTile icon={Users} label="Supporters" value={formatCount(data.stats.subscribers)} detail="Paying you each month" />
-            <StatTile
-              icon={Wallet}
-              label="Earnings this month"
-              value={<span className="text-tertiary-container">{formatXaf(data.stats.earningsXaf)}</span>}
-              detail={<EarningsChange current={data.stats.earningsXaf} previous={data.stats.earningsLastMonthXaf} />}
-            />
-            <StatTile icon={Eye} label="Course views" value={formatCount(data.stats.views)} detail={`Across ${data.courses.length} courses`} />
-            <StatTile icon={Star} label="Average rating" value={`${data.stats.rating.toFixed(1)} / 5`} detail="From student reviews" />
+            {tiles.map((tile) => (
+              <StatTile key={tile.label} {...tile} />
+            ))}
           </div>
 
           <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
@@ -195,14 +230,19 @@ export default function Dashboard() {
               <h2 className="text-lg font-semibold text-on-surface">Top courses</h2>
               <ul className="mt-4 space-y-3">
                 {[...data.courses]
-                  .sort((a, b) => b.viewsCount - a.viewsCount)
+                  .sort((a, b) => b.likesCount - a.likesCount)
                   .slice(0, 3)
                   .map((course) => (
                     <li key={course.id}>
                       <Link to={`/dashboard/courses/${course.id}/edit`} className="block rounded-lg p-2 -mx-2 hover:bg-surface-container-low">
                         <p className="line-clamp-2 text-sm font-medium text-on-surface">{course.title}</p>
                         <p className="mt-1 text-xs text-on-surface-variant">
-                          {formatCount(course.viewsCount)} views, {formatCount(course.likesCount)} likes
+                          {[
+                            `${countLabel(course.likesCount, "likes")}`,
+                            `${countLabel(course.commentsCount ?? 0, "comments")}`,
+                          ]
+                            .filter(Boolean)
+                            .join(', ')}
                         </p>
                       </Link>
                     </li>

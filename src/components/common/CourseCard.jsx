@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { BadgeCheck, Play } from 'lucide-react'
 import Avatar from './Avatar'
 import CourseThumbnail from './CourseThumbnail'
-import { formatCount, formatDuration, formatRelative, formatXaf, totalMinutes } from '@/lib/format'
+import { formatDuration, formatRelative, formatXaf, countLabel, totalMinutes } from '@/lib/format'
 
 /**
  * Feed tile in the video-platform style: the thumbnail stands on its own,
@@ -10,8 +10,9 @@ import { formatCount, formatDuration, formatRelative, formatXaf, totalMinutes } 
  * thumbnail and reveals what "open" does.
  */
 export default function CourseCard({ course }) {
-  const minutes = totalMinutes(course.lessons)
-  const lessonCount = course.lessons?.length ?? 0
+  const lessons = course.lessons ?? []
+  const minutes = totalMinutes(lessons)
+  const playable = lessons.length > 0 || course.previewVideoUrl
 
   return (
     <article className="group relative flex flex-col">
@@ -22,8 +23,8 @@ export default function CourseCard({ course }) {
         />
         <div className="absolute inset-0 flex items-center justify-center bg-on-surface/0 transition-colors duration-300 group-hover:bg-on-surface/35 group-focus-within:bg-on-surface/35">
           <span className="flex translate-y-2 items-center gap-2 rounded-full bg-surface-container-lowest px-4 py-2 text-sm font-semibold text-primary opacity-0 shadow-lg transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:translate-y-0 group-focus-within:opacity-100">
-            <Play className="size-4 fill-primary" aria-hidden="true" />
-            {lessonCount ? `Watch · ${lessonCount} lessons` : 'Open course'}
+            {playable && <Play className="size-4 fill-primary" aria-hidden="true" />}
+            {lessons.length ? `Watch · ${lessons.length} ${lessons.length === 1 ? 'lesson' : 'lessons'}` : course.previewVideoUrl ? 'Watch preview' : 'Open course'}
           </span>
         </div>
         {course.priceXaf > 0 && (
@@ -55,9 +56,15 @@ export default function CourseCard({ course }) {
             </p>
           )}
           <p className="mt-0.5 text-sm text-outline">
-            {formatCount(course.viewsCount ?? 0)} views
-            {course.publishedAt && <> · {formatRelative(course.publishedAt)}</>}
-            {!course.priceXaf && <> · <span className="font-semibold text-tertiary-container">Free</span></>}
+            {[course.likesCount > 0 && countLabel(course.likesCount, 'likes'), course.publishedAt && formatRelative(course.publishedAt)]
+              .filter(Boolean)
+              .join(' · ')}
+            {!course.priceXaf && (
+              <>
+                {(course.likesCount > 0 || course.publishedAt) && ' · '}
+                <span className="font-semibold text-tertiary-container">Free</span>
+              </>
+            )}
           </p>
         </div>
       </div>

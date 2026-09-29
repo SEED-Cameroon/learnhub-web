@@ -1,37 +1,86 @@
 import { startTransition, useState } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { Lock, Mail } from 'lucide-react'
-import { useAuth } from '@/context/AuthContext'
+import { SESSION_EXPIRED_FLAG, useAuth } from '@/context/AuthContext'
 import { authApi } from '@/services/api'
-import { USE_MOCKS } from '@/services/mock'
 import { homeFor } from '@/components/auth/ProtectedRoute'
+import { AuthBanner, AuthField, PasswordInput, Spinner } from '@/components/auth/AuthField'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent } from '@/components/ui/card'
 
-const FIELD =
-  'h-auto rounded-lg border-outline-variant py-3 pl-10 pr-3 focus-visible:border-primary focus-visible:ring-primary'
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+// Why a guest was sent here, from the gated action they tried (Frontend SRS §4.3).
+const REASONS = {
+  like: 'Log in to like this course. We’ll bring you straight back.',
+  follow: 'Log in to follow this tutor. We’ll bring you straight back.',
+  comment: 'Log in to join the discussion. We’ll bring you straight back.',
+}
+
+function validate({ email, password }) {
+  const errors = {}
+  if (!email.trim()) errors.email = 'Enter your email address.'
+  else if (!EMAIL_PATTERN.test(email.trim())) errors.email = 'Enter an email like name@example.com.'
+  if (!password) errors.password = 'Enter your password.'
+  return errors
+}
+
+// Read once per visit: set by AuthContext when the API rejected an expired token.
+function takeSessionExpired() {
+  try {
+    const expired = sessionStorage.getItem(SESSION_EXPIRED_FLAG) === '1'
+    sessionStorage.removeItem(SESSION_EXPIRED_FLAG)
+    return expired
+  } catch {
+    return false
+  }
+}
 
 export default function Login() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+  const [sessionExpired] = useState(takeSessionExpired)
+  const [form, setForm] = useState({ email: '', password: '' })
+  const [errors, setErrors] = useState({})
+  const [touched, setTouched] = useState({})
+  const [serverError, setServerError] = useState('')
   const [loading, setLoading] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const from = location.state?.from
   const pendingAction = location.state?.pendingAction
+  const reason = sessionExpired
+    ? 'Your session expired. Log in again to continue.'
+    : (REASONS[pendingAction?.type] ?? (from ? 'Log in to continue where you left off.' : ''))
+
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    const next = { ...form, [name]: value }
+    setForm(next)
+    setServerError('')
+    // Once a field has been left, re-check it as the person types so the error clears as soon as it's fixed.
+    if (touched[name]) setErrors((errs) => ({ ...errs, [name]: validate(next)[name] }))
+  }
+
+  const handleBlur = (e) => {
+    const { name } = e.target
+    setTouched((t) => ({ ...t, [name]: true }))
+    if (form[name]) setErrors((errs) => ({ ...errs, [name]: validate(form)[name] }))
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setError('')
-    setLoading(true)
+    setServerError('')
+    const found = validate(form)
+    setErrors(found)
+    setTouched({ email: true, password: true })
+    if (Object.keys(found).length) {
+      document.getElementById(Object.keys(found)[0])?.focus()
+      return
+    }
 
+    setLoading(true)
     try {
       // Expected API response: { token, user: { id, name, email, role: "student" | "tutor" } }
-      const data = await authApi.login({ email, password })
+      const data = await authApi.login({ email: form.email.trim(), password: form.password })
       // React Router applies navigation as a transition. Setting the user in the same transition renders both
       // together; otherwise GuestOnly sees the user first and redirects to the role home instead of `from`.
       if (from) {
@@ -42,107 +91,71 @@ export default function Login() {
       }
       startTransition(() => login(data.user, data.token))
     } catch (err) {
-      setError(
+      setServerError(
         err?.status === 401 || !err?.message
           ? 'That email and password don’t match. Check them and try again.'
-          : err.message,
+          : err.message
       )
+      document.getElementById('password')?.select()
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="w-full max-w-md">
-      <Card className="relative overflow-hidden rounded-xl border-surface-variant py-0 shadow-[0px_12px_32px_rgba(0,0,0,0.08)]">
-        <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-primary to-tertiary" />
+    <>
+      <h1 className="text-[32px] font-bold leading-tight tracking-tight text-primary">Welcome back</h1>
+      <p className="mt-2 text-on-surface-variant">Log in to follow tutors, like courses and join the discussion.</p>
 
-        <CardContent className="p-6 sm:p-8">
-          <div className="mb-8 text-center">
-            <h1 className="text-[28px] font-bold leading-9 text-primary">Log in</h1>
-            <p className="mt-2 text-base text-on-surface-variant">
-              {from ? 'Log in to continue where you left off.' : 'Welcome back. Enter your details to continue.'}
-            </p>
-          </div>
+      <div className="mt-8">
+        {reason && <AuthBanner tone="info">{reason}</AuthBanner>}
+        {serverError && <AuthBanner>{serverError}</AuthBanner>}
+      </div>
 
-          {error && (
-            <div role="alert" className="mb-6 rounded-lg bg-error-container p-3 text-sm text-on-error-container">
-              {error}
-            </div>
-          )}
+      <form onSubmit={handleSubmit} noValidate className="space-y-5">
+        <AuthField
+          id="email"
+          label="Email"
+          icon={Mail}
+          type="email"
+          inputMode="email"
+          autoComplete="email"
+          autoFocus
+          value={form.email}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          placeholder="you@example.com"
+          error={errors.email}
+        />
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-sm font-semibold text-on-surface">
-                Email
-              </Label>
-              <div className="relative">
-                <Mail
-                  className="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-on-surface-variant"
-                  aria-hidden="true"
-                />
-                <Input
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  className={FIELD}
-                  required
-                />
-              </div>
-            </div>
+        <AuthField id="password" label="Password" icon={Lock} error={errors.password}>
+          <PasswordInput
+            id="password"
+            autoComplete="current-password"
+            value={form.password}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            placeholder="Your password"
+            error={errors.password}
+          />
+        </AuthField>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="password" className="text-sm font-semibold text-on-surface">
-                Password
-              </Label>
-              <div className="relative">
-                <Lock
-                  className="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-on-surface-variant"
-                  aria-hidden="true"
-                />
-                <Input
-                  id="password"
-                  type="password"
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Your password"
-                  className={FIELD}
-                  required
-                />
-              </div>
-            </div>
+        <Button
+          type="submit"
+          disabled={loading}
+          className="mt-2 h-12 w-full rounded-full text-base font-semibold shadow-none hover:bg-primary-container"
+        >
+          {loading && <Spinner />}
+          {loading ? 'Logging in…' : 'Log in'}
+        </Button>
+      </form>
 
-            <Button
-              type="submit"
-              disabled={loading}
-              className="h-auto w-full rounded-full py-3 text-sm shadow-sm hover:bg-primary-container hover:shadow-md"
-            >
-              {loading ? 'Logging in…' : 'Log in'}
-            </Button>
-          </form>
-
-          {USE_MOCKS && (
-            <p className="mt-6 rounded-lg bg-surface-container-low p-3 text-xs text-on-surface-variant">
-              Sample mode: any email and password work. Use an email with “tutor” in it to open the tutor studio.
-            </p>
-          )}
-
-          <p className="mt-8 text-center text-sm text-on-surface-variant">
-            Don’t have an account?{' '}
-            <Link
-              to="/register"
-              state={location.state}
-              className="font-semibold text-secondary underline-offset-4 transition-colors hover:text-secondary-container hover:underline"
-            >
-              Sign up
-            </Link>
-          </p>
-        </CardContent>
-      </Card>
-    </div>
+      <p className="mt-8 text-center text-sm text-on-surface-variant">
+        New to LearnHub?{' '}
+        <Link to="/register" state={location.state} className="font-semibold text-primary underline-offset-4 hover:underline">
+          Create a free account
+        </Link>
+      </p>
+    </>
   )
 }

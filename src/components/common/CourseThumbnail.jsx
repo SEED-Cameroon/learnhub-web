@@ -1,4 +1,4 @@
-import { BookOpenText, Calculator, Code2, FlaskConical, GraduationCap, Languages, Landmark, PlayCircle } from 'lucide-react'
+import { BookOpenText, BrainCircuit, Calculator, Code2, FlaskConical, GraduationCap, Languages, Landmark, PlayCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 // Placeholder artwork until tutors can upload thumbnails: a palette tone,
@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 const BY_CATEGORY = {
   Mathematics: { Icon: Calculator, tone: 'bg-primary-container text-primary-fixed-dim' },
   'Computer Science': { Icon: Code2, tone: 'bg-tertiary-container text-tertiary-fixed' },
+  'Artificial Intelligence': { Icon: BrainCircuit, tone: 'bg-on-surface text-secondary-container' },
   'Business & Finance': { Icon: Landmark, tone: 'bg-secondary text-secondary-fixed' },
   Languages: { Icon: Languages, tone: 'bg-surface-tint text-primary-fixed' },
   Sciences: { Icon: FlaskConical, tone: 'bg-tertiary text-tertiary-fixed' },

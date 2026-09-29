@@ -1,22 +1,22 @@
-import { ArrowDownRight, ArrowUpRight, Clock3, Users, Wallet } from 'lucide-react'
+import { ArrowDownRight, ArrowUpRight, FlaskConical, Users, Wallet } from 'lucide-react'
 import { useAsync } from '@/hooks/useAsync'
-import { EARNINGS_ENABLED, getEarnings } from '@/services/studio'
+import { getEarnings } from '@/services/studio'
 import { PROVIDERS } from '@/services/subscriptions'
 import PageHeader from '@/components/common/PageHeader'
 import Avatar from '@/components/common/Avatar'
 import StatusBadge from '@/components/common/StatusBadge'
-import { EmptyState, ErrorState, Skeleton } from '@/components/common/States'
+import { ErrorState, Skeleton } from '@/components/common/States'
 import { Panel } from '@/components/studio/Field'
 import { formatDate, formatXaf } from '@/lib/format'
 
 const providerLabel = (value) => PROVIDERS.find((p) => p.value === value)?.label ?? value
 
-function ComingSoon() {
+function TestBadge() {
   return (
-    <EmptyState icon={Clock3} title="Earnings are coming soon">
-      Once Mobile Money payments are connected, this page will show what supporters pay you each month, your supporter list
-      and every payout sent to your phone. Supporters can’t be charged until then.
-    </EmptyState>
+    <span className="inline-flex items-center gap-1 rounded-full bg-secondary-fixed px-2 py-0.5 text-xs font-semibold text-on-secondary-container">
+      <FlaskConical className="size-3" aria-hidden="true" />
+      Test
+    </span>
   )
 }
 
@@ -40,32 +40,39 @@ function MonthComparison({ current, previous }) {
       <div className="sm:border-l sm:border-outline-variant/60 sm:pl-6">
         <p className="text-sm text-on-surface-variant">Last month</p>
         <p className="mt-1 text-3xl font-bold tracking-tight text-on-surface">{formatXaf(previous)}</p>
-        <p className="mt-2 text-sm text-on-surface-variant">Paid out on the 1st of each month</p>
+
       </div>
     </Panel>
   )
 }
 
 export default function Earnings() {
-  const { data, error, loading, reload } = useAsync(() => (EARNINGS_ENABLED ? getEarnings() : Promise.resolve(null)), [])
+  const { data, error, loading, reload } = useAsync(getEarnings, [])
+  const hasTest = data && (data.payments.some((p) => p.testMode) || data.supporters.some((s) => s.testMode))
 
   return (
     <>
-      <PageHeader title="Earnings" description="What your supporters pay you, and the payouts sent to your Mobile Money account." />
+      <PageHeader title="Earnings" description="What your supporters pay you through MTN Mobile Money and Orange Money." />
 
-      {!EARNINGS_ENABLED && <ComingSoon />}
-
-      {EARNINGS_ENABLED && loading && (
+      {loading && (
         <div className="space-y-6" role="status" aria-label="Loading">
           <Skeleton className="h-36 rounded-xl" />
           <Skeleton className="h-64 rounded-xl" />
         </div>
       )}
-      {EARNINGS_ENABLED && error && <ErrorState error={error} onRetry={reload} title="Your earnings didn’t load" />}
+      {error && <ErrorState error={error} onRetry={reload} title="Your earnings didn’t load" />}
 
-      {EARNINGS_ENABLED && data && (
+      {data && (
         <div className="space-y-6">
-          <MonthComparison current={data.stats.earningsXaf} previous={data.stats.earningsLastMonthXaf} />
+          {hasTest && (
+            <p className="flex items-start gap-2 rounded-xl bg-secondary-fixed/60 px-4 py-3 text-sm text-on-secondary-container">
+              <FlaskConical className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+              Payments marked Test were confirmed by LearnHub’s test mode. No real money moved; live Mobile Money payments
+              will replace them once the providers are connected.
+            </p>
+          )}
+
+          <MonthComparison current={data.thisMonthXaf} previous={data.lastMonthXaf} />
 
           <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
             <Panel>
@@ -76,44 +83,59 @@ export default function Earnings() {
               {data.supporters.length === 0 ? (
                 <p className="mt-4 text-on-surface-variant">No one is supporting you yet. Share your profile link with your students.</p>
               ) : (
-                <ul className="mt-4 divide-y divide-outline-variant/60">
-                  {data.supporters.map((s) => (
-                    <li key={s.id} className="flex items-center gap-3 py-3">
-                      <Avatar name={s.name} size="sm" />
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium text-on-surface">{s.name}</p>
-                        <p className="text-sm text-on-surface-variant">Since {formatDate(s.since)}</p>
-                      </div>
-                      <p className="whitespace-nowrap text-sm font-semibold text-tertiary-container">{formatXaf(s.amountXaf)} / month</p>
-                    </li>
-                  ))}
-                </ul>
+                <>
+                  <p className="mt-1 text-sm text-on-surface-variant">
+                    {formatXaf(data.monthlySupportXaf)} a month from {data.supporters.length}{' '}
+                    {data.supporters.length === 1 ? 'supporter' : 'supporters'}
+                  </p>
+                  <ul className="mt-3 divide-y divide-outline-variant/60">
+                    {data.supporters.map((s) => (
+                      <li key={s.id} className="flex items-center gap-3 py-3">
+                        <Avatar name={s.name} src={s.avatarUrl} size="sm" />
+                        <div className="min-w-0 flex-1">
+                          <p className="flex items-center gap-2 truncate font-medium text-on-surface">
+                            {s.name}
+                            {s.testMode && <TestBadge />}
+                          </p>
+                          <p className="text-sm text-on-surface-variant">Since {formatDate(s.since)}</p>
+                        </div>
+                        <p className="whitespace-nowrap text-sm font-semibold text-tertiary-container">{formatXaf(s.amountXaf)} / month</p>
+                      </li>
+                    ))}
+                  </ul>
+                </>
               )}
             </Panel>
 
             <Panel>
               <h2 className="flex items-center gap-2 text-lg font-semibold text-on-surface">
                 <Wallet className="size-5 text-on-surface-variant" aria-hidden="true" />
-                Payout history
+                Payment history
               </h2>
-              {data.payouts.length === 0 ? (
-                <p className="mt-4 text-on-surface-variant">Your first payout will appear here after your first full month of support.</p>
+              {data.payments.length === 0 ? (
+                <p className="mt-4 text-on-surface-variant">Payments from your supporters will appear here.</p>
               ) : (
                 <>
                   <table className="mt-4 hidden w-full text-left text-sm sm:table">
                     <thead className="text-on-surface-variant">
                       <tr className="border-b border-outline-variant/60">
                         <th scope="col" className="py-2 pr-3 font-semibold">Date</th>
-                        <th scope="col" className="py-2 pr-3 font-semibold">Sent to</th>
+                        <th scope="col" className="py-2 pr-3 font-semibold">From</th>
                         <th scope="col" className="py-2 pr-3 font-semibold">Status</th>
                         <th scope="col" className="py-2 text-right font-semibold">Amount</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-outline-variant/60">
-                      {data.payouts.map((p) => (
+                      {data.payments.map((p) => (
                         <tr key={p.id}>
-                          <td className="py-3 pr-3 whitespace-nowrap">{formatDate(p.paidAt)}</td>
-                          <td className="py-3 pr-3">{providerLabel(p.provider)}</td>
+                          <td className="py-3 pr-3 whitespace-nowrap">{formatDate(p.date)}</td>
+                          <td className="py-3 pr-3">
+                            <span className="flex items-center gap-2">
+                              {p.name}
+                              {p.testMode && <TestBadge />}
+                            </span>
+                            <span className="text-xs text-on-surface-variant">{providerLabel(p.provider)}</span>
+                          </td>
                           <td className="py-3 pr-3"><StatusBadge status={p.status} /></td>
                           <td className="py-3 text-right font-semibold whitespace-nowrap text-tertiary-container tabular-nums">{formatXaf(p.amountXaf)}</td>
                         </tr>
@@ -121,11 +143,16 @@ export default function Earnings() {
                     </tbody>
                   </table>
                   <ul className="mt-4 divide-y divide-outline-variant/60 sm:hidden">
-                    {data.payouts.map((p) => (
+                    {data.payments.map((p) => (
                       <li key={p.id} className="flex items-start justify-between gap-3 py-3">
                         <div>
-                          <p className="font-medium text-on-surface">{formatDate(p.paidAt)}</p>
-                          <p className="text-sm text-on-surface-variant">{providerLabel(p.provider)}</p>
+                          <p className="flex items-center gap-2 font-medium text-on-surface">
+                            {p.name}
+                            {p.testMode && <TestBadge />}
+                          </p>
+                          <p className="text-sm text-on-surface-variant">
+                            {formatDate(p.date)} · {providerLabel(p.provider)}
+                          </p>
                         </div>
                         <div className="flex flex-col items-end gap-1">
                           <span className="font-semibold text-tertiary-container">{formatXaf(p.amountXaf)}</span>

@@ -1,4 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react'
+import { SESSION_EXPIRED_EVENT } from '@/services/apiClient'
+
+export const SESSION_EXPIRED_FLAG = 'learnhub:session-expired'
 
 const AuthContext = createContext(null)
 
@@ -34,6 +37,24 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('user')
     setUser(null)
   }
+
+  // The API rejected the stored token (it expired): sign out, and let the
+  // login page explain why the person was sent there.
+  useEffect(() => {
+    const onExpired = () => {
+      if (!localStorage.getItem('token')) return
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      setUser(null)
+      try {
+        sessionStorage.setItem(SESSION_EXPIRED_FLAG, '1')
+      } catch {
+        // Private mode: the banner is a nicety, signing out still happens.
+      }
+    }
+    window.addEventListener(SESSION_EXPIRED_EVENT, onExpired)
+    return () => window.removeEventListener(SESSION_EXPIRED_EVENT, onExpired)
+  }, [])
 
   return (
     <AuthContext.Provider

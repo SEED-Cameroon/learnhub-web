@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Camera } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
-import { updateMe } from '@/services/me'
+import { getMe, updateMe } from '@/services/me'
+import { IMAGE_ACCEPT, checkFile, uploadImage } from '@/services/uploads'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -12,7 +13,6 @@ import PageHeader from '@/components/common/PageHeader'
 import FormField from '@/components/account/FormField'
 import FormStatus from '@/components/account/FormStatus'
 
-const MAX_PHOTO_BYTES = 2 * 1024 * 1024
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const BIO_MAX = 280
 
@@ -38,20 +38,34 @@ function ProfileForm() {
   const [status, setStatus] = useState({ state: 'idle', message: '' })
   const fileRef = useRef(null)
 
-  // Preview only: uploading the file needs an upload endpoint the API doesn't list yet.
+  // Local preview until the profile is saved; the file is uploaded on save.
   const previewUrl = useMemo(() => (photo ? URL.createObjectURL(photo) : null), [photo])
   useEffect(() => () => previewUrl && URL.revokeObjectURL(previewUrl), [previewUrl])
   const photoUrl = previewUrl ?? user?.avatarUrl
+
+  // The stored session may be missing the bio or photo; fetch the full profile.
+  useEffect(() => {
+    let cancelled = false
+    getMe()
+      .then((me) => {
+        if (cancelled) return
+        setValues((v) => ({ ...v, bio: v.bio || me.bio || '' }))
+        if (me.avatarUrl && me.avatarUrl !== user?.avatarUrl) login({ ...user, avatarUrl: me.avatarUrl })
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const set = (key) => (event) => setValues((v) => ({ ...v, [key]: event.target.value }))
 
   const onPhoto = (event) => {
     const file = event.target.files?.[0]
     if (!file) return
-    if (!file.type.startsWith('image/')) {
-      setErrors((e) => ({ ...e, photo: 'Choose an image file, such as a JPG or PNG.' }))
-    } else if (file.size > MAX_PHOTO_BYTES) {
-      setErrors((e) => ({ ...e, photo: 'This photo is larger than 2 MB. Choose a smaller one.' }))
+    const problem = checkFile(file, 'image')
+    if (problem) {
+      setErrors((e) => ({ ...e, photo: problem }))
     } else {
       setErrors((e) => ({ ...e, photo: undefined }))
       setPhoto(file)
@@ -70,11 +84,33 @@ function ProfileForm() {
 
     setStatus({ state: 'pending', message: '' })
     try {
-      const updated = await updateMe({ name: values.name.trim(), email: values.email.trim(), bio: values.bio.trim() })
+      let avatarUrl
+      if (photo) {
+        setStatus({ state: 'pending', message: 'Uploading photo…' })
+        try {
+          avatarUrl = await uploadImage(photo)
+        } catch (err) {
+          setErrors((e) => ({ ...e, photo: err?.message || 'The photo didn’t upload. Try again.' }))
+          setStatus({ state: 'error', message: 'Your profile wasn’t saved because the photo didn’t upload.' })
+          return
+        }
+      }
+      const updated = await updateMe({
+        name: values.name.trim(),
+        email: values.email.trim(),
+        bio: values.bio.trim(),
+        ...(avatarUrl && { avatarUrl }),
+      })
       login({ ...user, ...updated })
+      setPhoto(null)
       setStatus({ state: 'success', message: 'Profile saved.' })
     } catch (err) {
-      setStatus({ state: 'error', message: err?.message || 'Your profile wasn’t saved. Try again.' })
+      if (err?.status === 409) {
+        setErrors((e) => ({ ...e, email: 'Another account already uses this email.' }))
+        setStatus({ state: 'error', message: 'Your profile wasn’t saved. Use a different email.' })
+      } else {
+        setStatus({ state: 'error', message: err?.message || 'Your profile wasn’t saved. Try again.' })
+      }
     }
   }
 
@@ -83,13 +119,13 @@ function ProfileForm() {
       <div className="flex items-center gap-5">
         <Avatar name={values.name || user?.name} src={photoUrl} size="lg" />
         <div className="flex flex-col gap-2">
-          <input ref={fileRef} id="photo" type="file" accept="image/*" className="sr-only" onChange={onPhoto} aria-describedby="photo-help" />
+          <input ref={fileRef} id="photo" type="file" accept={IMAGE_ACCEPT} className="sr-only" onChange={onPhoto} aria-describedby="photo-help" />
           <Button type="button" variant="outline" className="h-auto self-start rounded-full px-4 py-2" onClick={() => fileRef.current?.click()}>
             <Camera aria-hidden="true" />
             Change photo
           </Button>
           <p id="photo-help" className={errors.photo ? 'text-sm text-error' : 'text-sm text-on-surface-variant'}>
-            {errors.photo || 'JPG or PNG, up to 2 MB.'}
+            {errors.photo || (photo ? 'New photo selected. Save your profile to keep it.' : 'JPG, PNG or WebP, up to 2 MB.')}
           </p>
         </div>
       </div>
@@ -109,7 +145,7 @@ function ProfileForm() {
       <FormStatus status={status.state} message={status.message} />
 
       <Button type="submit" disabled={status.state === 'pending'} className="h-auto self-start rounded-full px-6 py-2.5 shadow-none">
-        {status.state === 'pending' ? 'Saving…' : 'Save profile'}
+        {status.state === 'pending' ? status.message || 'Saving…' : 'Save profile'}
       </Button>
     </form>
   )
@@ -138,7 +174,12 @@ function PasswordForm() {
       setValues(empty)
       setStatus({ state: 'success', message: 'Password changed.' })
     } catch (err) {
-      setStatus({ state: 'error', message: err?.message || 'Your password wasn’t changed. Try again.' })
+      if (err?.status === 400 && /current password/i.test(err.message ?? '')) {
+        setErrors({ currentPassword: 'Current password is incorrect.' })
+        setStatus({ state: 'error', message: 'Your password wasn’t changed. Check your current password.' })
+      } else {
+        setStatus({ state: 'error', message: err?.message || 'Your password wasn’t changed. Try again.' })
+      }
     }
   }
 

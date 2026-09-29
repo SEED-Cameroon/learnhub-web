@@ -1,4 +1,8 @@
-const BASE_URL = import.meta.env.VITE_API_URL || "";
+// In development the API defaults to a local learnhub-api on port 5000.
+// A production build must set VITE_API_URL (e.g. https://api.example.com/api).
+const BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "http://localhost:5000/api" : "");
+
+export const SESSION_EXPIRED_EVENT = "learnhub:session-expired";
 
 function getToken() {
   return localStorage.getItem("token");
@@ -15,10 +19,16 @@ export class ApiError extends Error {
 }
 
 async function request(endpoint, options = {}) {
+  if (!BASE_URL) {
+    throw new ApiError("The site isn't connected to the API. Set VITE_API_URL.", { status: 0 });
+  }
+
   const token = getToken();
 
+  // File uploads send FormData; the browser sets its multipart Content-Type.
+  const isForm = options.body instanceof FormData;
   const headers = {
-    "Content-Type": "application/json",
+    ...(!isForm && { "Content-Type": "application/json" }),
     ...(token && { Authorization: `Bearer ${token}` }),
     ...options.headers,
   };
@@ -46,6 +56,12 @@ async function request(endpoint, options = {}) {
     throw new ApiError(`Unexpected response (${response.status})`, {
       status: response.status,
     });
+  }
+
+  // A rejected token on anything but the login/register calls means the session
+  // is over; AuthContext listens for this and signs the user out.
+  if (response.status === 401 && token && !endpoint.startsWith("/auth/")) {
+    window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT));
   }
 
   if (!response.ok || body.success === false) {
@@ -109,45 +125,11 @@ export const apiClient = {
     request(endpoint, {
       method: "DELETE",
     }),
+
+  /** Sends one file as multipart form data in a "file" field. */
+  upload: (endpoint, file) => {
+    const body = new FormData();
+    body.append("file", file);
+    return request(endpoint, { method: "POST", body });
+  },
 };
-
-/**
- * Lower-level fetch that returns the full response envelope
- * ({ success, data, message }) instead of unwrapping `data`.
- * Shares the base URL, token and ApiError handling with apiClient.
- */
-export async function apiFetch(endpoint, options = {}) {
-  const token = getToken();
-
-  let response;
-
-  try {
-    response = await fetch(`${BASE_URL}${endpoint}`, {
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...(token && { Authorization: `Bearer ${token}` }),
-        ...options.headers,
-      },
-    });
-  } catch {
-    throw new ApiError("Network error — check your connection.", {
-      status: 0,
-    });
-  }
-
-  const body = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    throw new ApiError(
-      body?.message || fallbackMessageForStatus(response.status),
-      {
-        status: response.status,
-        code: body?.code,
-        fieldErrors: body?.errors,
-      }
-    );
-  }
-
-  return body;
-}

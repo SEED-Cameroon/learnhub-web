@@ -9,7 +9,7 @@ import FilterChips from '@/components/public/FilterChips'
 import { BrowseHero, HeroSearchField, StickyFilterBar } from '@/components/public/BrowseHero'
 import { useAsync } from '@/hooks/useAsync'
 import { listTutors } from '@/services/tutors'
-import { CATEGORIES } from '@/data/mock'
+import { CATEGORIES } from '@/lib/constants'
 
 const GRID = 'grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'
 

@@ -1,19 +1,48 @@
-import { Link, Outlet } from 'react-router-dom'
+import { Link, Outlet, useLocation } from 'react-router-dom'
 import { BookHeart } from 'lucide-react'
+import AuthAside from '@/components/auth/AuthAside'
 
-// Minimal centred shell for Login / Signup (Frontend SRS §3).
+// Split shell for Login / Signup: a focused form on the left, and on wide
+// screens a panel explaining what the account is for.
 export default function AuthLayout() {
+  const location = useLocation()
+  const onLogin = location.pathname === '/login'
+
   return (
-    <div className="min-h-screen flex flex-col bg-surface-container-low">
-      <header className="px-4 py-5 md:px-10">
-        <Link to="/" className="inline-flex items-center gap-2 text-xl font-bold text-primary">
-          <BookHeart className="size-7 text-secondary-container" strokeWidth={2.25} aria-hidden="true" />
-          LearnHub Cameroon
-        </Link>
-      </header>
-      <main id="main" className="flex flex-1 items-start justify-center px-4 pb-16 pt-4 md:items-center md:pt-0">
-        <Outlet />
-      </main>
+    <div className="min-h-screen bg-surface lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
+      <div className="flex min-h-screen flex-col px-4 py-5 sm:px-8 md:px-12">
+        <header className="flex items-center justify-between gap-4">
+          <Link to="/" className="inline-flex items-center gap-2 text-lg font-bold text-primary sm:text-xl">
+            <BookHeart className="size-7 text-secondary-container" strokeWidth={2.25} aria-hidden="true" />
+            LearnHub Cameroon
+          </Link>
+          <p className="hidden text-sm text-on-surface-variant sm:block">
+            {onLogin ? 'New to LearnHub? ' : 'Have an account? '}
+            <Link
+              to={onLogin ? '/register' : '/login'}
+              state={location.state}
+              className="font-semibold text-primary underline-offset-4 hover:underline"
+            >
+              {onLogin ? 'Sign up' : 'Log in'}
+            </Link>
+          </p>
+        </header>
+
+        <main id="main" className="flex flex-1 items-start justify-center py-10 sm:items-center">
+          <div className="w-full max-w-[420px]">
+            <Outlet />
+          </div>
+        </main>
+
+        <footer className="flex flex-wrap items-center justify-between gap-3 text-xs text-on-surface-variant">
+          <span>© {new Date().getFullYear()} LearnHub Cameroon</span>
+          <Link to="/courses" className="hover:text-primary">
+            Browse courses without an account
+          </Link>
+        </footer>
+      </div>
+
+      <AuthAside />
     </div>
   )
 }

@@ -1,6 +1,6 @@
 import { BadgeCheck, MapPin, Users } from 'lucide-react'
 import Avatar from '@/components/common/Avatar'
-import { formatCount } from '@/lib/format'
+import { countLabel } from '@/lib/format'
 
 /** The top of the public tutor page, rendered from the profile form so tutors see changes before saving. */
 export default function ProfileHeaderPreview({ profile }) {
@@ -32,7 +32,7 @@ export default function ProfileHeaderPreview({ profile }) {
           )}
           <span className="flex items-center gap-1">
             <Users className="size-4" aria-hidden="true" />
-            {formatCount(profile.followersCount ?? 0)} followers
+            {countLabel(profile.followersCount ?? 0, "followers")}
           </span>
         </div>
         {profile.subjects?.length > 0 && (

@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { ArrowDown, ArrowUp, ChevronLeft, Plus, Trash2 } from 'lucide-react'
+import { ChevronLeft, Film, ImageUp, Loader2, X } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { createCourse, getMyCourse, updateCourse } from '@/services/studio'
-import { CATEGORIES } from '@/data/mock'
+import { IMAGE_ACCEPT, VIDEO_ACCEPT, checkFile, uploadImage, uploadVideo } from '@/services/uploads'
+import { CATEGORIES } from '@/lib/constants'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -12,36 +13,64 @@ import CourseCard from '@/components/common/CourseCard'
 import StatusBadge from '@/components/common/StatusBadge'
 import { EmptyState, ErrorState, Skeleton } from '@/components/common/States'
 import Field, { FormBanner, Panel, selectClass } from '@/components/studio/Field'
+import OutlineEditor from '@/components/studio/OutlineEditor'
 
-const LEVELS = ['Beginner', 'Intermediate', 'Advanced']
-
+// The editor shows exactly the fields the API stores for a course.
 const EMPTY_FORM = {
   title: '',
   description: '',
   category: '',
-  level: 'Beginner',
   priceXaf: '0',
+  thumbnailUrl: '',
+  previewVideoUrl: '',
+  level: '',
+  outcomes: [],
   lessons: [],
 }
 
-let lessonSeq = 0
-const newLesson = () => ({ id: `new-${Date.now()}-${lessonSeq++}`, title: '', durationMin: '' })
+const LEVELS = ['Beginner', 'Intermediate', 'Advanced']
 
-/** Draft only needs a title; publishing needs everything a student will see. */
-function validate(form, intent) {
+const isHttpUrl = (value) => {
+  try {
+    const url = new URL(value)
+    return url.protocol === 'http:' || url.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
+/**
+ * A new course needs the title, description and category the API requires,
+ * even as a draft; publishing also needs a valid price.
+ */
+function validate(form, intent, { isEdit }) {
   const errors = {}
   if (!form.title.trim()) errors.title = 'Add a course title.'
   else if (form.title.trim().length > 120) errors.title = 'Keep the title under 120 characters.'
 
-  if (intent === 'publish') {
+  for (const field of ['thumbnailUrl', 'previewVideoUrl']) {
+    if (form[field].trim() && !isHttpUrl(form[field].trim())) errors[field] = 'Enter a full web address starting with https://'
+  }
+
+  // Lessons: a title is required; a video link must be a web address.
+  const lessonErrors = {}
+  for (const lesson of form.lessons) {
+    const e = {}
+    if (!lesson.title.trim()) e.title = 'Give this lesson a title.'
+    if (lesson.videoUrl.trim() && !isHttpUrl(lesson.videoUrl.trim())) e.videoUrl = 'Enter a full link starting with https://'
+    if (Object.keys(e).length) lessonErrors[lesson.id] = e
+  }
+  if (Object.keys(lessonErrors).length) errors.lessons = lessonErrors
+
+  const needsBasics = intent === 'publish' || !isEdit
+  if (needsBasics) {
     if (!form.description.trim()) errors.description = 'Add a description so students know what they’ll learn.'
     if (!form.category) errors.category = 'Choose a category.'
+  }
+
+  if (intent === 'publish') {
     const price = Number(form.priceXaf)
     if (form.priceXaf === '' || !Number.isInteger(price) || price < 0) errors.priceXaf = 'Enter a whole number of XAF, or 0 for a free course.'
-    if (form.lessons.length === 0) errors.lessons = 'Add at least one lesson before publishing.'
-    form.lessons.forEach((lesson, i) => {
-      if (!lesson.title.trim()) errors[`lesson-${i}`] = 'Give this lesson a title.'
-    })
   } else if (form.priceXaf !== '' && (Number(form.priceXaf) < 0 || !Number.isInteger(Number(form.priceXaf)))) {
     errors.priceXaf = 'Enter a whole number of XAF, or 0 for a free course.'
   }
@@ -53,16 +82,104 @@ function toPayload(form, status) {
     title: form.title.trim(),
     description: form.description.trim(),
     category: form.category,
-    level: form.level,
     priceXaf: Number(form.priceXaf) || 0,
-    // Blank lesson rows are dropped; publishing already requires every lesson to have a title.
-    lessons: form.lessons.filter((l) => l.title.trim()).map((l, i) => ({
-      id: l.id.startsWith('new-') ? `l${i + 1}` : l.id,
-      title: l.title.trim(),
-      durationMin: Number(l.durationMin) || 0,
-    })),
+    thumbnailUrl: form.thumbnailUrl.trim(),
+    previewVideoUrl: form.previewVideoUrl.trim(),
+    level: form.level,
+    outcomes: form.outcomes.map((o) => o.trim()).filter(Boolean),
+    lessons: form.lessons.map((l) => ({ ...l, title: l.title.trim(), summary: l.summary.trim(), videoUrl: l.videoUrl.trim(), videoCredit: l.videoCredit.trim() })),
     status,
   }
+}
+
+/**
+ * Thumbnail / preview video: upload a file (it goes up straight away and
+ * fills in the URL) or paste a link to one hosted elsewhere.
+ */
+function MediaField({ id, kind, label, help, value, onChange, error, onError, onBusy }) {
+  const [uploading, setUploading] = useState(false)
+  const isVideo = kind === 'video'
+  const Icon = isVideo ? Film : ImageUp
+
+  const pick = async (file) => {
+    if (!file) return
+    const problem = checkFile(file, kind)
+    if (problem) return onError(problem)
+    onError(undefined)
+    setUploading(true)
+    onBusy(true)
+    try {
+      onChange(await (isVideo ? uploadVideo(file) : uploadImage(file)))
+    } catch (err) {
+      onError(err?.message || 'The upload didn’t finish. Try again.')
+    } finally {
+      setUploading(false)
+      onBusy(false)
+    }
+  }
+
+  return (
+    <Field id={id} label={label} optional error={error} help={help}>
+      {(p) => (
+        <div className="flex flex-col gap-3">
+          {value && !uploading && (
+            <div className="relative overflow-hidden rounded-lg border border-outline-variant bg-surface-container-low">
+              {isVideo ? (
+                <video src={value} controls preload="metadata" className="aspect-video w-full bg-on-surface" />
+              ) : (
+                <img src={value} alt="Thumbnail preview" className="aspect-video w-full object-cover" />
+              )}
+              <button
+                type="button"
+                onClick={() => onChange('')}
+                aria-label={`Remove ${isVideo ? 'video' : 'thumbnail'}`}
+                className="absolute right-2 top-2 flex size-8 items-center justify-center rounded-full bg-on-surface/70 text-white hover:bg-on-surface"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
+          )}
+          <label
+            className={
+              'flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-outline-variant bg-surface-container-low px-4 py-3 text-sm text-on-surface-variant hover:border-primary focus-within:outline-2 focus-within:outline-surface-tint' +
+              (uploading ? ' pointer-events-none opacity-70' : '')
+            }
+          >
+            {uploading ? <Loader2 className="size-5 animate-spin text-primary" aria-hidden="true" /> : <Icon className="size-5 text-primary" aria-hidden="true" />}
+            <span aria-live="polite">
+              {uploading
+                ? isVideo
+                  ? 'Uploading video… large files can take a few minutes'
+                  : 'Uploading image…'
+                : value
+                  ? `Replace ${isVideo ? 'video' : 'image'}`
+                  : `Upload ${isVideo ? 'a video (MP4, WebM or MOV, up to 100 MB)' : 'an image (JPG, PNG or WebP, up to 2 MB)'}`}
+            </span>
+            <input
+              type="file"
+              accept={isVideo ? VIDEO_ACCEPT : IMAGE_ACCEPT}
+              className="sr-only"
+              disabled={uploading}
+              onChange={(e) => {
+                pick(e.target.files?.[0])
+                e.target.value = ''
+              }}
+            />
+          </label>
+          <Input
+            {...p}
+            type="url"
+            inputMode="url"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder="…or paste a link: https://"
+            className="h-10"
+            disabled={uploading}
+          />
+        </div>
+      )}
+    </Field>
+  )
 }
 
 function EditorSkeleton() {
@@ -71,91 +188,6 @@ function EditorSkeleton() {
       <Skeleton className="h-[520px] rounded-xl" />
       <Skeleton className="h-72 rounded-xl" />
     </div>
-  )
-}
-
-function LessonsEditor({ lessons, errors, onChange }) {
-  const update = (index, patch) => onChange(lessons.map((l, i) => (i === index ? { ...l, ...patch } : l)))
-  const move = (index, delta) => {
-    const next = [...lessons]
-    const [item] = next.splice(index, 1)
-    next.splice(index + delta, 0, item)
-    onChange(next)
-  }
-
-  return (
-    <fieldset className="flex flex-col gap-3" aria-describedby={errors.lessons ? 'lessons-error' : undefined}>
-      <legend className="text-sm font-semibold text-on-surface">Lessons</legend>
-      <p className="-mt-1 text-sm text-on-surface-variant">Students see lessons in this order.</p>
-
-      {lessons.length > 0 && (
-        <ol className="flex flex-col gap-2">
-          {lessons.map((lesson, i) => (
-            <li key={lesson.id} className="rounded-lg border border-outline-variant/70 bg-surface-container-low p-3">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
-                <span className="mt-2 w-6 shrink-0 text-sm font-semibold text-on-surface-variant" aria-hidden="true">
-                  {i + 1}.
-                </span>
-                <div className="flex-1">
-                  <label htmlFor={`lesson-title-${lesson.id}`} className="sr-only">
-                    Lesson {i + 1} title
-                  </label>
-                  <Input
-                    id={`lesson-title-${lesson.id}`}
-                    value={lesson.title}
-                    placeholder="Lesson title"
-                    onChange={(e) => update(i, { title: e.target.value })}
-                    aria-invalid={errors[`lesson-${i}`] ? true : undefined}
-                    aria-describedby={errors[`lesson-${i}`] ? `lesson-error-${lesson.id}` : undefined}
-                    className="h-10 bg-surface-container-lowest"
-                  />
-                  {errors[`lesson-${i}`] && (
-                    <p id={`lesson-error-${lesson.id}`} className="mt-1 text-sm font-medium text-error">
-                      {errors[`lesson-${i}`]}
-                    </p>
-                  )}
-                </div>
-                <div className="flex items-center gap-1">
-                  <label htmlFor={`lesson-min-${lesson.id}`} className="sr-only">
-                    Lesson {i + 1} length in minutes
-                  </label>
-                  <Input
-                    id={`lesson-min-${lesson.id}`}
-                    type="number"
-                    min="0"
-                    inputMode="numeric"
-                    value={lesson.durationMin}
-                    placeholder="Min"
-                    onChange={(e) => update(i, { durationMin: e.target.value })}
-                    className="h-10 w-20 bg-surface-container-lowest"
-                  />
-                  <span className="mr-1 text-sm text-on-surface-variant">min</span>
-                  <Button type="button" variant="ghost" size="icon" onClick={() => move(i, -1)} disabled={i === 0} aria-label={`Move lesson ${i + 1} up`}>
-                    <ArrowUp />
-                  </Button>
-                  <Button type="button" variant="ghost" size="icon" onClick={() => move(i, 1)} disabled={i === lessons.length - 1} aria-label={`Move lesson ${i + 1} down`}>
-                    <ArrowDown />
-                  </Button>
-                  <Button type="button" variant="ghost" size="icon" className="text-error hover:text-error" onClick={() => onChange(lessons.filter((_, j) => j !== i))} aria-label={`Remove lesson ${i + 1}`}>
-                    <Trash2 />
-                  </Button>
-                </div>
-              </div>
-            </li>
-          ))}
-        </ol>
-      )}
-
-      <Button type="button" variant="outline" className="self-start rounded-full" onClick={() => onChange([...lessons, newLesson()])}>
-        <Plus aria-hidden="true" />
-        Add lesson
-      </Button>
-      {errors.lessons && (
-        <p id="lessons-error" className="text-sm font-medium text-error">
-          {errors.lessons}
-        </p>
-      )}
-    </fieldset>
   )
 }
 
@@ -171,6 +203,13 @@ export default function CourseEditor() {
   const [errors, setErrors] = useState({})
   const [formError, setFormError] = useState('')
   const [pending, setPending] = useState(null) // 'draft' | 'publish' | null
+  const [uploads, setUploads] = useState(0) // files still uploading
+  const trackUpload = (busy) => setUploads((n) => Math.max(0, n + (busy ? 1 : -1)))
+  const setField = (field) => (value) => {
+    setForm((f) => ({ ...f, [field]: value }))
+    setErrors((errs) => ({ ...errs, [field]: undefined }))
+  }
+  const setFieldError = (field) => (message) => setErrors((errs) => ({ ...errs, [field]: message }))
 
   useEffect(() => {
     if (!isEdit) return
@@ -183,9 +222,12 @@ export default function CourseEditor() {
           title: course.title ?? '',
           description: course.description ?? '',
           category: course.category ?? '',
-          level: course.level ?? 'Beginner',
           priceXaf: String(course.priceXaf ?? 0),
-          lessons: (course.lessons ?? []).map((l) => ({ ...l, durationMin: String(l.durationMin ?? '') })),
+          thumbnailUrl: course.thumbnailUrl ?? '',
+          previewVideoUrl: course.previewVideoUrl ?? '',
+          level: course.level ?? '',
+          outcomes: course.outcomes ?? [],
+          lessons: (course.lessons ?? []).map((l) => ({ ...l, durationMin: l.durationMin ? String(l.durationMin) : '' })),
         })
         setStatus(course.status ?? 'draft')
         setLoadState((s) => ({ ...s, loading: false }))
@@ -203,11 +245,18 @@ export default function CourseEditor() {
   }
 
   const submit = async (intent) => {
-    const found = validate(form, intent)
+    if (uploads > 0) return
+    const found = validate(form, intent, { isEdit })
     setErrors(found)
     setFormError('')
     if (Object.keys(found).length > 0) {
-      setFormError(intent === 'publish' ? 'Fix the highlighted fields to publish this course.' : 'Fix the highlighted fields to save this draft.')
+      setFormError(
+        found.lessons && Object.keys(found).length === 1
+          ? 'Some lessons need attention: check the highlighted lessons in the outline.'
+          : intent === 'publish'
+            ? 'Fix the highlighted fields to publish this course.'
+            : 'Fix the highlighted fields to save this draft.'
+      )
       return
     }
 
@@ -264,6 +313,7 @@ export default function CourseEditor() {
     title: form.title || 'Your course title',
     priceXaf: Number(form.priceXaf) || 0,
     lessons: form.lessons.map((l) => ({ ...l, durationMin: Number(l.durationMin) || 0 })),
+    thumbnailUrl: isHttpUrl(form.thumbnailUrl.trim()) ? form.thumbnailUrl.trim() : '',
     likesCount: 0,
     commentsCount: 0,
     tutor: { name: user?.name ?? 'You', avatarUrl: user?.avatarUrl },
@@ -309,11 +359,14 @@ export default function CourseEditor() {
                 </select>
               )}
             </Field>
-            <Field id="level" label="Level">
+            <Field id="level" label="Level" optional>
               {(p) => (
                 <select {...p} value={form.level} onChange={set('level')} className={selectClass}>
+                  <option value="">Not set</option>
                   {LEVELS.map((l) => (
-                    <option key={l}>{l}</option>
+                    <option key={l} value={l}>
+                      {l}
+                    </option>
                   ))}
                 </select>
               )}
@@ -323,20 +376,50 @@ export default function CourseEditor() {
             </Field>
           </div>
 
-          <LessonsEditor
-            lessons={form.lessons}
-            errors={errors}
-            onChange={(lessons) => {
-              setForm((f) => ({ ...f, lessons }))
-              setErrors((errs) => ({ ...errs, lessons: undefined }))
-            }}
+          <MediaField
+            id="thumbnailUrl"
+            kind="image"
+            label="Thumbnail"
+            help="A wide image (16:9). Leave empty to use the subject artwork."
+            value={form.thumbnailUrl}
+            onChange={setField('thumbnailUrl')}
+            error={errors.thumbnailUrl}
+            onError={setFieldError('thumbnailUrl')}
+            onBusy={trackUpload}
+          />
+          <MediaField
+            id="previewVideoUrl"
+            kind="video"
+            label="Preview video"
+            help="Plays on the course page for every student."
+            value={form.previewVideoUrl}
+            onChange={setField('previewVideoUrl')}
+            error={errors.previewVideoUrl}
+            onError={setFieldError('previewVideoUrl')}
+            onBusy={trackUpload}
           />
 
+          <div className="border-t border-outline-variant/60 pt-6">
+            <h2 className="mb-4 text-base font-semibold text-on-surface">Course outline</h2>
+            <OutlineEditor
+              outcomes={form.outcomes}
+              lessons={form.lessons}
+              errors={errors.lessons}
+              onBusy={trackUpload}
+              onOutcomes={(outcomes) => setForm((f) => ({ ...f, outcomes }))}
+              onLessons={(lessons) => {
+                setForm((f) => ({ ...f, lessons }))
+                setErrors((errs) => ({ ...errs, lessons: undefined }))
+              }}
+            />
+          </div>
+
           <div className="flex flex-col-reverse gap-3 border-t border-outline-variant/60 pt-6 sm:flex-row sm:justify-end">
-            <Button type="button" variant="outline" className="h-auto rounded-full px-6 py-2.5" disabled={Boolean(pending)} onClick={() => submit('draft')}>
+            {uploads > 0 && <p className="self-center text-sm text-on-surface-variant sm:mr-auto">Wait for the upload to finish before saving.</p>}
+            <Button type="button" variant="outline" className="h-auto rounded-full px-6 py-2.5" disabled={Boolean(pending) || uploads > 0} onClick={() => submit('draft')}>
               {pending === 'draft' ? 'Saving draft…' : 'Save draft'}
             </Button>
-            <Button type="submit" className="h-auto rounded-full px-6 py-2.5 shadow-none" disabled={Boolean(pending)}>
+            <Button type="submit" className="h-auto rounded-full px-6 py-2.5 shadow-none" disabled={Boolean(pending) || uploads > 0}>
               {pending === 'publish' ? 'Publishing…' : status === 'published' ? 'Save and keep published' : 'Publish'}
             </Button>
           </div>

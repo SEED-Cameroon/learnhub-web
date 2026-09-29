@@ -15,7 +15,7 @@ import { useAsync } from '@/hooks/useAsync'
 import { useAuthGate } from '@/hooks/useAuthGate'
 import { getTutor, setFollowing } from '@/services/tutors'
 import { listCourses } from '@/services/courses'
-import { formatCount } from '@/lib/format'
+import { countLabel } from '@/lib/format'
 
 const GRID = 'grid grid-cols-1 gap-x-6 gap-y-9 sm:grid-cols-2 lg:grid-cols-3'
 
@@ -36,12 +36,18 @@ function ProfileHeader({ tutor }) {
     <section aria-labelledby="tutor-name">
       <div className="-mx-4 md:mx-0">
         <div className={`relative h-36 overflow-hidden sm:h-44 md:h-56 md:rounded-3xl ${bannerToneFor(tutor.id)}`}>
-          <div className="thumb-dots absolute inset-0 text-white opacity-[0.12]" />
-          <SubjectIcon
-            className="absolute -bottom-10 right-6 size-56 text-white opacity-[0.12] md:right-16 md:size-72"
-            strokeWidth={1}
-            aria-hidden="true"
-          />
+          {tutor.bannerUrl ? (
+            <img src={tutor.bannerUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
+          ) : (
+            <>
+              <div className="thumb-dots absolute inset-0 text-white opacity-[0.12]" />
+              <SubjectIcon
+                className="absolute -bottom-10 right-6 size-56 text-white opacity-[0.12] md:right-16 md:size-72"
+                strokeWidth={1}
+                aria-hidden="true"
+              />
+            </>
+          )}
         </div>
       </div>
 
@@ -67,8 +73,8 @@ function ProfileHeader({ tutor }) {
             <p className="mt-1.5 text-sm text-on-surface-variant">
               {[
                 tutor.city,
-                `${formatCount(follow.count)} followers`,
-                tutor.coursesCount != null && `${tutor.coursesCount} courses`,
+                `${countLabel(follow.count, "followers")}`,
+                tutor.coursesCount != null && `${countLabel(tutor.coursesCount, "courses")}`,
               ]
                 .filter(Boolean)
                 .join(' · ')}
@@ -120,7 +126,11 @@ function ProfileHeader({ tutor }) {
 }
 
 function TutorCourses({ tutor }) {
-  const courses = useAsync(() => listCourses({ tutorId: tutor.id, sort: 'newest' }), [tutor.id])
+  // The API returns the tutor's courses with the tutor; sample mode loads them separately.
+  const courses = useAsync(
+    () => (tutor.courses ? Promise.resolve(tutor.courses) : listCourses({ tutorId: tutor.id, sort: 'newest' })),
+    [tutor.id]
+  )
 
   if (courses.loading) return <CardGridSkeleton count={3} className={GRID} />
   if (courses.error) return <ErrorState error={courses.error} onRetry={courses.reload} title="Courses didn’t load" />

@@ -36,6 +36,7 @@ export function FormBanner({ tone = 'error', children }) {
   const tones = {
     error: 'bg-error-container text-on-error-container',
     success: 'bg-tertiary-fixed/50 text-tertiary-container',
+    info: 'bg-primary-fixed/50 text-primary',
   }
   return (
     <p role={tone === 'error' ? 'alert' : 'status'} className={cn('rounded-lg px-4 py-3 text-sm font-medium', tones[tone])}>
