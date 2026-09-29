@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { BadgeCheck, Check, CircleCheck, HandCoins, Heart, Link2, ListVideo, MessageCircle, Play, Plus } from 'lucide-react'
+import { BadgeCheck, Check, ChevronDown, CircleCheck, HandCoins, Heart, Link2, ListVideo, MessageCircle, Play, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import Avatar from '@/components/common/Avatar'
@@ -357,19 +357,34 @@ function NoVideo({ course, label = 'No video yet' }) {
 
 function LessonList({ lessons, current, onSelect }) {
   const minutes = totalMinutes(lessons)
+  // On phones the outline starts collapsed so the course title stays near the video.
+  const [open, setOpen] = useState(false)
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-2xl bg-white/[0.06] ring-1 ring-white/10">
-      <div className="border-b border-white/10 px-5 py-4">
-        <h2 id="lessons-heading" className="font-semibold">
-          Course outline
-        </h2>
-        <p className="mt-0.5 flex items-center gap-1.5 text-sm text-primary-fixed">
-          <ListVideo className="size-4" aria-hidden="true" />
-          {lessons.length} {lessons.length === 1 ? 'lesson' : 'lessons'}
-          {minutes > 0 && ` · ${formatDuration(minutes)}`}
-        </p>
-      </div>
-      <ol className="min-h-0 flex-1 overflow-y-auto p-2" aria-labelledby="lessons-heading">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        aria-controls="lesson-list"
+        className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left lg:pointer-events-none lg:border-b lg:border-white/10"
+      >
+        <span>
+          <span id="lessons-heading" className="block font-semibold">
+            Course outline
+          </span>
+          <span className="mt-0.5 flex items-center gap-1.5 text-sm text-primary-fixed">
+            <ListVideo className="size-4" aria-hidden="true" />
+            {lessons.length} {lessons.length === 1 ? 'lesson' : 'lessons'}
+            {minutes > 0 && ` · ${formatDuration(minutes)}`}
+          </span>
+        </span>
+        <ChevronDown className={cn('size-5 shrink-0 transition-transform lg:hidden', open && 'rotate-180')} aria-hidden="true" />
+      </button>
+      <ol
+        id="lesson-list"
+        className={cn('min-h-0 flex-1 overflow-y-auto border-t border-white/10 p-2 lg:block lg:border-t-0', !open && 'hidden')}
+        aria-labelledby="lessons-heading"
+      >
         {lessons.map((lesson, i) => {
           const active = i === current
           return (
@@ -385,18 +400,18 @@ function LessonList({ lessons, current, onSelect }) {
               >
                 <span
                   className={cn(
-                    'mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
+                    'flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
                     active ? 'bg-primary text-on-primary' : 'bg-white/10'
                   )}
                 >
                   {active ? <Play className="size-3 fill-current" aria-hidden="true" /> : i + 1}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="line-clamp-2 font-medium">{lesson.title}</span>
+                  <span className="line-clamp-2 font-medium leading-6">{lesson.title}</span>
                   {!lesson.videoUrl && <span className={cn('text-xs', active ? 'text-outline' : 'text-primary-fixed-dim')}>No video yet</span>}
                 </span>
                 {lesson.durationMin > 0 && (
-                  <span className={cn('shrink-0 text-xs', active ? 'text-on-surface-variant' : 'text-primary-fixed-dim')}>
+                  <span className={cn('shrink-0 text-xs leading-6', active ? 'text-on-surface-variant' : 'text-primary-fixed-dim')}>
                     {formatDuration(lesson.durationMin)}
                   </span>
                 )}
@@ -441,7 +456,7 @@ function Theatre({ course }) {
         </div>
         {hasOutline && (
           <aside aria-label="Course outline" className="lg:relative">
-            <div className="max-h-[420px] lg:absolute lg:inset-0 lg:max-h-none">
+            <div className="lg:absolute lg:inset-0">
               <LessonList lessons={lessons} current={current} onSelect={setCurrent} />
             </div>
           </aside>
@@ -491,7 +506,7 @@ export default function CourseDetails() {
             <h1 className="text-[28px] font-bold leading-[1.15] tracking-[-0.015em] text-on-surface text-balance md:text-[36px]">
               {c.title}
             </h1>
-            <p className="mt-3 text-sm text-on-surface-variant">
+            <p className="mt-3 flex flex-wrap gap-x-1.5 gap-y-1 text-sm text-on-surface-variant">
               {[
                 c.publishedAt && `Published ${formatDate(c.publishedAt)}`,
                 c.category,
@@ -500,7 +515,12 @@ export default function CourseDetails() {
                 formatXaf(c.priceXaf, { free: true }),
               ]
                 .filter(Boolean)
-                .join(' · ')}
+                .map((item, i, items) => (
+                  <span key={item} className="whitespace-nowrap">
+                    {item}
+                    {i < items.length - 1 && <span aria-hidden="true"> ·</span>}
+                  </span>
+                ))}
             </p>
 
             <div className="mt-6 border-y border-outline-variant py-5">{c.tutor && <CourseTutor tutor={c.tutor} />}</div>
