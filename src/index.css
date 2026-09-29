@@ -1,8 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "@fontsource-variable/public-sans";
 
 @theme {
-  --font-sans: "Public Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Public Sans Variable", "Public Sans", ui-sans-serif, system-ui, sans-serif;
 
   --color-surface: #f9f9ff;
   --color-surface-dim: #d3daea;
@@ -20,6 +21,7 @@
   --color-primary-fixed-dim: #b6c4ff;
 
   --color-secondary: #855300;
+  --color-on-secondary: #ffffff;
   --color-secondary-container: #fea619;
   --color-on-secondary-container: #684000;
   --color-secondary-fixed: #ffddb8;
@@ -65,12 +67,41 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-.material-symbols-outlined {
-  font-variation-settings:
-    "FILL" 0,
-    "wght" 400,
-    "GRAD" 0,
-    "opsz" 24;
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-surface text-on-surface font-sans antialiased;
+    font-feature-settings: "tnum" 0;
+  }
+
+  /* One visible focus style for every interactive element (Frontend SRS §6). */
+  :where(a, button, [role="button"], input, select, textarea, summary):focus-visible {
+    outline: 2px solid var(--color-surface-tint);
+    outline-offset: 2px;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-outline);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .interactive-card:hover {
+    transform: none;
+  }
 }
 
 .elevation-1 {
@@ -86,6 +117,28 @@
 .interactive-card:hover {
   transform: translateY(-4px);
   box-shadow: 0px 12px 24px rgba(0, 0, 0, 0.08);
+}
+
+.thumb-dots {
+  background-image: radial-gradient(currentColor 1.2px, transparent 1.2px);
+  background-size: 14px 14px;
+}
+
+/* The home hero's one orchestrated entrance: each piece sets --d for its delay. */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rise-in {
+  animation: rise-in 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: var(--d, 0ms);
 }
 
 .hide-scrollbar::-webkit-scrollbar {

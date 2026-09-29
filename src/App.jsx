@@ -1,171 +1,79 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { lazy, Suspense } from 'react'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from '@/context/AuthContext'
 import { RequireAuth, RequireTutor, GuestOnly } from '@/components/auth/ProtectedRoute'
 import Layout from '@/components/layout/Layout'
+import AuthLayout from '@/components/layout/AuthLayout'
+import ScrollToTop from '@/components/layout/ScrollToTop'
 
 import Home from '@/pages/Home'
 import About from '@/pages/About'
+import Courses from '@/pages/Courses'
+import CourseDetails from '@/pages/CourseDetails'
+import Tutors from '@/pages/Tutors'
+import TutorProfile from '@/pages/TutorProfile'
 import Login from '@/pages/Login'
 import Register from '@/pages/Register'
-import Courses from '@/pages/Courses'
+import NotFound from '@/pages/NotFound'
 import Account from '@/pages/Account'
-import Dashboard from '@/pages/Dashboard'
-import DashboardCourses from '@/pages/DashboardCourses'
-import Tutors from '@/pages/Tutors'
-import AllTutors from '@/pages/AllTutors'
-import CourseDetails from '@/pages/CourseDetails'
-import TutorProfile from '@/pages/TutorProfile'
-import SupportTutor from '@/pages/SupportTutor'
 import AccountSettings from '@/pages/AccountSettings'
+import SupportTutor from '@/pages/SupportTutor'
 import Subscriptions from '@/pages/Subscriptions'
-import CreateCourse from '@/pages/CreateCourse'
-import EditCourse from '@/pages/EditCourse'
-import Earnings from '@/pages/Earnings'
-import TutorProfileEdit from '@/pages/TutorProfileEdit'
+
+// Students never load the tutor studio bundle (Frontend SRS §6).
+const StudioLayout = lazy(() => import('@/components/layout/StudioLayout'))
+const Dashboard = lazy(() => import('@/pages/studio/Dashboard'))
+const DashboardCourses = lazy(() => import('@/pages/studio/DashboardCourses'))
+const CourseEditor = lazy(() => import('@/pages/studio/CourseEditor'))
+const Earnings = lazy(() => import('@/pages/studio/Earnings'))
+const TutorProfileEdit = lazy(() => import('@/pages/studio/TutorProfileEdit'))
+
+const guest = (el) => <GuestOnly>{el}</GuestOnly>
+const signedIn = (el) => <RequireAuth>{el}</RequireAuth>
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Routes>
-          <Route element={<Layout />}>
-            {/* Public */}
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/tutors" element={<Tutors />} />
-            <Route path="/tutors/all" element={<AllTutors />} />
-            <Route path="/tutors/:id" element={<TutorProfile />} />
+        <ScrollToTop />
+        <Suspense fallback={<div role="status" className="p-10 text-center text-on-surface-variant">Loading…</div>}>
+          <Routes>
+            <Route element={<Layout />}>
+              {/* Public */}
+              <Route path="/" element={<Home />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/courses" element={<Courses />} />
+              <Route path="/courses/:id" element={<CourseDetails />} />
+              <Route path="/tutors" element={<Tutors />} />
+              <Route path="/tutors/all" element={<Navigate to="/tutors" replace />} />
+              <Route path="/tutors/:id" element={<TutorProfile />} />
 
-            {/* Guest only */}
-            <Route
-              path="/login"
-              element={
-                <GuestOnly>
-                  <Login />
-                </GuestOnly>
-              }
-            />
-            <Route
-              path="/register"
-              element={
-                <GuestOnly>
-                  <Register />
-                </GuestOnly>
-              }
-            />
+              {/* Student account */}
+              <Route path="/account" element={signedIn(<Account />)} />
+              <Route path="/account/settings" element={signedIn(<AccountSettings />)} />
+              <Route path="/account/subscriptions" element={signedIn(<Subscriptions />)} />
+              <Route path="/tutors/:id/support" element={signedIn(<SupportTutor />)} />
 
-            {/* Authenticated (Student + Tutor) */}
-            <Route
-              path="/courses"
-              element={
-                <RequireAuth>
-                  <Courses />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/account"
-              element={
-                <RequireAuth>
-                  <Account />
-                </RequireAuth>
-              }
-            />
+              <Route path="*" element={<NotFound />} />
+            </Route>
 
-            <Route
-              path="/courses/:id"
-              element={
-                <RequireAuth>
-                  <CourseDetails />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/tutors/:id/support"
-              element={
-                <RequireAuth>
-                  <SupportTutor />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/account/settings"
-              element={
-                <RequireAuth>
-                  <AccountSettings />
-                </RequireAuth>
-              }
-            />
-            <Route
-              path="/account/subscriptions"
-              element={
-                <RequireAuth>
-                  <Subscriptions />
-                </RequireAuth>
-              }
-            />
+            <Route element={<AuthLayout />}>
+              <Route path="/login" element={guest(<Login />)} />
+              <Route path="/register" element={guest(<Register />)} />
+              <Route path="/signup" element={<Navigate to="/register" replace />} />
+            </Route>
 
-            {/* Tutor only */}
-            <Route
-              path="/dashboard"
-              element={
-                <RequireTutor>
-                  <Dashboard />
-                </RequireTutor>
-              }
-            />
-            <Route
-              path="/dashboard/courses"
-              element={
-                <RequireTutor>
-                  <DashboardCourses />
-                </RequireTutor>
-              }
-            />
-            <Route
-              path="/dashboard/courses/new"
-              element={
-                <RequireTutor>
-                  <CreateCourse />
-                </RequireTutor>
-              }
-            />
-            <Route
-              path="/dashboard/courses/:id/edit"
-              element={
-                <RequireTutor>
-                  <EditCourse />
-                </RequireTutor>
-              }
-            />
-            <Route
-              path="/dashboard/earnings"
-              element={
-                <RequireTutor>
-                  <Earnings />
-                </RequireTutor>
-              }
-            />
-            <Route
-              path="/dashboard/profile"
-              element={
-                <RequireTutor>
-                  <TutorProfileEdit />
-                </RequireTutor>
-              }
-            />
-          </Route>
-
-          {/* 404 */}
-          <Route
-            path="*"
-            element={
-              <div className="p-8 text-center text-on-surface-variant">
-                404 – Page not found
-              </div>
-            }
-          />
-        </Routes>
+            {/* Tutor studio */}
+            <Route element={<RequireTutor><StudioLayout /></RequireTutor>}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/dashboard/courses" element={<DashboardCourses />} />
+              <Route path="/dashboard/courses/new" element={<CourseEditor />} />
+              <Route path="/dashboard/courses/:id/edit" element={<CourseEditor />} />
+              <Route path="/dashboard/earnings" element={<Earnings />} />
+              <Route path="/dashboard/profile" element={<TutorProfileEdit />} />
+            </Route>
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </AuthProvider>
   )

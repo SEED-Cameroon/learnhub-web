@@ -1,13 +1,17 @@
-import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { startTransition, useState } from 'react'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
+import { Lock, Mail } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { authApi } from '@/services/api'
-import { ApiError } from '@/services/apiClient'
-import MaterialIcon from '@/components/icons/MaterialIcon'
+import { USE_MOCKS } from '@/services/mock'
+import { homeFor } from '@/components/auth/ProtectedRoute'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
+
+const FIELD =
+  'h-auto rounded-lg border-outline-variant py-3 pl-10 pr-3 focus-visible:border-primary focus-visible:ring-primary'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -16,6 +20,9 @@ export default function Login() {
   const [loading, setLoading] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const from = location.state?.from
+  const pendingAction = location.state?.pendingAction
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -23,121 +30,119 @@ export default function Login() {
     setLoading(true)
 
     try {
-      // Expected API response:
-      // { token: "...", user: { id, name, email, role: "student" | "tutor" } }
+      // Expected API response: { token, user: { id, name, email, role: "student" | "tutor" } }
       const data = await authApi.login({ email, password })
-
-      login(data.user, data.token)
-
-      // Redirect based on role (Acceptance Criteria)
-      if (data.user.role === 'tutor') {
-        navigate('/dashboard', { replace: true })
+      // React Router applies navigation as a transition. Setting the user in the same transition renders both
+      // together; otherwise GuestOnly sees the user first and redirects to the role home instead of `from`.
+      if (from) {
+        // Back to the page that asked for login, finishing the action the guest started there.
+        navigate(from, { replace: true, state: pendingAction ? { pendingAction } : null })
       } else {
-        navigate('/courses', { replace: true })
+        navigate(homeFor(data.user), { replace: true })
       }
+      startTransition(() => login(data.user, data.token))
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : 'Invalid email or password')
+      setError(
+        err?.status === 401 || !err?.message
+          ? 'That email and password don’t match. Check them and try again.'
+          : err.message,
+      )
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-[calc(100vh-64px)] flex items-center justify-center relative overflow-hidden px-4 py-16">
-      {/* Ambient background decoration */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary-fixed-dim rounded-full mix-blend-multiply filter blur-3xl opacity-30" />
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-secondary-fixed rounded-full mix-blend-multiply filter blur-3xl opacity-30" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-tertiary-fixed rounded-full mix-blend-multiply filter blur-3xl opacity-20" />
-      </div>
+    <div className="w-full max-w-md">
+      <Card className="relative overflow-hidden rounded-xl border-surface-variant py-0 shadow-[0px_12px_32px_rgba(0,0,0,0.08)]">
+        <div className="absolute top-0 left-0 h-1 w-full bg-gradient-to-r from-primary to-tertiary" />
 
-      <main className="w-full max-w-md z-10 relative">
-        <Card className="rounded-xl shadow-[0px_12px_32px_rgba(0,0,0,0.1)] relative overflow-hidden border-surface-variant py-0">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-tertiary" />
+        <CardContent className="p-6 sm:p-8">
+          <div className="mb-8 text-center">
+            <h1 className="text-[28px] font-bold leading-9 text-primary">Log in</h1>
+            <p className="mt-2 text-base text-on-surface-variant">
+              {from ? 'Log in to continue where you left off.' : 'Welcome back. Enter your details to continue.'}
+            </p>
+          </div>
 
-          <CardContent className="p-8">
-            <div className="text-center mb-8">
-              <Link to="/" className="text-[32px] leading-10 font-bold text-primary hover:text-primary-container transition-colors">
-                LearnHub Cameroon
-              </Link>
-              <p className="mt-2 text-base text-on-surface-variant">
-                Welcome back. Please enter your details.
-              </p>
+          {error && (
+            <div role="alert" className="mb-6 rounded-lg bg-error-container p-3 text-sm text-on-error-container">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-1.5">
+              <Label htmlFor="email" className="text-sm font-semibold text-on-surface">
+                Email
+              </Label>
+              <div className="relative">
+                <Mail
+                  className="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-on-surface-variant"
+                  aria-hidden="true"
+                />
+                <Input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  className={FIELD}
+                  required
+                />
+              </div>
             </div>
 
-            {error && (
-              <div role="alert" className="bg-error-container text-on-error-container p-3 rounded mb-6 text-sm">
-                {error}
+            <div className="space-y-1.5">
+              <Label htmlFor="password" className="text-sm font-semibold text-on-surface">
+                Password
+              </Label>
+              <div className="relative">
+                <Lock
+                  className="pointer-events-none absolute left-3 top-1/2 size-5 -translate-y-1/2 text-on-surface-variant"
+                  aria-hidden="true"
+                />
+                <Input
+                  id="password"
+                  type="password"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Your password"
+                  className={FIELD}
+                  required
+                />
               </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-1">
-                <Label htmlFor="email" className="text-sm font-semibold tracking-wide text-on-surface">
-                  Email
-                </Label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-on-surface-variant">
-                    <MaterialIcon name="mail" />
-                  </span>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
-                    className="h-auto pl-10 pr-3 py-3 rounded-lg border-outline-variant focus-visible:border-primary focus-visible:ring-primary"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <Label htmlFor="password" className="text-sm font-semibold tracking-wide text-on-surface">
-                  Password
-                </Label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-on-surface-variant">
-                    <MaterialIcon name="lock" />
-                  </span>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="h-auto pl-10 pr-3 py-3 rounded-lg border-outline-variant focus-visible:border-primary focus-visible:ring-primary"
-                    required
-                  />
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full h-auto text-sm tracking-wide py-3 rounded-full shadow-sm hover:shadow-md hover:bg-primary-container group"
-              >
-                <span>{loading ? 'Logging in...' : 'Login'}</span>
-                {!loading && (
-                  <MaterialIcon name="arrow_forward" className="group-hover:translate-x-1 transition-transform" />
-                )}
-              </Button>
-            </form>
-
-            <div className="mt-8 text-center">
-              <p className="text-sm text-on-surface-variant">
-                Don&apos;t have an account?{' '}
-                <Link
-                  to="/register"
-                  className="font-semibold text-secondary hover:text-secondary-container transition-colors underline-offset-4 hover:underline"
-                >
-                  Sign up
-                </Link>
-              </p>
             </div>
-          </CardContent>
-        </Card>
-      </main>
+
+            <Button
+              type="submit"
+              disabled={loading}
+              className="h-auto w-full rounded-full py-3 text-sm shadow-sm hover:bg-primary-container hover:shadow-md"
+            >
+              {loading ? 'Logging in…' : 'Log in'}
+            </Button>
+          </form>
+
+          {USE_MOCKS && (
+            <p className="mt-6 rounded-lg bg-surface-container-low p-3 text-xs text-on-surface-variant">
+              Sample mode: any email and password work. Use an email with “tutor” in it to open the tutor studio.
+            </p>
+          )}
+
+          <p className="mt-8 text-center text-sm text-on-surface-variant">
+            Don’t have an account?{' '}
+            <Link
+              to="/register"
+              state={location.state}
+              className="font-semibold text-secondary underline-offset-4 transition-colors hover:text-secondary-container hover:underline"
+            >
+              Sign up
+            </Link>
+          </p>
+        </CardContent>
+      </Card>
     </div>
   )
 }

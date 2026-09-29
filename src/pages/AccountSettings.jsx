@@ -1,144 +1,185 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { apiFetch } from "@/services/apiClient";
-import { useAuth } from "@/context/AuthContext";
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { ArrowLeft, Camera } from 'lucide-react'
+import { useAuth } from '@/context/AuthContext'
+import { updateMe } from '@/services/me'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import Avatar from '@/components/common/Avatar'
+import Container from '@/components/common/Container'
+import PageHeader from '@/components/common/PageHeader'
+import FormField from '@/components/account/FormField'
+import FormStatus from '@/components/account/FormStatus'
 
-function AccountSettings() {
-  const { user, login } = useAuth();
+const MAX_PHOTO_BYTES = 2 * 1024 * 1024
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const BIO_MAX = 280
 
-  const [name, setName] = useState(user?.name || "");
-  const [email, setEmail] = useState(user?.email || "");
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
+const inputClass = 'h-11 bg-surface-container-lowest'
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-
-    setSaving(true);
-    setMessage("");
-    setError("");
-
-    try {
-      const response = await apiFetch("/me", {
-        method: "PATCH",
-        body: JSON.stringify({
-          name,
-          email,
-        }),
-      });
-
-      const data = response?.data ?? response;
-      const updatedUser = data?.user ?? data;
-
-      if (updatedUser && typeof updatedUser === "object") {
-        login(updatedUser);
-      }
-
-      setMessage(response?.message || "Your account has been updated.");
-    } catch (err) {
-      setError(err.message || "Unable to update your account.");
-    } finally {
-      setSaving(false);
-    }
-  };
-
+function Section({ title, description, children }) {
   return (
-    <main className="min-h-screen bg-slate-50 px-6 py-12">
-      <div className="mx-auto max-w-3xl">
-        <Link
-          to="/account"
-          className="text-sm font-medium text-blue-600 hover:text-blue-700"
-        >
-          Back to account
-        </Link>
-
-        <section className="mt-6 rounded-xl bg-white p-8 shadow-sm">
-          <h1 className="text-3xl font-bold text-slate-900">
-            Account settings
-          </h1>
-
-          <p className="mt-2 text-slate-600">
-            Update your LearnHub account information.
-          </p>
-
-          {error && (
-            <div
-              role="alert"
-              className="mt-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700"
-            >
-              {error}
-            </div>
-          )}
-
-          {message && (
-            <div
-              role="status"
-              className="mt-6 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-700"
-            >
-              {message}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="mt-8 space-y-6">
-            <div>
-              <label
-                htmlFor="name"
-                className="mb-2 block text-sm font-medium text-slate-700"
-              >
-                Full name
-              </label>
-
-              <input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                required
-                className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-blue-600"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="email"
-                className="mb-2 block text-sm font-medium text-slate-700"
-              >
-                Email
-              </label>
-
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                required
-                className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none focus:border-blue-600"
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">
-                Account type
-              </label>
-
-              <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm capitalize text-slate-600">
-                {user?.role || "student"}
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded-lg bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {saving ? "Saving..." : "Save changes"}
-            </button>
-          </form>
-        </section>
+    <section className="grid gap-6 rounded-xl bg-surface-container-lowest p-6 elevation-1 md:grid-cols-[220px_1fr] md:p-8">
+      <div>
+        <h2 className="text-lg font-semibold text-on-surface">{title}</h2>
+        <p className="mt-1 text-sm text-on-surface-variant">{description}</p>
       </div>
-    </main>
-  );
+      <div>{children}</div>
+    </section>
+  )
 }
 
-export default AccountSettings;
+function ProfileForm() {
+  const { user, login } = useAuth()
+  const [values, setValues] = useState({ name: user?.name ?? '', email: user?.email ?? '', bio: user?.bio ?? '' })
+  const [photo, setPhoto] = useState(null)
+  const [errors, setErrors] = useState({})
+  const [status, setStatus] = useState({ state: 'idle', message: '' })
+  const fileRef = useRef(null)
+
+  // Preview only: uploading the file needs an upload endpoint the API doesn't list yet.
+  const previewUrl = useMemo(() => (photo ? URL.createObjectURL(photo) : null), [photo])
+  useEffect(() => () => previewUrl && URL.revokeObjectURL(previewUrl), [previewUrl])
+  const photoUrl = previewUrl ?? user?.avatarUrl
+
+  const set = (key) => (event) => setValues((v) => ({ ...v, [key]: event.target.value }))
+
+  const onPhoto = (event) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      setErrors((e) => ({ ...e, photo: 'Choose an image file, such as a JPG or PNG.' }))
+    } else if (file.size > MAX_PHOTO_BYTES) {
+      setErrors((e) => ({ ...e, photo: 'This photo is larger than 2 MB. Choose a smaller one.' }))
+    } else {
+      setErrors((e) => ({ ...e, photo: undefined }))
+      setPhoto(file)
+    }
+    event.target.value = ''
+  }
+
+  const onSubmit = async (event) => {
+    event.preventDefault()
+    const next = {}
+    if (!values.name.trim()) next.name = 'Enter your name.'
+    if (!EMAIL_PATTERN.test(values.email)) next.email = 'Enter an email address like name@example.com.'
+    if (values.bio.length > BIO_MAX) next.bio = `Keep your bio under ${BIO_MAX} characters.`
+    setErrors((e) => ({ photo: e.photo, ...next }))
+    if (Object.keys(next).length) return
+
+    setStatus({ state: 'pending', message: '' })
+    try {
+      const updated = await updateMe({ name: values.name.trim(), email: values.email.trim(), bio: values.bio.trim() })
+      login({ ...user, ...updated })
+      setStatus({ state: 'success', message: 'Profile saved.' })
+    } catch (err) {
+      setStatus({ state: 'error', message: err?.message || 'Your profile wasn’t saved. Try again.' })
+    }
+  }
+
+  return (
+    <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
+      <div className="flex items-center gap-5">
+        <Avatar name={values.name || user?.name} src={photoUrl} size="lg" />
+        <div className="flex flex-col gap-2">
+          <input ref={fileRef} id="photo" type="file" accept="image/*" className="sr-only" onChange={onPhoto} aria-describedby="photo-help" />
+          <Button type="button" variant="outline" className="h-auto self-start rounded-full px-4 py-2" onClick={() => fileRef.current?.click()}>
+            <Camera aria-hidden="true" />
+            Change photo
+          </Button>
+          <p id="photo-help" className={errors.photo ? 'text-sm text-error' : 'text-sm text-on-surface-variant'}>
+            {errors.photo || 'JPG or PNG, up to 2 MB.'}
+          </p>
+        </div>
+      </div>
+
+      <FormField id="name" label="Full name" error={errors.name}>
+        {(p) => <Input {...p} value={values.name} onChange={set('name')} autoComplete="name" className={inputClass} />}
+      </FormField>
+
+      <FormField id="email" label="Email" error={errors.email}>
+        {(p) => <Input {...p} type="email" value={values.email} onChange={set('email')} autoComplete="email" className={inputClass} />}
+      </FormField>
+
+      <FormField id="bio" label="Bio" hint={`${values.bio.length}/${BIO_MAX} characters. Shown on comments you post.`} error={errors.bio}>
+        {(p) => <Textarea {...p} value={values.bio} onChange={set('bio')} rows={4} className="bg-surface-container-lowest" />}
+      </FormField>
+
+      <FormStatus status={status.state} message={status.message} />
+
+      <Button type="submit" disabled={status.state === 'pending'} className="h-auto self-start rounded-full px-6 py-2.5 shadow-none">
+        {status.state === 'pending' ? 'Saving…' : 'Save profile'}
+      </Button>
+    </form>
+  )
+}
+
+function PasswordForm() {
+  const empty = { currentPassword: '', newPassword: '', confirm: '' }
+  const [values, setValues] = useState(empty)
+  const [errors, setErrors] = useState({})
+  const [status, setStatus] = useState({ state: 'idle', message: '' })
+
+  const set = (key) => (event) => setValues((v) => ({ ...v, [key]: event.target.value }))
+
+  const onSubmit = async (event) => {
+    event.preventDefault()
+    const next = {}
+    if (!values.currentPassword) next.currentPassword = 'Enter your current password.'
+    if (values.newPassword.length < 8) next.newPassword = 'Use at least 8 characters.'
+    if (values.confirm !== values.newPassword) next.confirm = 'This doesn’t match the new password.'
+    setErrors(next)
+    if (Object.keys(next).length) return
+
+    setStatus({ state: 'pending', message: '' })
+    try {
+      await updateMe({ currentPassword: values.currentPassword, newPassword: values.newPassword })
+      setValues(empty)
+      setStatus({ state: 'success', message: 'Password changed.' })
+    } catch (err) {
+      setStatus({ state: 'error', message: err?.message || 'Your password wasn’t changed. Try again.' })
+    }
+  }
+
+  return (
+    <form onSubmit={onSubmit} noValidate className="flex flex-col gap-5">
+      <FormField id="currentPassword" label="Current password" error={errors.currentPassword}>
+        {(p) => <Input {...p} type="password" value={values.currentPassword} onChange={set('currentPassword')} autoComplete="current-password" className={inputClass} />}
+      </FormField>
+      <FormField id="newPassword" label="New password" hint="At least 8 characters." error={errors.newPassword}>
+        {(p) => <Input {...p} type="password" value={values.newPassword} onChange={set('newPassword')} autoComplete="new-password" className={inputClass} />}
+      </FormField>
+      <FormField id="confirm" label="Confirm new password" error={errors.confirm}>
+        {(p) => <Input {...p} type="password" value={values.confirm} onChange={set('confirm')} autoComplete="new-password" className={inputClass} />}
+      </FormField>
+
+      <FormStatus status={status.state} message={status.message} />
+
+      <Button type="submit" disabled={status.state === 'pending'} className="h-auto self-start rounded-full px-6 py-2.5 shadow-none">
+        {status.state === 'pending' ? 'Changing…' : 'Change password'}
+      </Button>
+    </form>
+  )
+}
+
+export default function AccountSettings() {
+  return (
+    <Container className="py-10 md:py-12">
+      <Link to="/account" className="mb-6 inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:underline">
+        <ArrowLeft className="size-4" aria-hidden="true" />
+        Back to my account
+      </Link>
+      <PageHeader title="Settings" description="Update how you appear on LearnHub and how you sign in." />
+
+      <div className="flex max-w-4xl flex-col gap-6">
+        <Section title="Profile" description="Your name and photo appear on comments and on tutors’ supporter lists.">
+          <ProfileForm />
+        </Section>
+        <Section title="Password" description="You’ll need your current password to set a new one.">
+          <PasswordForm />
+        </Section>
+      </div>
+    </Container>
+  )
+}

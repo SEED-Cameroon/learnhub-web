@@ -1,170 +1,233 @@
+import { Link } from 'react-router-dom'
+import { BadgeCheck, Mail, MapPin, MessagesSquare, Phone, PlayCircle, Smartphone } from 'lucide-react'
 import heroImage from '../assets/hero.jpg'
-import MaterialIcon from '../components/icons/MaterialIcon'
 import { Button } from '@/components/ui/button'
+import Avatar from '@/components/common/Avatar'
+import Container from '@/components/common/Container'
 
-const HOW_IT_WORKS = [
+const BELIEFS = [
   {
-    title: 'Browse',
-    description:
-      'Explore a wide range of courses tailored to local industry needs, from tech to management.',
-    icon: 'search',
-    iconBgClass: 'bg-primary-fixed',
-    iconColorClass: 'text-primary-fixed-dim',
+    title: 'Lessons should be free to watch',
+    description: 'No paywalls, no locked chapters. A student who can’t pay learns exactly what a student who can learns.',
+    Icon: PlayCircle,
   },
   {
-    title: 'Learn',
+    title: 'Local teachers teach best',
     description:
-      'Engage with interactive content and expert-led sessions designed for deep skill acquisition.',
-    icon: 'menu_book',
-    iconBgClass: 'bg-secondary-fixed',
-    iconColorClass: 'text-secondary',
+      'Tutors who have sat the GCE, the Bac and the public-service exams know where students get stuck, and explain it in context.',
+    Icon: BadgeCheck,
   },
   {
-    title: 'Support',
+    title: 'Good teaching deserves to be paid',
     description:
-      'Join our community and get the mentorship you need from local and international experts.',
-    icon: 'diversity_3',
-    iconBgClass: 'bg-tertiary-fixed',
-    iconColorClass: 'text-tertiary',
+      'Students who are helped can support a tutor each month with Mobile Money. The money goes to the teacher, not to unlock content.',
+    Icon: Smartphone,
+  },
+  {
+    title: 'Questions make lessons better',
+    description: 'Every course has comments where students ask and tutors answer, so the next student finds the answer too.',
+    Icon: MessagesSquare,
   },
 ]
 
+// Supporting a tutor is a real sequence, so these steps are numbered.
+const SUPPORT_STEPS = [
+  { title: 'Choose an amount', description: 'Pick 500, 1,000, 2,000 or 5,000 XAF a month, or enter your own.' },
+  { title: 'Pick your provider', description: 'Pay with MTN Mobile Money or Orange Money and enter your number.' },
+  { title: 'Approve on your phone', description: 'A payment prompt arrives on your phone. Enter your PIN to approve it.' },
+  { title: 'Support is confirmed', description: 'Once your provider confirms, it shows as active. Cancel any time.' },
+]
+
 const TEAM = [
-  {
-    name: 'Samuel E.',
-    role: 'Founder & CEO',
-    avatar: 'https://randomuser.me/api/portraits/men/22.jpg',
-  },
-  {
-    name: 'Marie L.',
-    role: 'Head of Education',
-    avatar: 'https://randomuser.me/api/portraits/women/23.jpg',
-  },
-  {
-    name: 'Jean-Paul N.',
-    role: 'Tech Lead',
-    avatar: 'https://randomuser.me/api/portraits/men/24.jpg',
-  },
-  {
-    name: 'Clarisse B.',
-    role: 'Student Success',
-    avatar: 'https://randomuser.me/api/portraits/women/25.jpg',
-  },
+  { name: 'Samuel Etoundi', role: 'Founder' },
+  { name: 'Marie Loga', role: 'Head of education' },
+  { name: 'Jean-Paul Nkeng', role: 'Tech lead' },
+  { name: 'Clarisse Bessala', role: 'Student success' },
 ]
 
 export default function About() {
   return (
     <div>
       {/* Mission */}
-      <section className="max-w-[1280px] mx-auto px-4 md:px-10 py-16 md:py-24 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-        <div className="md:col-span-6 relative h-[280px] md:h-[420px] rounded-xl overflow-hidden elevation-1">
-          <img
-            src={heroImage}
-            alt="Students collaborating in a bright, modern LearnHub Cameroon classroom"
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-        </div>
-        <div className="md:col-span-6 flex flex-col gap-6">
-          <h1 className="text-[32px] leading-[40px] md:text-[48px] md:leading-[56px] font-extrabold tracking-tight text-on-surface">
-            Empowering Local Talent and Students
-          </h1>
-          <p className="text-base text-on-surface-variant max-w-lg">
-            LearnHub Cameroon is dedicated to providing accessible, high-quality education and
-            resources to the next generation of Cameroonian leaders and innovators. We bridge the
-            gap between education and industry.
-          </p>
-          <Button
-            asChild
-            className="self-start h-auto text-sm px-8 py-3 rounded-full hover:bg-primary hover:opacity-90 shadow-none"
+      <section aria-labelledby="mission-heading" className="relative z-10 bg-primary text-on-primary">
+        <div className="thumb-dots pointer-events-none absolute inset-0 text-white opacity-[0.06]" />
+        <Container className="relative grid grid-cols-1 items-center gap-12 py-16 md:py-24 lg:grid-cols-12 lg:gap-10">
+          <div className="lg:col-span-7">
+            <h1
+              id="mission-heading"
+              className="rise-in text-[40px] font-extrabold leading-[1.05] tracking-[-0.02em] text-balance md:text-[60px]"
+              style={{ '--d': '0ms' }}
+            >
+              Good teaching should reach every student in Cameroon
+            </h1>
+            <p className="rise-in mt-6 max-w-xl text-lg leading-relaxed text-primary-fixed" style={{ '--d': '100ms' }}>
+              LearnHub puts courses from Cameroonian teachers online for free, so a student in Garoua can learn from the
+              same tutor as a student in Douala. Tutors earn from the students they help, through Mobile Money.
+            </p>
+          </div>
+
+          {/* Kept near the photo's native 657px width so it stays sharp. */}
+          <div
+            className="rise-in mx-auto w-full max-w-[520px] overflow-hidden rounded-[28px] ring-1 ring-white/15 lg:col-span-5 lg:mr-0"
+            style={{ '--d': '200ms' }}
           >
-            <a href="#how-it-works">See How It Works</a>
-          </Button>
-        </div>
+            <img
+              src={heroImage}
+              alt="Students working through a LearnHub lesson together on a tablet"
+              className="aspect-[4/3.4] w-full object-cover"
+            />
+          </div>
+        </Container>
       </section>
 
-      {/* How It Works */}
-      <section id="how-it-works" className="bg-surface-container-low scroll-mt-20">
-        <div className="max-w-[1280px] mx-auto px-4 md:px-10 py-16 md:py-24">
-          <h2 className="text-[32px] leading-[40px] font-bold text-center text-on-surface mb-12">
-            How It Works
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {HOW_IT_WORKS.map((step) => (
-              <div
-                key={step.title}
-                className="bg-surface-container-lowest rounded-xl p-8 elevation-1 interactive-card flex flex-col items-start gap-4"
-              >
-                <div
-                  className={`w-12 h-12 rounded-full flex items-center justify-center ${step.iconBgClass} ${step.iconColorClass}`}
-                >
-                  <MaterialIcon name={step.icon} />
-                </div>
-                <h3 className="text-[24px] leading-8 font-semibold text-on-surface">
-                  {step.title}
-                </h3>
-                <p className="text-base text-on-surface-variant">{step.description}</p>
-              </div>
-            ))}
+      {/* What we believe */}
+      <section aria-labelledby="beliefs-heading">
+        <Container className="grid grid-cols-1 gap-12 py-16 md:py-24 lg:grid-cols-12">
+          <div className="lg:col-span-5">
+            <h2
+              id="beliefs-heading"
+              className="text-3xl font-bold tracking-tight text-primary text-balance md:text-[40px] md:leading-[1.1]"
+            >
+              What we believe
+            </h2>
+            <p className="mt-5 max-w-md text-lg text-on-surface-variant">
+              Four ideas shape every decision we make, from how courses are priced to how tutors get paid.
+            </p>
           </div>
-        </div>
+
+          <ul className="divide-y divide-outline-variant lg:col-span-6 lg:col-start-7">
+            {BELIEFS.map(({ title, description, Icon }) => (
+              <li key={title} className="flex gap-5 py-7 first:pt-0 last:pb-0">
+                <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-secondary-container">
+                  <Icon className="size-6" aria-hidden="true" />
+                </span>
+                <div>
+                  <h3 className="text-lg font-semibold text-on-surface">{title}</h3>
+                  <p className="mt-1.5 text-on-surface-variant">{description}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Container>
+      </section>
+
+      {/* Supporting a tutor */}
+      <section id="support" aria-labelledby="support-heading" className="scroll-mt-20 bg-surface-container-low">
+        <Container className="py-16 md:py-24">
+          <div className="max-w-2xl">
+            <h2 id="support-heading" className="text-3xl font-bold tracking-tight text-on-surface md:text-[40px] md:leading-[1.1]">
+              How supporting a tutor works
+            </h2>
+            <p className="mt-4 text-lg text-on-surface-variant">
+              Support is a monthly thank-you. It never unlocks or locks lessons: every course stays free whether you
+              support or not.
+            </p>
+          </div>
+
+          <ol className="relative mt-12 grid gap-0 md:grid-cols-4 md:gap-6">
+            {/* Connecting line: vertical on mobile, horizontal on desktop */}
+            <span
+              aria-hidden="true"
+              className="absolute top-5 bottom-5 left-5 w-px bg-outline-variant md:top-5 md:right-[12.5%] md:bottom-auto md:left-[12.5%] md:h-px md:w-auto"
+            />
+            {SUPPORT_STEPS.map((step, i) => (
+              <li key={step.title} className="relative flex gap-5 pb-9 last:pb-0 md:flex-col md:items-center md:gap-0 md:pb-0 md:text-center">
+                <span
+                  className={
+                    i === SUPPORT_STEPS.length - 1
+                      ? 'relative z-10 flex size-10 shrink-0 items-center justify-center rounded-full bg-tertiary-container text-sm font-bold text-tertiary-fixed ring-8 ring-surface-container-low'
+                      : 'relative z-10 flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-on-primary ring-8 ring-surface-container-low'
+                  }
+                >
+                  {i + 1}
+                </span>
+                <div className="pt-1.5 md:pt-5">
+                  <h3 className="text-lg font-semibold text-on-surface">{step.title}</h3>
+                  <p className="mt-1 text-on-surface-variant md:mx-auto md:max-w-[15rem]">{step.description}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+
+          <Button asChild variant="outline" className="mt-12 h-auto rounded-full border-primary px-6 py-3 text-primary">
+            <Link to="/tutors">Find a tutor to support</Link>
+          </Button>
+        </Container>
       </section>
 
       {/* Team */}
-      <section className="max-w-[1280px] mx-auto px-4 md:px-10 py-16 md:py-24">
-        <h2 className="text-[32px] leading-[40px] font-bold text-center text-on-surface mb-12">
-          Meet Our Team
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {TEAM.map((member) => (
-            <div key={member.name} className="flex flex-col items-center text-center gap-3">
-              <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-primary-fixed transition-transform duration-300 hover:scale-105">
-                <img
-                  src={member.avatar}
-                  alt={`${member.name}, ${member.role}`}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div>
-                <h3 className="text-on-surface font-semibold text-base">{member.name}</h3>
-                <p className="text-outline text-sm">{member.role}</p>
-              </div>
+      <section aria-labelledby="team-heading">
+        <Container className="py-16 md:py-24">
+          <h2 id="team-heading" className="text-3xl font-bold tracking-tight text-on-surface md:text-[40px] md:leading-[1.1]">
+            The team
+          </h2>
+          <ul className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 md:grid-cols-4">
+            {TEAM.map((member) => (
+              <li key={member.name} className="flex items-center gap-4">
+                <Avatar name={member.name} size="lg" className="size-16 text-lg" />
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-on-surface">{member.name}</h3>
+                  <p className="text-sm text-on-surface-variant">{member.role}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-16 grid gap-8 border-t border-outline-variant pt-10 md:grid-cols-2">
+            <div>
+              <h2 id="contact-heading" className="text-xl font-bold text-on-surface">
+                Get in touch
+              </h2>
+              <p className="mt-2 max-w-md text-on-surface-variant">
+                Questions about a course, a payment, or partnering with us? Write to us and we’ll reply within two working
+                days.
+              </p>
             </div>
-          ))}
-        </div>
+            <address className="flex flex-col gap-3 not-italic md:items-end">
+              <a href="mailto:contact@learnhub.cm" className="flex items-center gap-3 text-on-surface hover:text-primary">
+                <Mail className="size-5 text-primary" aria-hidden="true" />
+                contact@learnhub.cm
+              </a>
+              <a href="tel:+237600000000" className="flex items-center gap-3 text-on-surface hover:text-primary">
+                <Phone className="size-5 text-primary" aria-hidden="true" />
+                +237 600 000 000
+              </a>
+              <p className="flex items-center gap-3 text-on-surface">
+                <MapPin className="size-5 text-primary" aria-hidden="true" />
+                Bonanjo, Douala
+              </p>
+            </address>
+          </div>
+        </Container>
       </section>
 
-      {/* Contact */}
-      <section className="max-w-[1280px] mx-auto px-4 md:px-10 pb-16 md:pb-24">
-        <div className="bg-surface-container rounded-xl p-8 flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="flex-1 text-center md:text-left">
-            <h2 className="text-primary text-2xl font-bold mb-2">Get In Touch</h2>
-            <p className="text-on-surface-variant max-w-md mx-auto md:mx-0">
-              Have questions about our programs or want to partner with us? We&apos;d love to
-              hear from you.
-            </p>
-          </div>
-          <div className="flex flex-col gap-4 w-full md:w-auto">
-            <a
-              href="mailto:contact@learnhub.cm"
-              className="flex items-center justify-center md:justify-start gap-3 text-on-surface hover:text-primary transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+      {/* Closing calls to action */}
+      <Container as="section" aria-labelledby="cta-heading" className="pb-16 md:pb-24">
+        <div className="relative overflow-hidden rounded-[28px] bg-primary px-6 py-12 text-center text-on-primary md:px-14 md:py-16">
+          <div className="thumb-dots pointer-events-none absolute inset-0 text-white opacity-[0.06]" />
+          <h2 id="cta-heading" className="relative mx-auto max-w-2xl text-3xl font-bold tracking-tight text-balance md:text-4xl">
+            Start with one lesson today
+          </h2>
+          <p className="relative mx-auto mt-4 max-w-lg text-lg text-primary-fixed">
+            Watch a course for free, or share what you know with students across Cameroon.
+          </p>
+          <div className="relative mt-8 flex flex-wrap justify-center gap-3">
+            <Button
+              asChild
+              className="h-auto rounded-full bg-secondary-container px-8 py-3 text-sm font-semibold text-on-secondary-container shadow-none hover:bg-secondary-container/85"
             >
-              <MaterialIcon name="mail" className="text-primary" />
-              <span className="text-sm font-medium">contact@learnhub.cm</span>
-            </a>
-            <div className="flex items-center justify-center md:justify-start gap-3 text-on-surface">
-              <MaterialIcon name="location_on" className="text-primary" />
-              <span className="text-sm font-medium">Bonanjo, Douala, Cameroon</span>
-            </div>
-            <a
-              href="tel:+237600000000"
-              className="flex items-center justify-center md:justify-start gap-3 text-on-surface hover:text-primary transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+              <Link to="/courses">Browse courses</Link>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              className="h-auto rounded-full border-white/40 bg-transparent px-8 py-3 text-sm text-on-primary hover:bg-white/10 hover:text-on-primary"
             >
-              <MaterialIcon name="call" className="text-primary" />
-              <span className="text-sm font-medium">+237 600 000 000</span>
-            </a>
+              <Link to="/register?role=tutor">Become a tutor</Link>
+            </Button>
           </div>
         </div>
-      </section>
+      </Container>
     </div>
   )
 }
