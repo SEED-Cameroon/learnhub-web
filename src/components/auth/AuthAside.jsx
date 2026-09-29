@@ -3,7 +3,7 @@ import { Check, HandCoins, MessagesSquare, PlaySquare, TrendingUp, Upload, Users
 import Avatar from '@/components/common/Avatar'
 import CourseThumbnail from '@/components/common/CourseThumbnail'
 import { COURSES, TUTORS } from '@/data/mock'
-import { formatCount } from '@/lib/format'
+import { countLabel } from '@/lib/format'
 
 // Brand panel beside the auth forms. Its message follows the page and, on
 // sign-up, the role picked, so people see what the account is for.
@@ -55,7 +55,7 @@ function CourseStack() {
               <p className="mt-0.5 flex items-center gap-1.5 text-xs text-on-surface-variant">
                 <Avatar name={tutorName(course.tutorId)} size="xs" className="size-5 text-[9px]" />
                 <span className="truncate">{tutorName(course.tutorId)}</span>
-                <span className="shrink-0">· {formatCount(course.viewsCount)} views</span>
+                <span className="shrink-0">· {countLabel(course.viewsCount, "views")}</span>
               </p>
             </div>
           </div>

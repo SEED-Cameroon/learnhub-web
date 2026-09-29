@@ -1,5 +1,6 @@
 import { apiClient } from "./apiClient";
 import { USE_MOCKS, mockResponse } from "./mock";
+import { toUser } from "./normalize";
 
 // Sample sign-in while VITE_API_URL is unset: any email and password work,
 // and an email containing "tutor" signs in as a tutor.
@@ -14,12 +15,24 @@ function mockSession({ email, name, role }) {
   return mockResponse({ user, token: `mock-${user.id}` }, 500);
 }
 
+async function login({ email, password }) {
+  const { user, token } = await apiClient.post("/auth/login", { email, password });
+  return { user: toUser(user), token };
+}
+
 export const authApi = {
-  register: (payload) =>
-    USE_MOCKS ? mockSession(payload) : apiClient.post("/auth/register", payload),
+  /** POST /auth/register returns no token, so a successful sign-up logs straight in. */
+  register: async (payload) => {
+    if (USE_MOCKS) return mockSession(payload);
+    await apiClient.post("/auth/register", payload);
+    return login(payload);
+  },
 
-  login: (payload) =>
-    USE_MOCKS ? mockSession(payload) : apiClient.post("/auth/login", payload),
+  /** POST /auth/login → { user, token } */
+  login: (payload) => (USE_MOCKS ? mockSession(payload) : login(payload)),
 
-  me: () => apiClient.get("/me"),
+  me: async () => {
+    const { user } = await apiClient.get("/me");
+    return toUser(user);
+  },
 };

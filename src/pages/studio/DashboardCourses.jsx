@@ -69,6 +69,8 @@ export default function DashboardCourses() {
     draft: courses?.filter((c) => c.status === 'draft').length ?? 0,
   }
   const visible = courses?.filter((c) => filter === 'all' || c.status === filter) ?? []
+  const showViews = (courses ?? []).some((c) => c.viewsCount != null)
+  const showEarnings = (courses ?? []).some((c) => c.earningsXaf != null)
 
   // Optimistic: flip the status straight away, roll back if the request fails.
   const handleToggle = async (course) => {
@@ -160,10 +162,10 @@ export default function DashboardCourses() {
                     <tr>
                       <th scope="col" className="px-4 py-3 font-semibold">Course</th>
                       <th scope="col" className="px-4 py-3 font-semibold">Status</th>
-                      <th scope="col" className="px-4 py-3 text-right font-semibold">Views</th>
+                      {showViews && <th scope="col" className="px-4 py-3 text-right font-semibold">Views</th>}
                       <th scope="col" className="px-4 py-3 text-right font-semibold">Likes</th>
                       <th scope="col" className="px-4 py-3 text-right font-semibold">Comments</th>
-                      <th scope="col" className="px-4 py-3 text-right font-semibold">Earnings</th>
+                      {showEarnings && <th scope="col" className="px-4 py-3 text-right font-semibold">Earnings</th>}
                       <th scope="col" className="px-4 py-3"><span className="sr-only">Actions</span></th>
                     </tr>
                   </thead>
@@ -180,12 +182,14 @@ export default function DashboardCourses() {
                           </div>
                         </td>
                         <td className="px-4 py-3"><StatusBadge status={course.status} /></td>
-                        <td className="px-4 py-3 text-right tabular-nums">{formatCount(course.viewsCount)}</td>
+                        {showViews && <td className="px-4 py-3 text-right tabular-nums">{formatCount(course.viewsCount ?? 0)}</td>}
                         <td className="px-4 py-3 text-right tabular-nums">{formatCount(course.likesCount)}</td>
                         <td className="px-4 py-3 text-right tabular-nums">{formatCount(course.commentsCount)}</td>
-                        <td className="px-4 py-3 text-right tabular-nums font-medium text-tertiary-container whitespace-nowrap">
-                          {formatXaf(course.earningsXaf ?? 0)}
-                        </td>
+                        {showEarnings && (
+                          <td className="px-4 py-3 text-right tabular-nums font-medium text-tertiary-container whitespace-nowrap">
+                            {formatXaf(course.earningsXaf ?? 0)}
+                          </td>
+                        )}
                         <td className="px-2 py-3">
                           <RowActions compact course={course} onToggle={handleToggle} onDelete={setToDelete} busy={busyId === course.id} />
                         </td>
@@ -206,13 +210,13 @@ export default function DashboardCourses() {
                         <div className="mt-2"><StatusBadge status={course.status} /></div>
                       </div>
                     </div>
-                    <dl className="grid grid-cols-4 gap-2 border-t border-outline-variant/60 px-4 py-3 text-center text-xs">
+                    <dl className="flex gap-2 border-t border-outline-variant/60 px-4 py-3 text-center text-xs [&>div]:flex-1">
                       {[
-                        ['Views', formatCount(course.viewsCount)],
+                        showViews && ['Views', formatCount(course.viewsCount ?? 0)],
                         ['Likes', formatCount(course.likesCount)],
                         ['Comments', formatCount(course.commentsCount)],
-                        ['Earnings', `${formatCount(course.earningsXaf ?? 0)} XAF`],
-                      ].map(([label, value]) => (
+                        showEarnings && ['Earnings', `${formatCount(course.earningsXaf ?? 0)} XAF`],
+                      ].filter(Boolean).map(([label, value]) => (
                         <div key={label}>
                           <dt className="text-on-surface-variant">{label}</dt>
                           <dd className={cn('mt-0.5 font-semibold text-on-surface', label === 'Earnings' && 'text-tertiary-container')}>{value}</dd>

@@ -1,5 +1,6 @@
 import { apiClient } from './apiClient'
 import { USE_MOCKS, mockResponse } from './mock'
+import { toSubscription } from './normalize'
 import { SUBSCRIPTIONS, TUTORS } from '@/data/mock'
 
 export const PROVIDERS = [
@@ -18,8 +19,16 @@ const withTutor = (s) => ({ ...s, tutor: TUTORS.find((t) => t.id === s.tutorId) 
  * POST /subscriptions — starts a Mobile Money payment request. The result is
  * always "pending": the provider confirms asynchronously via backend webhook.
  */
-export function createSubscription({ tutorId, amountXaf, provider, phone }) {
-  if (!USE_MOCKS) return apiClient.post('/subscriptions', { tutorId, amountXaf, provider, phone })
+export async function createSubscription({ tutorId, amountXaf, provider, phone }) {
+  if (!USE_MOCKS) {
+    const { subscription } = await apiClient.post('/subscriptions', {
+      tutorId,
+      amount: amountXaf,
+      provider,
+      phoneNumber: `+237${phone}`,
+    })
+    return toSubscription(subscription)
+  }
   const sub = {
     id: `sub${Date.now()}`,
     tutorId,
@@ -34,14 +43,20 @@ export function createSubscription({ tutorId, amountXaf, provider, phone }) {
 }
 
 /** GET /subscriptions/me */
-export function listMySubscriptions() {
-  if (!USE_MOCKS) return apiClient.get('/subscriptions/me')
+export async function listMySubscriptions() {
+  if (!USE_MOCKS) {
+    const { subscriptions } = await apiClient.get('/subscriptions/me')
+    return subscriptions.map(toSubscription)
+  }
   return mockResponse(SUBSCRIPTIONS.map(withTutor))
 }
 
-/** DELETE /subscriptions/:id — cancels billing; the record stays in history. */
-export function cancelSubscription(id) {
-  if (!USE_MOCKS) return apiClient.delete(`/subscriptions/${id}`)
+/** PATCH /subscriptions/:id/cancel — cancels billing; the record stays in history. */
+export async function cancelSubscription(id) {
+  if (!USE_MOCKS) {
+    const { subscription } = await apiClient.patch(`/subscriptions/${id}/cancel`)
+    return toSubscription(subscription)
+  }
   const sub = SUBSCRIPTIONS.find((s) => s.id === id)
   if (sub) {
     sub.status = 'cancelled'

@@ -8,7 +8,7 @@ import { useAuthGate } from '@/hooks/useAuthGate'
 import { setFollowing } from '@/services/tutors'
 import { useOptimisticToggle } from '@/components/public/useOptimisticToggle'
 import { usePendingAction } from '@/components/public/usePendingAction'
-import { formatCount } from '@/lib/format'
+import { formatCount, countLabel } from '@/lib/format'
 
 const BANNER_TONES = ['bg-primary-container', 'bg-surface-tint', 'bg-tertiary-container']
 
@@ -69,7 +69,7 @@ export default function TutorCard({ tutor }) {
               <div className="min-w-0">
                 <p className="line-clamp-1 text-sm font-medium text-on-surface">{course.title}</p>
                 {course.viewsCount != null && (
-                  <p className="text-xs text-outline">{formatCount(course.viewsCount)} views</p>
+                  <p className="text-xs text-outline">{countLabel(course.viewsCount, "views")}</p>
                 )}
               </div>
             </li>

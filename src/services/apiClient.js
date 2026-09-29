@@ -1,5 +1,7 @@
 const BASE_URL = import.meta.env.VITE_API_URL || "";
 
+export const SESSION_EXPIRED_EVENT = "learnhub:session-expired";
+
 function getToken() {
   return localStorage.getItem("token");
 }
@@ -46,6 +48,12 @@ async function request(endpoint, options = {}) {
     throw new ApiError(`Unexpected response (${response.status})`, {
       status: response.status,
     });
+  }
+
+  // A rejected token on anything but the login/register calls means the session
+  // is over; AuthContext listens for this and signs the user out.
+  if (response.status === 401 && token && !endpoint.startsWith("/auth/")) {
+    window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT));
   }
 
   if (!response.ok || body.success === false) {

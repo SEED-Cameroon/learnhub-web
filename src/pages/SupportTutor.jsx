@@ -121,7 +121,21 @@ function SupportForm({ tutor, onPending }) {
       const subscription = await createSubscription({ tutorId: tutor.id, amountXaf: amount, provider, phone: digits })
       onPending(subscription, digits)
     } catch (err) {
-      setStatus({ state: 'error', message: err?.message || 'The payment request wasn’t sent. Check your number and try again.' })
+      setStatus({
+        state: 'error',
+        message:
+          err?.status === 409 ? (
+            <span>
+              You already support this tutor.{' '}
+              <Link to="/account/subscriptions" className="font-semibold underline underline-offset-2">
+                Manage it in My subscriptions
+              </Link>
+              .
+            </span>
+          ) : (
+            err?.message || 'The payment request wasn’t sent. Check your number and try again.'
+          ),
+      })
     }
   }
 

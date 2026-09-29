@@ -73,7 +73,8 @@ export default function Subscriptions() {
 
   const confirmCancel = async () => {
     const updated = await cancelSubscription(target.id)
-    setData((subs) => subs.map((s) => (s.id === target.id ? { ...s, ...updated } : s)))
+    // The cancel response doesn't include the tutor's details, so keep the row's.
+    setData((subs) => subs.map((s) => (s.id === target.id ? { ...s, ...updated, tutor: updated.tutor ?? s.tutor } : s)))
     setNotice(`Support cancelled. You won’t be charged for ${target.tutor?.name ?? 'this tutor'} again.`)
   }
 

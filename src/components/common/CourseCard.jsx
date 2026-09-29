@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { BadgeCheck, Play } from 'lucide-react'
 import Avatar from './Avatar'
 import CourseThumbnail from './CourseThumbnail'
-import { formatCount, formatDuration, formatRelative, formatXaf, totalMinutes } from '@/lib/format'
+import { formatDuration, formatRelative, formatXaf, totalMinutes, countLabel } from '@/lib/format'
 
 /**
  * Feed tile in the video-platform style: the thumbnail stands on its own,
@@ -55,9 +55,19 @@ export default function CourseCard({ course }) {
             </p>
           )}
           <p className="mt-0.5 text-sm text-outline">
-            {formatCount(course.viewsCount ?? 0)} views
-            {course.publishedAt && <> · {formatRelative(course.publishedAt)}</>}
-            {!course.priceXaf && <> · <span className="font-semibold text-tertiary-container">Free</span></>}
+            {[
+              course.viewsCount != null && `${countLabel(course.viewsCount, "views")}`,
+              course.viewsCount == null && course.likesCount > 0 && `${countLabel(course.likesCount, "likes")}`,
+              course.publishedAt && formatRelative(course.publishedAt),
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+            {!course.priceXaf && (
+              <>
+                {(course.viewsCount != null || course.likesCount > 0 || course.publishedAt) && ' · '}
+                <span className="font-semibold text-tertiary-container">Free</span>
+              </>
+            )}
           </p>
         </div>
       </div>

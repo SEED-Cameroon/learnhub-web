@@ -14,9 +14,10 @@ import { useAuth } from '@/context/AuthContext'
 import { useAsync } from '@/hooks/useAsync'
 import { useAuthGate } from '@/hooks/useAuthGate'
 import { addComment, getCourse, listComments, listCourses, setCourseLiked } from '@/services/courses'
-import { setFollowing } from '@/services/tutors'
+import { getTutor, setFollowing } from '@/services/tutors'
+import { USE_MOCKS } from '@/services/mock'
 import { cn } from '@/lib/utils'
-import { formatCount, formatDate, formatDuration, formatRelative, formatXaf, totalMinutes } from '@/lib/format'
+import { formatCount, formatDate, formatDuration, formatRelative, formatXaf, totalMinutes, countLabel } from '@/lib/format'
 
 const COMMENT_MAX = 1000
 
@@ -60,7 +61,7 @@ function TutorRow({ tutor }) {
               <BadgeCheck className="size-4 shrink-0 fill-primary text-on-primary" aria-label="Verified tutor" />
             )}
           </p>
-          <p className="text-sm text-on-surface-variant">{formatCount(follow.count)} followers</p>
+          <p className="text-sm text-on-surface-variant">{countLabel(follow.count, "followers")}</p>
         </div>
       </Link>
       <div className="flex flex-wrap gap-2">
@@ -97,10 +98,32 @@ function TutorRow({ tutor }) {
   )
 }
 
+/**
+ * The course only carries the tutor's name and avatar, so against the API the
+ * row loads the full tutor for follower count and follow state. TutorRow
+ * mounts once that's known, so its optimistic toggle starts from real values.
+ */
+function CourseTutor({ tutor }) {
+  const full = useAsync(() => (USE_MOCKS ? Promise.resolve(tutor) : getTutor(tutor.id)), [tutor.id])
+
+  if (full.loading) {
+    return (
+      <div className="flex items-center gap-3" role="status" aria-label="Loading tutor">
+        <Skeleton className="size-12 rounded-full" />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-40" />
+          <Skeleton className="h-3.5 w-24" />
+        </div>
+      </div>
+    )
+  }
+  return <TutorRow tutor={full.data ?? tutor} />
+}
+
 function LikeButton({ course }) {
   const { gate } = useAuthGate()
   const request = useCallback((next) => setCourseLiked(course.id, next), [course.id])
-  const like = useOptimisticToggle({ initialOn: Boolean(course.isLiked), initialCount: course.likesCount, request })
+  const like = useOptimisticToggle({ initialOn: Boolean(course.likedByMe ?? course.isLiked), initialCount: course.likesCount ?? 0, request })
   usePendingAction({ like: () => like.toggle(true) })
 
   return (
@@ -161,7 +184,7 @@ function Comments({ courseId, initialCount }) {
   return (
     <section aria-labelledby="comments-heading" className="mt-10">
       <h2 id="comments-heading" className="mb-5 text-xl font-bold text-on-surface">
-        {formatCount(count)} comments
+        {countLabel(count, "comments")}
       </h2>
 
       {isAuthenticated ? (
@@ -321,30 +344,70 @@ function SupportAside({ tutor }) {
   )
 }
 
-/** Dark band that frames the player and the lesson list, like a cinema. */
+function Player({ course, lesson, index }) {
+  if (course.previewVideoUrl) {
+    return (
+      <div className="overflow-hidden rounded-2xl bg-black ring-1 ring-white/10">
+        <video
+          controls
+          preload="metadata"
+          poster={course.thumbnailUrl || undefined}
+          src={course.previewVideoUrl}
+          className="aspect-video w-full bg-black"
+        >
+          Your browser can’t play this video.{' '}
+          <a href={course.previewVideoUrl} className="underline">
+            Open it directly
+          </a>
+          .
+        </video>
+      </div>
+    )
+  }
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl bg-primary-container ring-1 ring-white/10">
+      <CourseThumbnail course={course} showPlay />
+      <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-end justify-between gap-2 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
+        {lesson ? (
+          <p className="text-sm font-medium text-white">
+            <span className="text-white/70">Lesson {index + 1} · </span>
+            {lesson.title}
+          </p>
+        ) : (
+          <span />
+        )}
+        <span className="hidden rounded-full bg-white/15 px-2.5 py-1 text-xs text-white/85 backdrop-blur sm:inline-flex">
+          The tutor hasn’t added a video yet
+        </span>
+      </div>
+    </div>
+  )
+}
+
+/** Dark band that frames the player and, when the course has them, the lesson list. */
 function Theatre({ course }) {
   const [current, setCurrent] = useState(0)
   const lessons = course.lessons ?? []
   const minutes = totalMinutes(lessons)
   const lesson = lessons[current]
 
+  if (lessons.length === 0) {
+    return (
+      <section aria-label="Course player" className="bg-primary text-on-primary">
+        <Container className="py-5 md:py-8">
+          <div className="mx-auto max-w-5xl">
+            <Player course={course} />
+          </div>
+        </Container>
+      </section>
+    )
+  }
+
   return (
     <section aria-label="Course player" className="bg-primary text-on-primary">
       <Container className="grid gap-5 py-5 md:py-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-6">
-        <div className="relative overflow-hidden rounded-2xl bg-primary-container ring-1 ring-white/10">
-          <CourseThumbnail course={course} showPlay />
-          {lesson && (
-            <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-end justify-between gap-2 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
-              <p className="text-sm font-medium text-white">
-                <span className="text-white/70">Lesson {current + 1} · </span>
-                {lesson.title}
-              </p>
-              <span className="hidden rounded-full bg-white/15 px-2.5 py-1 text-xs text-white/85 backdrop-blur sm:inline-flex">
-                Video arrives when lessons are uploaded
-              </span>
-            </div>
-          )}
-        </div>
+        <Player course={course} lesson={lesson} index={current} />
 
         <aside aria-labelledby="lessons-heading" className="lg:relative">
           <div className="flex flex-col overflow-hidden rounded-2xl bg-white/[0.06] ring-1 ring-white/10 lg:absolute lg:inset-0">
@@ -442,10 +505,19 @@ export default function CourseDetails() {
               {c.title}
             </h1>
             <p className="mt-3 text-sm text-on-surface-variant">
-              {formatCount(c.viewsCount)} views · Published {formatDate(c.publishedAt)} · {c.category} · {c.level}
+              {[
+                c.viewsCount != null && `${countLabel(c.viewsCount, "views")}`,
+                c.publishedAt && `Published ${formatDate(c.publishedAt)}`,
+                c.category,
+                c.level,
+                // Without a lessons panel, the price has nowhere else to show.
+                !c.lessons?.length && formatXaf(c.priceXaf, { free: true }),
+              ]
+                .filter(Boolean)
+                .join(' · ')}
             </p>
 
-            <div className="mt-6 border-y border-outline-variant py-5">{c.tutor && <TutorRow tutor={c.tutor} />}</div>
+            <div className="mt-6 border-y border-outline-variant py-5">{c.tutor && <CourseTutor tutor={c.tutor} />}</div>
 
             <div className="mt-5 flex flex-wrap items-center gap-3">
               <LikeButton course={c} />
@@ -455,7 +527,7 @@ export default function CourseDetails() {
                 className="flex items-center gap-1.5 rounded-full px-3 py-2.5 text-sm text-on-surface-variant hover:text-primary"
               >
                 <MessageCircle className="size-4" aria-hidden="true" />
-                {formatCount(c.commentsCount)} comments
+                {countLabel(c.commentsCount, "comments")}
               </a>
             </div>
 

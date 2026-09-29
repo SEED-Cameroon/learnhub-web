@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowDown, ArrowUp, ChevronLeft, Plus, Trash2 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { createCourse, getMyCourse, updateCourse } from '@/services/studio'
+import { USE_MOCKS } from '@/services/mock'
 import { CATEGORIES } from '@/data/mock'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,6 +16,10 @@ import Field, { FormBanner, Panel, selectClass } from '@/components/studio/Field
 
 const LEVELS = ['Beginner', 'Intermediate', 'Advanced']
 
+// The API stores a thumbnail and a preview video per course; lessons and
+// level exist only in sample mode, so the editor shows what will be saved.
+const HAS_LESSONS = USE_MOCKS
+
 const EMPTY_FORM = {
   title: '',
   description: '',
@@ -22,26 +27,50 @@ const EMPTY_FORM = {
   level: 'Beginner',
   priceXaf: '0',
   lessons: [],
+  thumbnailUrl: '',
+  previewVideoUrl: '',
+}
+
+const isHttpUrl = (value) => {
+  try {
+    const url = new URL(value)
+    return url.protocol === 'http:' || url.protocol === 'https:'
+  } catch {
+    return false
+  }
 }
 
 let lessonSeq = 0
 const newLesson = () => ({ id: `new-${Date.now()}-${lessonSeq++}`, title: '', durationMin: '' })
 
-/** Draft only needs a title; publishing needs everything a student will see. */
-function validate(form, intent) {
+/**
+ * A draft needs a title (and, when creating one on the API, the description
+ * and category it requires); publishing needs everything a student will see.
+ */
+function validate(form, intent, { isEdit }) {
   const errors = {}
   if (!form.title.trim()) errors.title = 'Add a course title.'
   else if (form.title.trim().length > 120) errors.title = 'Keep the title under 120 characters.'
 
-  if (intent === 'publish') {
+  for (const field of ['thumbnailUrl', 'previewVideoUrl']) {
+    if (form[field].trim() && !isHttpUrl(form[field].trim())) errors[field] = 'Enter a full web address starting with https://'
+  }
+
+  const needsBasics = intent === 'publish' || (!HAS_LESSONS && !isEdit)
+  if (needsBasics) {
     if (!form.description.trim()) errors.description = 'Add a description so students know what they’ll learn.'
     if (!form.category) errors.category = 'Choose a category.'
+  }
+
+  if (intent === 'publish') {
     const price = Number(form.priceXaf)
     if (form.priceXaf === '' || !Number.isInteger(price) || price < 0) errors.priceXaf = 'Enter a whole number of XAF, or 0 for a free course.'
-    if (form.lessons.length === 0) errors.lessons = 'Add at least one lesson before publishing.'
-    form.lessons.forEach((lesson, i) => {
-      if (!lesson.title.trim()) errors[`lesson-${i}`] = 'Give this lesson a title.'
-    })
+    if (HAS_LESSONS) {
+      if (form.lessons.length === 0) errors.lessons = 'Add at least one lesson before publishing.'
+      form.lessons.forEach((lesson, i) => {
+        if (!lesson.title.trim()) errors[`lesson-${i}`] = 'Give this lesson a title.'
+      })
+    }
   } else if (form.priceXaf !== '' && (Number(form.priceXaf) < 0 || !Number.isInteger(Number(form.priceXaf)))) {
     errors.priceXaf = 'Enter a whole number of XAF, or 0 for a free course.'
   }
@@ -49,19 +78,25 @@ function validate(form, intent) {
 }
 
 function toPayload(form, status) {
-  return {
+  const base = {
     title: form.title.trim(),
     description: form.description.trim(),
     category: form.category,
-    level: form.level,
     priceXaf: Number(form.priceXaf) || 0,
+    status,
+  }
+  if (!HAS_LESSONS) {
+    return { ...base, thumbnailUrl: form.thumbnailUrl.trim(), previewVideoUrl: form.previewVideoUrl.trim() }
+  }
+  return {
+    ...base,
+    level: form.level,
     // Blank lesson rows are dropped; publishing already requires every lesson to have a title.
     lessons: form.lessons.filter((l) => l.title.trim()).map((l, i) => ({
       id: l.id.startsWith('new-') ? `l${i + 1}` : l.id,
       title: l.title.trim(),
       durationMin: Number(l.durationMin) || 0,
     })),
-    status,
   }
 }
 
@@ -186,6 +221,8 @@ export default function CourseEditor() {
           level: course.level ?? 'Beginner',
           priceXaf: String(course.priceXaf ?? 0),
           lessons: (course.lessons ?? []).map((l) => ({ ...l, durationMin: String(l.durationMin ?? '') })),
+          thumbnailUrl: course.thumbnailUrl ?? '',
+          previewVideoUrl: course.previewVideoUrl ?? '',
         })
         setStatus(course.status ?? 'draft')
         setLoadState((s) => ({ ...s, loading: false }))
@@ -203,7 +240,7 @@ export default function CourseEditor() {
   }
 
   const submit = async (intent) => {
-    const found = validate(form, intent)
+    const found = validate(form, intent, { isEdit })
     setErrors(found)
     setFormError('')
     if (Object.keys(found).length > 0) {
@@ -264,6 +301,7 @@ export default function CourseEditor() {
     title: form.title || 'Your course title',
     priceXaf: Number(form.priceXaf) || 0,
     lessons: form.lessons.map((l) => ({ ...l, durationMin: Number(l.durationMin) || 0 })),
+    thumbnailUrl: isHttpUrl(form.thumbnailUrl.trim()) ? form.thumbnailUrl.trim() : '',
     likesCount: 0,
     commentsCount: 0,
     tutor: { name: user?.name ?? 'You', avatarUrl: user?.avatarUrl },
@@ -296,7 +334,7 @@ export default function CourseEditor() {
             {(p) => <Textarea {...p} value={form.description} onChange={set('description')} rows={5} />}
           </Field>
 
-          <div className="grid gap-6 sm:grid-cols-3">
+          <div className={HAS_LESSONS ? 'grid gap-6 sm:grid-cols-3' : 'grid gap-6 sm:grid-cols-2'}>
             <Field id="category" label="Category" error={errors.category}>
               {(p) => (
                 <select {...p} value={form.category} onChange={set('category')} className={selectClass}>
@@ -309,28 +347,57 @@ export default function CourseEditor() {
                 </select>
               )}
             </Field>
-            <Field id="level" label="Level">
-              {(p) => (
-                <select {...p} value={form.level} onChange={set('level')} className={selectClass}>
-                  {LEVELS.map((l) => (
-                    <option key={l}>{l}</option>
-                  ))}
-                </select>
-              )}
-            </Field>
+            {HAS_LESSONS && (
+              <Field id="level" label="Level">
+                {(p) => (
+                  <select {...p} value={form.level} onChange={set('level')} className={selectClass}>
+                    {LEVELS.map((l) => (
+                      <option key={l}>{l}</option>
+                    ))}
+                  </select>
+                )}
+              </Field>
+            )}
             <Field id="priceXaf" label="Price (XAF)" error={errors.priceXaf} help="0 makes the course free.">
               {(p) => <Input {...p} type="number" min="0" step="500" inputMode="numeric" value={form.priceXaf} onChange={set('priceXaf')} className="h-10" />}
             </Field>
           </div>
 
-          <LessonsEditor
-            lessons={form.lessons}
-            errors={errors}
-            onChange={(lessons) => {
-              setForm((f) => ({ ...f, lessons }))
-              setErrors((errs) => ({ ...errs, lessons: undefined }))
-            }}
-          />
+          {HAS_LESSONS ? (
+            <LessonsEditor
+              lessons={form.lessons}
+              errors={errors}
+              onChange={(lessons) => {
+                setForm((f) => ({ ...f, lessons }))
+                setErrors((errs) => ({ ...errs, lessons: undefined }))
+              }}
+            />
+          ) : (
+            <>
+              <Field
+                id="thumbnailUrl"
+                label="Thumbnail image URL"
+                optional
+                error={errors.thumbnailUrl}
+                help="A wide image (16:9) hosted online. Leave empty to use the subject artwork."
+              >
+                {(p) => (
+                  <Input {...p} type="url" inputMode="url" value={form.thumbnailUrl} onChange={set('thumbnailUrl')} placeholder="https://" className="h-10" />
+                )}
+              </Field>
+              <Field
+                id="previewVideoUrl"
+                label="Preview video URL"
+                optional
+                error={errors.previewVideoUrl}
+                help="A direct link to an MP4 or WebM file. It plays on the course page."
+              >
+                {(p) => (
+                  <Input {...p} type="url" inputMode="url" value={form.previewVideoUrl} onChange={set('previewVideoUrl')} placeholder="https://" className="h-10" />
+                )}
+              </Field>
+            </>
+          )}
 
           <div className="flex flex-col-reverse gap-3 border-t border-outline-variant/60 pt-6 sm:flex-row sm:justify-end">
             <Button type="button" variant="outline" className="h-auto rounded-full px-6 py-2.5" disabled={Boolean(pending)} onClick={() => submit('draft')}>

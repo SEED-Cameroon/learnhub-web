@@ -48,3 +48,11 @@ export function formatDuration(minutes) {
   const m = minutes % 60
   return h ? `${h} h ${m} min` : `${m} min`
 }
+
+const SINGULAR = { views: 'view', likes: 'like', comments: 'comment', followers: 'follower', courses: 'course' }
+
+/** 1 -> "1 comment", 12400 -> "12.4k comments" */
+export function countLabel(n, plural) {
+  const value = n ?? 0
+  return `${formatCount(value)} ${value === 1 ? SINGULAR[plural] ?? plural : plural}`
+}

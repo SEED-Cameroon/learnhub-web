@@ -1,7 +1,7 @@
 import { startTransition, useState } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { Lock, Mail } from 'lucide-react'
-import { useAuth } from '@/context/AuthContext'
+import { SESSION_EXPIRED_FLAG, useAuth } from '@/context/AuthContext'
 import { authApi } from '@/services/api'
 import { USE_MOCKS } from '@/services/mock'
 import { homeFor } from '@/components/auth/ProtectedRoute'
@@ -25,7 +25,19 @@ function validate({ email, password }) {
   return errors
 }
 
+// Read once per visit: set by AuthContext when the API rejected an expired token.
+function takeSessionExpired() {
+  try {
+    const expired = sessionStorage.getItem(SESSION_EXPIRED_FLAG) === '1'
+    sessionStorage.removeItem(SESSION_EXPIRED_FLAG)
+    return expired
+  } catch {
+    return false
+  }
+}
+
 export default function Login() {
+  const [sessionExpired] = useState(takeSessionExpired)
   const [form, setForm] = useState({ email: '', password: '' })
   const [errors, setErrors] = useState({})
   const [touched, setTouched] = useState({})
@@ -36,7 +48,9 @@ export default function Login() {
   const location = useLocation()
   const from = location.state?.from
   const pendingAction = location.state?.pendingAction
-  const reason = REASONS[pendingAction?.type] ?? (from ? 'Log in to continue where you left off.' : '')
+  const reason = sessionExpired
+    ? 'Your session expired. Log in again to continue.'
+    : (REASONS[pendingAction?.type] ?? (from ? 'Log in to continue where you left off.' : ''))
 
   const handleChange = (e) => {
     const { name, value } = e.target

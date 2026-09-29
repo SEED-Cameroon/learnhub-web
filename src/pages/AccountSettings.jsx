@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowLeft, Camera } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
-import { updateMe } from '@/services/me'
+import { getMe, updateMe } from '@/services/me'
+import { USE_MOCKS } from '@/services/mock'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -43,6 +44,18 @@ function ProfileForm() {
   useEffect(() => () => previewUrl && URL.revokeObjectURL(previewUrl), [previewUrl])
   const photoUrl = previewUrl ?? user?.avatarUrl
 
+  // The stored session only has name, email and role; fetch the bio from the API.
+  useEffect(() => {
+    if (USE_MOCKS) return
+    let cancelled = false
+    getMe()
+      .then((me) => !cancelled && setValues((v) => ({ ...v, bio: v.bio || me.bio || '' })))
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   const set = (key) => (event) => setValues((v) => ({ ...v, [key]: event.target.value }))
 
   const onPhoto = (event) => {
@@ -74,7 +87,12 @@ function ProfileForm() {
       login({ ...user, ...updated })
       setStatus({ state: 'success', message: 'Profile saved.' })
     } catch (err) {
-      setStatus({ state: 'error', message: err?.message || 'Your profile wasn’t saved. Try again.' })
+      if (err?.status === 409) {
+        setErrors((e) => ({ ...e, email: 'Another account already uses this email.' }))
+        setStatus({ state: 'error', message: 'Your profile wasn’t saved. Use a different email.' })
+      } else {
+        setStatus({ state: 'error', message: err?.message || 'Your profile wasn’t saved. Try again.' })
+      }
     }
   }
 
@@ -138,7 +156,12 @@ function PasswordForm() {
       setValues(empty)
       setStatus({ state: 'success', message: 'Password changed.' })
     } catch (err) {
-      setStatus({ state: 'error', message: err?.message || 'Your password wasn’t changed. Try again.' })
+      if (err?.status === 400 && /current password/i.test(err.message ?? '')) {
+        setErrors({ currentPassword: 'Current password is incorrect.' })
+        setStatus({ state: 'error', message: 'Your password wasn’t changed. Check your current password.' })
+      } else {
+        setStatus({ state: 'error', message: err?.message || 'Your password wasn’t changed. Try again.' })
+      }
     }
   }
 
