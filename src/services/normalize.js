@@ -12,6 +12,7 @@ export function toTutor(t) {
     name: t.name ?? '',
     email: t.email,
     avatarUrl: t.avatarUrl || null,
+    bannerUrl: t.bannerUrl || null,
     bio: t.bio ?? '',
     subjects,
     headline: t.headline || subjects[0] || 'Tutor',
@@ -23,7 +24,7 @@ export function toTutor(t) {
   }
 }
 
-/** API course → page course. The API has no lessons, level or view counts. */
+/** API course → page course. */
 export function toCourse(c, { tutor } = {}) {
   if (!c) return c
   const populated = c.tutor && typeof c.tutor === 'object' ? toTutor(c.tutor) : null
@@ -38,10 +39,8 @@ export function toCourse(c, { tutor } = {}) {
     status: c.status ?? 'published',
     likesCount: c.likesCount ?? 0,
     commentsCount: c.commentsCount ?? 0,
-    viewsCount: c.viewsCount,
     publishedAt: c.createdAt,
     updatedAt: c.updatedAt,
-    lessons: [],
     tutorId: populated?.id || idOf(c.tutor) || tutor?.id || '',
     tutor: populated ?? tutor ?? null,
     likedByMe: Boolean(c.likedByMe),

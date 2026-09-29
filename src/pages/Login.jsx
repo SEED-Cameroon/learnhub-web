@@ -3,7 +3,6 @@ import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { Lock, Mail } from 'lucide-react'
 import { SESSION_EXPIRED_FLAG, useAuth } from '@/context/AuthContext'
 import { authApi } from '@/services/api'
-import { USE_MOCKS } from '@/services/mock'
 import { homeFor } from '@/components/auth/ProtectedRoute'
 import { AuthBanner, AuthField, PasswordInput, Spinner } from '@/components/auth/AuthField'
 import { Button } from '@/components/ui/button'
@@ -150,13 +149,6 @@ export default function Login() {
           {loading ? 'Logging in…' : 'Log in'}
         </Button>
       </form>
-
-      {USE_MOCKS && (
-        <p className="mt-6 rounded-xl border border-dashed border-outline-variant px-4 py-3 text-xs leading-relaxed text-on-surface-variant">
-          <span className="font-semibold text-on-surface">Sample mode.</span> Any email and password work. Use an email
-          with “tutor” in it to open the tutor studio.
-        </p>
-      )}
 
       <p className="mt-8 text-center text-sm text-on-surface-variant">
         New to LearnHub?{' '}

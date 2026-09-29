@@ -8,12 +8,12 @@ import FilterChips from '@/components/public/FilterChips'
 import { BrowseHero, HeroSearchField, StickyFilterBar } from '@/components/public/BrowseHero'
 import { useAsync } from '@/hooks/useAsync'
 import { listCourses } from '@/services/courses'
-import { CATEGORIES } from '@/data/mock'
+import { CATEGORIES } from '@/lib/constants'
 
+// "popular" (the default) is most liked: the API has no view counts.
 const SORT_OPTIONS = [
-  { value: 'popular', label: 'Most watched' },
+  { value: 'popular', label: 'Most liked' },
   { value: 'newest', label: 'Newest' },
-  { value: 'liked', label: 'Most liked' },
 ]
 
 const GRID = 'grid grid-cols-1 gap-x-6 gap-y-9 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
@@ -21,7 +21,8 @@ const GRID = 'grid grid-cols-1 gap-x-6 gap-y-9 sm:grid-cols-2 lg:grid-cols-3 xl:
 export default function Courses() {
   const [params, setParams] = useSearchParams()
   const category = params.get('category')
-  const sort = params.get('sort') ?? 'popular'
+  // Old ?sort=liked links still work: they mean the same as the default.
+  const sort = params.get('sort') === 'newest' ? 'newest' : 'popular'
   const q = params.get('q') ?? ''
 
   // Typing updates the box immediately; the URL (and fetch) follow after a pause.

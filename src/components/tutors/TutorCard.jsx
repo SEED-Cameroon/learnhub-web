@@ -3,12 +3,11 @@ import { Link } from 'react-router-dom'
 import { BadgeCheck, Check, MapPin, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Avatar from '@/components/common/Avatar'
-import CourseThumbnail from '@/components/common/CourseThumbnail'
 import { useAuthGate } from '@/hooks/useAuthGate'
 import { setFollowing } from '@/services/tutors'
 import { useOptimisticToggle } from '@/components/public/useOptimisticToggle'
 import { usePendingAction } from '@/components/public/usePendingAction'
-import { formatCount, countLabel } from '@/lib/format'
+import { formatCount } from '@/lib/format'
 
 const BANNER_TONES = ['bg-primary-container', 'bg-surface-tint', 'bg-tertiary-container']
 
@@ -30,8 +29,6 @@ export default function TutorCard({ tutor }) {
 
   // Finish a follow the guest started before logging in.
   usePendingAction({ follow: (p) => p.id === tutor.id && follow.toggle(true) })
-
-  const strip = tutor.recentCourses ?? []
 
   return (
     <article className="group relative flex flex-col rounded-2xl border border-outline-variant/70 bg-surface-container-lowest p-5 transition-[border-color,box-shadow] duration-300 hover:border-primary/30 hover:shadow-[0_18px_40px_-24px_rgb(0_35_111/0.45)] focus-within:border-primary/30">
@@ -59,23 +56,7 @@ export default function TutorCard({ tutor }) {
         </div>
       </div>
 
-      {strip.length > 0 ? (
-        <ul className="mt-5 space-y-2" aria-label={`Popular courses by ${tutor.name}`}>
-          {strip.slice(0, 2).map((course) => (
-            <li key={course.id} className="flex items-center gap-3 rounded-xl bg-surface-container-low p-2 pr-3">
-              <div className="w-20 shrink-0 overflow-hidden rounded-lg">
-                <CourseThumbnail course={course} compact />
-              </div>
-              <div className="min-w-0">
-                <p className="line-clamp-1 text-sm font-medium text-on-surface">{course.title}</p>
-                {course.viewsCount != null && (
-                  <p className="text-xs text-outline">{countLabel(course.viewsCount, "views")}</p>
-                )}
-              </div>
-            </li>
-          ))}
-        </ul>
-      ) : (
+      {tutor.subjects?.length > 0 && (
         <div className="mt-5 flex flex-wrap gap-1.5">
           {tutor.subjects?.map((s) => (
             <span key={s} className="rounded-full bg-surface-container-low px-2.5 py-1 text-xs text-on-surface-variant">
@@ -87,11 +68,13 @@ export default function TutorCard({ tutor }) {
 
       <div className="mt-5 flex items-center justify-between gap-3">
         <p className="text-sm text-on-surface-variant">
-          <span className="font-semibold text-on-surface">{formatCount(follow.count)}</span> followers
+          <span className="font-semibold text-on-surface">{formatCount(follow.count)}</span>{' '}
+          {follow.count === 1 ? 'follower' : 'followers'}
           {tutor.coursesCount != null && (
             <>
               {' · '}
-              <span className="font-semibold text-on-surface">{tutor.coursesCount}</span> courses
+              <span className="font-semibold text-on-surface">{tutor.coursesCount}</span>{' '}
+              {tutor.coursesCount === 1 ? 'course' : 'courses'}
             </>
           )}
         </p>

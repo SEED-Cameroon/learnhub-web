@@ -4,7 +4,8 @@ import { Check, ExternalLink, ImageUp } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useAsync } from '@/hooks/useAsync'
 import { getTutor, updateTutorProfile } from '@/services/tutors'
-import { CATEGORIES } from '@/data/mock'
+import { IMAGE_ACCEPT, checkFile, uploadImage } from '@/services/uploads'
+import { CATEGORIES } from '@/lib/constants'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -14,7 +15,6 @@ import Field, { FormBanner, Panel } from '@/components/studio/Field'
 import ProfileHeaderPreview from '@/components/studio/ProfileHeaderPreview'
 import { cn } from '@/lib/utils'
 
-const MAX_IMAGE_BYTES = 2 * 1024 * 1024
 const BIO_MAX = 600
 
 function ImageInput({ id, label, help, error, onSelect }) {
@@ -29,7 +29,7 @@ function ImageInput({ id, label, help, error, onSelect }) {
         >
           <ImageUp className="size-5 text-primary" aria-hidden="true" />
           <span>Choose an image</span>
-          <input {...p} type="file" accept="image/*" className="sr-only" onChange={(e) => onSelect(e.target.files?.[0])} />
+          <input {...p} type="file" accept={IMAGE_ACCEPT} className="sr-only" onChange={(e) => onSelect(e.target.files?.[0])} />
         </label>
       )}
     </Field>
@@ -37,7 +37,7 @@ function ImageInput({ id, label, help, error, onSelect }) {
 }
 
 export default function TutorProfileEdit() {
-  const { user } = useAuth()
+  const { user, login } = useAuth()
   const { data: tutor, error, loading, reload } = useAsync(() => getTutor(user.id), [user?.id])
 
   const [form, setForm] = useState(null)
@@ -79,12 +79,9 @@ export default function TutorProfileEdit() {
 
   const pickImage = (field) => (file) => {
     if (!file) return
-    if (!file.type.startsWith('image/')) {
-      setErrors((errs) => ({ ...errs, [field]: 'Choose an image file (JPG, PNG or WebP).' }))
-      return
-    }
-    if (file.size > MAX_IMAGE_BYTES) {
-      setErrors((errs) => ({ ...errs, [field]: 'That image is over 2 MB. Choose a smaller one.' }))
+    const problem = checkFile(file, 'image')
+    if (problem) {
+      setErrors((errs) => ({ ...errs, [field]: problem }))
       return
     }
     const url = URL.createObjectURL(file)
@@ -109,10 +106,26 @@ export default function TutorProfileEdit() {
     setSaving(true)
     setStatus({ tone: 'error', text: '' })
     try {
-      // Image upload needs a backend endpoint; the files are kept on the form
-      // (avatarUrlFile / bannerUrlFile) ready for a multipart request.
-      const { avatarUrlFile: _a, bannerUrlFile: _b, ...changes } = form
-      await updateTutorProfile(user.id, { ...changes, name: changes.name.trim(), headline: changes.headline.trim() })
+      const { avatarUrlFile, bannerUrlFile, ...changes } = form
+      // Upload newly picked images first, then save their public URLs.
+      for (const [field, file] of [
+        ['avatarUrl', avatarUrlFile],
+        ['bannerUrl', bannerUrlFile],
+      ]) {
+        if (!file) continue
+        setStatus({ tone: 'info', text: field === 'avatarUrl' ? 'Uploading your photo…' : 'Uploading your banner…' })
+        try {
+          changes[field] = await uploadImage(file)
+        } catch (err) {
+          setErrors((errs) => ({ ...errs, [field]: err?.message || 'This image didn’t upload. Try again.' }))
+          setStatus({ tone: 'error', text: 'Your profile wasn’t saved because an image didn’t upload.' })
+          return
+        }
+      }
+      const saved = await updateTutorProfile(user.id, { ...changes, name: changes.name.trim(), headline: changes.headline.trim() })
+      setForm((f) => ({ ...f, avatarUrl: changes.avatarUrl, bannerUrl: changes.bannerUrl, avatarUrlFile: undefined, bannerUrlFile: undefined }))
+      // Keep the navbar and studio sidebar in step with the new name and photo.
+      login({ ...user, name: saved?.name ?? changes.name.trim(), avatarUrl: saved?.avatarUrl ?? changes.avatarUrl ?? user.avatarUrl })
       setStatus({ tone: 'success', text: 'Profile saved. Students now see these changes on your public page.' })
     } catch (err) {
       setStatus({ tone: 'error', text: `Your profile wasn’t saved: ${err?.message || 'try again.'}` })

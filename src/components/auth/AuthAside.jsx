@@ -1,8 +1,9 @@
 import { useLocation, useSearchParams } from 'react-router-dom'
-import { Check, HandCoins, MessagesSquare, PlaySquare, TrendingUp, Upload, UsersRound } from 'lucide-react'
+import { Check, HandCoins, MessagesSquare, PlaySquare, TrendingUp, Upload, UsersRound, Wallet } from 'lucide-react'
 import Avatar from '@/components/common/Avatar'
 import CourseThumbnail from '@/components/common/CourseThumbnail'
-import { COURSES, TUTORS } from '@/data/mock'
+import { useAsync } from '@/hooks/useAsync'
+import { listCourses } from '@/services/courses'
 import { countLabel } from '@/lib/format'
 
 // Brand panel beside the auth forms. Its message follows the page and, on
@@ -32,72 +33,73 @@ const COPY = {
     points: [
       { Icon: Upload, text: 'Publish your first course in an afternoon' },
       { Icon: HandCoins, text: 'Receive monthly support through MTN or Orange' },
-      { Icon: TrendingUp, text: 'See your views, followers and earnings in one place' },
+      { Icon: TrendingUp, text: 'See your followers, likes and support in one place' },
     ],
   },
 }
 
-const tutorName = (id) => TUTORS.find((t) => t.id === id)?.name
-
+/** The three most-liked real courses, fanned out. Renders nothing until they load. */
 function CourseStack() {
-  const picks = ['c2', 'c1', 'c5'].map((id) => COURSES.find((c) => c.id === id))
-  const tilt = ['-rotate-[8deg]', '', 'rotate-[8deg]']
+  const courses = useAsync(() => listCourses({ sort: 'liked' }), [])
+  const picks = (courses.data ?? []).slice(0, 3)
+  if (picks.length === 0) return null
+
+  // Put the most-liked course in front, with the others behind it.
+  const [front, ...back] = picks
+  const tilt = ['-rotate-[8deg] left-2', 'rotate-[8deg] right-2']
 
   return (
     <div className="relative mx-auto flex h-60 w-full max-w-md items-end justify-center" aria-hidden="true">
-      {picks.map((course, i) =>
-        i === 1 ? (
-          // Front card: the full course tile.
-          <div key={course.id} className="absolute bottom-0 z-10 w-60 overflow-hidden rounded-2xl bg-surface-container-lowest shadow-2xl">
-            <CourseThumbnail course={course} compact />
-            <div className="p-3">
-              <p className="line-clamp-1 text-sm font-semibold text-on-surface">{course.title}</p>
-              <p className="mt-0.5 flex items-center gap-1.5 text-xs text-on-surface-variant">
-                <Avatar name={tutorName(course.tutorId)} size="xs" className="size-5 text-[9px]" />
-                <span className="truncate">{tutorName(course.tutorId)}</span>
-                <span className="shrink-0">· {countLabel(course.viewsCount, "views")}</span>
-              </p>
-            </div>
-          </div>
-        ) : (
-          // Back cards: thumbnails only, fanned out behind.
-          <div
-            key={course.id}
-            className={`absolute bottom-10 w-48 overflow-hidden rounded-2xl opacity-90 shadow-xl ring-1 ring-white/10 ${tilt[i]} ${
-              i === 0 ? 'left-2' : 'right-2'
-            }`}
-          >
-            <CourseThumbnail course={course} compact />
-          </div>
-        )
-      )}
+      {back.map((course, i) => (
+        <div
+          key={course.id}
+          className={`absolute bottom-10 w-48 overflow-hidden rounded-2xl opacity-90 shadow-xl ring-1 ring-white/10 ${tilt[i]}`}
+        >
+          <CourseThumbnail course={course} compact />
+        </div>
+      ))}
+      <div className="absolute bottom-0 z-10 w-60 overflow-hidden rounded-2xl bg-surface-container-lowest shadow-2xl">
+        <CourseThumbnail course={front} compact />
+        <div className="p-3">
+          <p className="line-clamp-1 text-sm font-semibold text-on-surface">{front.title}</p>
+          {front.tutor && (
+            <p className="mt-0.5 flex items-center gap-1.5 text-xs text-on-surface-variant">
+              <Avatar name={front.tutor.name} src={front.tutor.avatarUrl} size="xs" className="size-5 text-[9px]" />
+              <span className="truncate">{front.tutor.name}</span>
+              {front.likesCount > 0 && <span className="shrink-0">· {countLabel(front.likesCount, 'likes')}</span>}
+            </p>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
 
-function EarningsPreview() {
+/** What tutors can expect from support, stated plainly with no example figures. */
+function SupportExplainer() {
+  const lines = [
+    'Students choose a monthly amount from 500 XAF',
+    'They pay with MTN Mobile Money or Orange Money',
+    'They can cancel at any time',
+    'Your courses stay free to watch either way',
+  ]
+
   return (
     <div className="mx-auto w-full max-w-sm rounded-2xl bg-surface-container-lowest p-5 text-on-surface shadow-2xl" aria-hidden="true">
-      <p className="text-sm text-on-surface-variant">Earnings this month</p>
-      <p className="mt-1 text-3xl font-bold text-tertiary-container">318,000 XAF</p>
-      <p className="mt-1 flex items-center gap-1 text-sm text-tertiary-container">
-        <TrendingUp className="size-4" />
-        Up 15% on last month
-      </p>
-      <div className="mt-5 space-y-3 border-t border-outline-variant pt-4">
-        {[
-          ['Nfor Brenda', '2,000 XAF', 'MTN'],
-          ['Fotso Arnaud', '5,000 XAF', 'Orange'],
-          ['Achu Mirabel', '1,000 XAF', 'MTN'],
-        ].map(([name, amount, provider]) => (
-          <div key={name} className="flex items-center gap-3 text-sm">
-            <Avatar name={name} size="xs" />
-            <span className="flex-1">{name}</span>
-            <span className="text-xs text-outline">{provider}</span>
-            <span className="font-semibold">{amount}</span>
-          </div>
-        ))}
+      <div className="flex items-center gap-3">
+        <span className="flex size-10 items-center justify-center rounded-full bg-tertiary-fixed text-tertiary-container">
+          <Wallet className="size-5" />
+        </span>
+        <p className="font-semibold">How support works</p>
       </div>
+      <ul className="mt-4 space-y-2.5 border-t border-outline-variant pt-4 text-sm">
+        {lines.map((line) => (
+          <li key={line} className="flex items-start gap-2">
+            <Check className="mt-0.5 size-4 shrink-0 text-tertiary-container" />
+            {line}
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
@@ -136,7 +138,7 @@ export default function AuthAside() {
           )}
 
           <div className="rise-in mt-auto pt-10" style={{ '--d': '200ms' }}>
-            {variant === 'tutor' ? <EarningsPreview /> : <CourseStack />}
+            {variant === 'tutor' ? <SupportExplainer /> : <CourseStack />}
           </div>
 
           {variant === 'login' && (

@@ -36,12 +36,18 @@ function ProfileHeader({ tutor }) {
     <section aria-labelledby="tutor-name">
       <div className="-mx-4 md:mx-0">
         <div className={`relative h-36 overflow-hidden sm:h-44 md:h-56 md:rounded-3xl ${bannerToneFor(tutor.id)}`}>
-          <div className="thumb-dots absolute inset-0 text-white opacity-[0.12]" />
-          <SubjectIcon
-            className="absolute -bottom-10 right-6 size-56 text-white opacity-[0.12] md:right-16 md:size-72"
-            strokeWidth={1}
-            aria-hidden="true"
-          />
+          {tutor.bannerUrl ? (
+            <img src={tutor.bannerUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
+          ) : (
+            <>
+              <div className="thumb-dots absolute inset-0 text-white opacity-[0.12]" />
+              <SubjectIcon
+                className="absolute -bottom-10 right-6 size-56 text-white opacity-[0.12] md:right-16 md:size-72"
+                strokeWidth={1}
+                aria-hidden="true"
+              />
+            </>
+          )}
         </div>
       </div>
 

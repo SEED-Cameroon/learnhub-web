@@ -1,8 +1,7 @@
 import { Link } from 'react-router-dom'
-import { BadgeCheck, Mail, MapPin, MessagesSquare, Phone, PlayCircle, Smartphone } from 'lucide-react'
+import { BadgeCheck, MessagesSquare, PlayCircle, Smartphone } from 'lucide-react'
 import heroImage from '../assets/hero.jpg'
 import { Button } from '@/components/ui/button'
-import Avatar from '@/components/common/Avatar'
 import Container from '@/components/common/Container'
 
 const BELIEFS = [
@@ -36,13 +35,6 @@ const SUPPORT_STEPS = [
   { title: 'Pick your provider', description: 'Pay with MTN Mobile Money or Orange Money and enter your number.' },
   { title: 'Approve on your phone', description: 'A payment prompt arrives on your phone. Enter your PIN to approve it.' },
   { title: 'Support is confirmed', description: 'Once your provider confirms, it shows as active. Cancel any time.' },
-]
-
-const TEAM = [
-  { name: 'Samuel Etoundi', role: 'Founder' },
-  { name: 'Marie Loga', role: 'Head of education' },
-  { name: 'Jean-Paul Nkeng', role: 'Tech lead' },
-  { name: 'Clarisse Bessala', role: 'Student success' },
 ]
 
 export default function About() {
@@ -155,48 +147,22 @@ export default function About() {
         </Container>
       </section>
 
-      {/* Team */}
-      <section aria-labelledby="team-heading">
-        <Container className="py-16 md:py-24">
-          <h2 id="team-heading" className="text-3xl font-bold tracking-tight text-on-surface md:text-[40px] md:leading-[1.1]">
-            The team
-          </h2>
-          <ul className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2 md:grid-cols-4">
-            {TEAM.map((member) => (
-              <li key={member.name} className="flex items-center gap-4">
-                <Avatar name={member.name} size="lg" className="size-16 text-lg" />
-                <div className="min-w-0">
-                  <h3 className="font-semibold text-on-surface">{member.name}</h3>
-                  <p className="text-sm text-on-surface-variant">{member.role}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-
-          <div className="mt-16 grid gap-8 border-t border-outline-variant pt-10 md:grid-cols-2">
+      {/* Questions */}
+      <section aria-labelledby="questions-heading">
+        <Container className="py-16 md:py-20">
+          <div className="flex flex-col gap-4 rounded-2xl bg-surface-container-low px-6 py-8 md:flex-row md:items-center md:justify-between md:px-10">
             <div>
-              <h2 id="contact-heading" className="text-xl font-bold text-on-surface">
-                Get in touch
+              <h2 id="questions-heading" className="text-xl font-bold text-on-surface">
+                Questions about a course?
               </h2>
-              <p className="mt-2 max-w-md text-on-surface-variant">
-                Questions about a course, a payment, or partnering with us? Write to us and we’ll reply within two working
-                days.
+              <p className="mt-1 max-w-xl text-on-surface-variant">
+                Ask in the comments under the course. Tutors and other students answer there, so everyone learns from
+                the reply.
               </p>
             </div>
-            <address className="flex flex-col gap-3 not-italic md:items-end">
-              <a href="mailto:contact@learnhub.cm" className="flex items-center gap-3 text-on-surface hover:text-primary">
-                <Mail className="size-5 text-primary" aria-hidden="true" />
-                contact@learnhub.cm
-              </a>
-              <a href="tel:+237600000000" className="flex items-center gap-3 text-on-surface hover:text-primary">
-                <Phone className="size-5 text-primary" aria-hidden="true" />
-                +237 600 000 000
-              </a>
-              <p className="flex items-center gap-3 text-on-surface">
-                <MapPin className="size-5 text-primary" aria-hidden="true" />
-                Bonanjo, Douala
-              </p>
-            </address>
+            <Button asChild variant="outline" className="h-auto shrink-0 rounded-full border-primary px-6 py-3 text-primary">
+              <Link to="/courses">Browse courses</Link>
+            </Button>
           </div>
         </Container>
       </section>

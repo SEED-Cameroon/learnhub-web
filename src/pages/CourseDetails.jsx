@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { BadgeCheck, Check, Clock, HandCoins, Heart, Link2, ListVideo, MessageCircle, Play, Plus } from 'lucide-react'
+import { BadgeCheck, Check, HandCoins, Heart, Link2, ListVideo, MessageCircle, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import Avatar from '@/components/common/Avatar'
@@ -15,9 +15,8 @@ import { useAsync } from '@/hooks/useAsync'
 import { useAuthGate } from '@/hooks/useAuthGate'
 import { addComment, getCourse, listComments, listCourses, setCourseLiked } from '@/services/courses'
 import { getTutor, setFollowing } from '@/services/tutors'
-import { USE_MOCKS } from '@/services/mock'
 import { cn } from '@/lib/utils'
-import { formatCount, formatDate, formatDuration, formatRelative, formatXaf, totalMinutes, countLabel } from '@/lib/format'
+import { formatCount, formatDate, formatRelative, formatXaf, countLabel } from '@/lib/format'
 
 const COMMENT_MAX = 1000
 
@@ -99,12 +98,11 @@ function TutorRow({ tutor }) {
 }
 
 /**
- * The course only carries the tutor's name and avatar, so against the API the
- * row loads the full tutor for follower count and follow state. TutorRow
+ * The course only carries the tutor's name and avatar, so the row loads the full tutor for follower count and follow state. TutorRow
  * mounts once that's known, so its optimistic toggle starts from real values.
  */
 function CourseTutor({ tutor }) {
-  const full = useAsync(() => (USE_MOCKS ? Promise.resolve(tutor) : getTutor(tutor.id)), [tutor.id])
+  const full = useAsync(() => getTutor(tutor.id), [tutor.id])
 
   if (full.loading) {
     return (
@@ -344,7 +342,7 @@ function SupportAside({ tutor }) {
   )
 }
 
-function Player({ course, lesson, index }) {
+function Player({ course }) {
   if (course.previewVideoUrl) {
     return (
       <div className="overflow-hidden rounded-2xl bg-black ring-1 ring-white/10">
@@ -365,100 +363,25 @@ function Player({ course, lesson, index }) {
     )
   }
 
+  // No video yet: show the course art without a play button, so nothing looks playable.
   return (
     <div className="relative overflow-hidden rounded-2xl bg-primary-container ring-1 ring-white/10">
-      <CourseThumbnail course={course} showPlay />
-      <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-end justify-between gap-2 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
-        {lesson ? (
-          <p className="text-sm font-medium text-white">
-            <span className="text-white/70">Lesson {index + 1} · </span>
-            {lesson.title}
-          </p>
-        ) : (
-          <span />
-        )}
-        <span className="hidden rounded-full bg-white/15 px-2.5 py-1 text-xs text-white/85 backdrop-blur sm:inline-flex">
-          The tutor hasn’t added a video yet
-        </span>
-      </div>
+      <CourseThumbnail course={course} />
+      <span className="absolute right-4 bottom-4 rounded-full bg-black/45 px-3 py-1 text-xs font-medium text-white backdrop-blur">
+        No video yet
+      </span>
     </div>
   )
 }
 
-/** Dark band that frames the player and, when the course has them, the lesson list. */
+/** Dark band that frames the course video. */
 function Theatre({ course }) {
-  const [current, setCurrent] = useState(0)
-  const lessons = course.lessons ?? []
-  const minutes = totalMinutes(lessons)
-  const lesson = lessons[current]
-
-  if (lessons.length === 0) {
-    return (
-      <section aria-label="Course player" className="bg-primary text-on-primary">
-        <Container className="py-5 md:py-8">
-          <div className="mx-auto max-w-5xl">
-            <Player course={course} />
-          </div>
-        </Container>
-      </section>
-    )
-  }
-
   return (
-    <section aria-label="Course player" className="bg-primary text-on-primary">
-      <Container className="grid gap-5 py-5 md:py-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-6">
-        <Player course={course} lesson={lesson} index={current} />
-
-        <aside aria-labelledby="lessons-heading" className="lg:relative">
-          <div className="flex flex-col overflow-hidden rounded-2xl bg-white/[0.06] ring-1 ring-white/10 lg:absolute lg:inset-0">
-            <div className="border-b border-white/10 px-5 py-4">
-              <h2 id="lessons-heading" className="font-semibold">
-                Lessons
-              </h2>
-              <p className="mt-0.5 flex items-center gap-1.5 text-sm text-primary-fixed-dim">
-                <Clock className="size-4" aria-hidden="true" />
-                {lessons.length} lessons · {formatDuration(minutes)}
-              </p>
-            </div>
-            <ol className="max-h-[360px] flex-1 overflow-y-auto p-2 lg:max-h-none">
-              {lessons.map((l, i) => {
-                const active = i === current
-                return (
-                  <li key={l.id}>
-                    <button
-                      type="button"
-                      onClick={() => setCurrent(i)}
-                      aria-current={active ? 'true' : undefined}
-                      className={cn(
-                        'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors',
-                        active ? 'bg-white text-primary' : 'text-primary-fixed hover:bg-white/10 hover:text-white',
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          'flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold tabular-nums',
-                          active ? 'bg-primary text-on-primary' : 'bg-white/10',
-                        )}
-                      >
-                        {active ? <Play className="size-3 fill-current" aria-hidden="true" /> : i + 1}
-                      </span>
-                      <span className="min-w-0 flex-1 font-medium">{l.title}</span>
-                      <span className={cn('shrink-0 tabular-nums', active ? 'text-primary/70' : 'text-primary-fixed-dim')}>
-                        {l.durationMin} min
-                      </span>
-                    </button>
-                  </li>
-                )
-              })}
-            </ol>
-            <div className="flex items-center justify-between border-t border-white/10 px-5 py-3.5 text-sm">
-              <span className="text-primary-fixed-dim">Price</span>
-              <span className={course.priceXaf ? 'font-semibold text-white' : 'font-semibold text-tertiary-fixed'}>
-                {formatXaf(course.priceXaf, { free: true })}
-              </span>
-            </div>
-          </div>
-        </aside>
+    <section aria-label="Course video" className="bg-primary text-on-primary">
+      <Container className="py-5 md:py-8">
+        <div className="mx-auto max-w-5xl">
+          <Player course={course} />
+        </div>
       </Container>
     </section>
   )
@@ -506,12 +429,9 @@ export default function CourseDetails() {
             </h1>
             <p className="mt-3 text-sm text-on-surface-variant">
               {[
-                c.viewsCount != null && `${countLabel(c.viewsCount, "views")}`,
                 c.publishedAt && `Published ${formatDate(c.publishedAt)}`,
                 c.category,
-                c.level,
-                // Without a lessons panel, the price has nowhere else to show.
-                !c.lessons?.length && formatXaf(c.priceXaf, { free: true }),
+                formatXaf(c.priceXaf, { free: true }),
               ]
                 .filter(Boolean)
                 .join(' · ')}

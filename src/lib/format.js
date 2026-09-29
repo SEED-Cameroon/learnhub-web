@@ -39,17 +39,9 @@ export function formatRelative(value) {
   return 'just now'
 }
 
-export function totalMinutes(lessons = []) {
-  return lessons.reduce((sum, l) => sum + (l.durationMin ?? 0), 0)
-}
 
-export function formatDuration(minutes) {
-  const h = Math.floor(minutes / 60)
-  const m = minutes % 60
-  return h ? `${h} h ${m} min` : `${m} min`
-}
 
-const SINGULAR = { views: 'view', likes: 'like', comments: 'comment', followers: 'follower', courses: 'course' }
+const SINGULAR = { likes: 'like', comments: 'comment', followers: 'follower', courses: 'course' }
 
 /** 1 -> "1 comment", 12400 -> "12.4k comments" */
 export function countLabel(n, plural) {

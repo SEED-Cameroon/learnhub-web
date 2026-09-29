@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { HandCoins, MapPin, Search, Smartphone, TrendingUp, Wallet } from 'lucide-react'
+import { HandCoins, MapPin, Search, Smartphone, Wallet } from 'lucide-react'
 import heroImage from '../assets/hero.jpg'
 import { Button } from '@/components/ui/button'
 import Avatar from '@/components/common/Avatar'
@@ -14,9 +14,9 @@ import FilterChips from '@/components/public/FilterChips'
 import { useAsync } from '@/hooks/useAsync'
 import { listCourses } from '@/services/courses'
 import { listTutors } from '@/services/tutors'
-import { CATEGORIES } from '@/data/mock'
+import { CATEGORIES } from '@/lib/constants'
+import { countLabel } from '@/lib/format'
 
-const POPULAR_SEARCHES = ['GCE maths', 'HTML and CSS', 'Bilingualism test', 'Excel', 'Bookkeeping']
 
 const FEATURES = [
   {
@@ -40,7 +40,11 @@ const FEATURES = [
 
 const COURSE_GRID = 'grid grid-cols-1 gap-x-6 gap-y-9 sm:grid-cols-2 lg:grid-cols-4'
 const TUTOR_GRID = 'grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'
-const SAMPLE_COURSE = { category: 'Mathematics' }
+const TEACH_STEPS = [
+  { title: 'Sign up as a tutor', text: 'Choose “I want to teach” when you create your account.' },
+  { title: 'Publish a course', text: 'Add a title, description and price — or make it free.' },
+  { title: 'Get followed and supported', text: 'Students follow you and can support you monthly with Mobile Money.' },
+]
 
 function HeroSearch() {
   const navigate = useNavigate()
@@ -79,24 +83,27 @@ function HeroSearch() {
       </form>
 
       <div className="mt-5 flex flex-wrap items-center gap-2 text-sm">
-        <span className="text-primary-fixed-dim">Popular:</span>
-        {POPULAR_SEARCHES.map((term) => (
-          <button
-            key={term}
-            type="button"
-            onClick={() => go(term)}
+        <span className="text-primary-fixed-dim">Browse:</span>
+        {CATEGORIES.slice(0, 5).map((category) => (
+          <Link
+            key={category}
+            to={`/courses?category=${encodeURIComponent(category)}`}
             className="rounded-full border border-white/20 px-3 py-1 text-primary-fixed transition-colors hover:border-white/60 hover:text-white"
           >
-            {term}
-          </button>
+            {category}
+          </Link>
         ))}
       </div>
     </div>
   )
 }
 
-/** Photo framed by small pieces of the real product, entering one after another. */
-function HeroStage() {
+/**
+ * Photo framed by small pieces of the real product, entering one after
+ * another: the most-liked course and the most-followed tutor, straight
+ * from the API. Each card stays hidden until its data exists.
+ */
+function HeroStage({ topCourse, topTutor, tutorCount }) {
   return (
     <div className="relative mx-auto w-full max-w-[560px] lg:mr-0">
       <div className="rise-in overflow-hidden rounded-[28px] ring-1 ring-white/15" style={{ '--d': '80ms' }}>
@@ -107,7 +114,7 @@ function HeroStage() {
         />
       </div>
 
-      {/* Mobile Money support notice */}
+      {/* How support works — a statement, not an example payment */}
       <div
         className="rise-in absolute -top-5 right-3 flex items-center gap-3 rounded-2xl bg-surface-container-lowest px-4 py-3 text-on-surface shadow-xl sm:-right-6"
         style={{ '--d': '420ms' }}
@@ -116,41 +123,52 @@ function HeroStage() {
           <Wallet className="size-[18px]" aria-hidden="true" />
         </span>
         <div className="text-sm leading-tight">
-          <p className="font-semibold">Nfor Brenda supported Dr. Foning</p>
-          <p className="text-on-surface-variant">
-            <span className="font-semibold text-tertiary-container">2,000 XAF</span> a month · MTN MoMo
-          </p>
+          <p className="font-semibold">Support tutors each month</p>
+          <p className="text-on-surface-variant">with MTN Mobile Money or Orange Money</p>
         </div>
       </div>
 
-      {/* Course being watched */}
-      <div
-        className="rise-in absolute -bottom-6 left-3 hidden w-72 items-center gap-3 rounded-2xl bg-surface-container-lowest p-2.5 pr-4 text-on-surface shadow-xl sm:flex md:-left-10"
-        style={{ '--d': '600ms' }}
-      >
-        <div className="w-24 shrink-0 overflow-hidden rounded-xl">
-          <CourseThumbnail course={SAMPLE_COURSE} compact />
-        </div>
-        <div className="min-w-0 text-sm leading-tight">
-          <p className="line-clamp-2 font-semibold">Calculus for GCE A Level</p>
-          <p className="mt-1 text-on-surface-variant">38.2k views · 6 lessons</p>
-        </div>
-      </div>
+      {/* Most-liked course */}
+      {topCourse && (
+        <Link
+          to={`/courses/${topCourse.id}`}
+          className="rise-in absolute -bottom-6 left-3 hidden w-72 items-center gap-3 rounded-2xl bg-surface-container-lowest p-2.5 pr-4 text-on-surface shadow-xl hover:ring-2 hover:ring-secondary-container sm:flex md:-left-10"
+          style={{ '--d': '600ms' }}
+        >
+          <div className="w-24 shrink-0 overflow-hidden rounded-xl">
+            <CourseThumbnail course={topCourse} compact />
+          </div>
+          <div className="min-w-0 text-sm leading-tight">
+            <p className="line-clamp-2 font-semibold">{topCourse.title}</p>
+            <p className="mt-1 truncate text-on-surface-variant">
+              {[topCourse.tutor?.name, topCourse.likesCount > 0 && countLabel(topCourse.likesCount, 'likes')]
+                .filter(Boolean)
+                .join(' · ')}
+            </p>
+          </div>
+        </Link>
+      )}
 
-      {/* Followers */}
-      <div
-        className="rise-in absolute bottom-16 -right-2 hidden items-center gap-2.5 rounded-full bg-surface-container-lowest py-2 pl-2 pr-4 text-sm text-on-surface shadow-xl md:flex lg:-right-8"
-        style={{ '--d': '780ms' }}
-      >
-        <span className="flex -space-x-2">
-          {['Ekane Grace', 'Kamdem Paul', 'Achu Mirabel'].map((n) => (
-            <Avatar key={n} name={n} size="xs" className="ring-2 ring-surface-container-lowest" />
-          ))}
-        </span>
-        <span>
-          <span className="font-semibold">+37</span> followers this week
-        </span>
-      </div>
+      {/* Most-followed tutor, or how many tutors there are */}
+      {tutorCount > 0 && (
+        <div
+          className="rise-in absolute bottom-16 -right-2 hidden items-center gap-2.5 rounded-full bg-surface-container-lowest py-2 pl-2 pr-4 text-sm text-on-surface shadow-xl md:flex lg:-right-8"
+          style={{ '--d': '780ms' }}
+        >
+          {topTutor ? (
+            <>
+              <Avatar name={topTutor.name} src={topTutor.avatarUrl} size="xs" />
+              <span>
+                <span className="font-semibold">{topTutor.name}</span> · {countLabel(topTutor.followersCount, 'followers')}
+              </span>
+            </>
+          ) : (
+            <span className="px-2">
+              <span className="font-semibold">{tutorCount}</span> {tutorCount === 1 ? 'tutor' : 'tutors'} from across Cameroon
+            </span>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -165,10 +183,12 @@ export default function Home() {
     [courses.data, category]
   )
 
-  const featuredTutors = tutors.data
-    ?.slice()
-    .sort((a, b) => b.followersCount - a.followersCount)
-    .slice(0, 3)
+  // Tutors with published courses, most-followed first.
+  const rankedTutors = (tutors.data ?? [])
+    .filter((t) => t.coursesCount > 0)
+    .sort((a, b) => b.followersCount - a.followersCount || b.coursesCount - a.coursesCount)
+  const featuredTutors = rankedTutors.slice(0, 3)
+  const topTutor = rankedTutors.find((t) => t.followersCount > 0)
 
   return (
     <div>
@@ -193,7 +213,7 @@ export default function Home() {
           </div>
 
           <div className="lg:col-span-6">
-            <HeroStage />
+            <HeroStage topCourse={courses.data?.[0]} topTutor={topTutor} tutorCount={rankedTutors.length} />
           </div>
         </Container>
       </section>
@@ -204,7 +224,7 @@ export default function Home() {
           <SectionHeading
             id="popular-heading"
             title="Popular courses"
-            description="What students across Cameroon are watching this week."
+            description="The most-liked courses on LearnHub right now."
             linkTo="/courses"
             linkLabel="All courses"
           />
@@ -284,6 +304,13 @@ export default function Home() {
             <CardGridSkeleton count={3} variant="tutor" className={TUTOR_GRID} />
           ) : tutors.error ? (
             <ErrorState error={tutors.error} onRetry={tutors.reload} title="Tutors didn’t load" />
+          ) : featuredTutors.length === 0 ? (
+            <p className="rounded-2xl bg-surface-container-low px-6 py-10 text-center text-on-surface-variant">
+              No tutors have published a course yet.{' '}
+              <Link to="/register?role=tutor" className="font-semibold text-primary hover:underline">
+                Be the first
+              </Link>
+            </p>
           ) : (
             <div className={TUTOR_GRID}>
               {featuredTutors.map((tutor) => (
@@ -314,28 +341,20 @@ export default function Home() {
             </Button>
           </div>
 
-          {/* A glimpse of the tutor studio */}
-          <div className="relative mx-auto w-full max-w-sm rounded-2xl bg-surface-container-lowest p-5 text-on-surface shadow-2xl md:mr-0" aria-hidden="true">
-            <p className="text-sm text-on-surface-variant">Earnings this month</p>
-            <p className="mt-1 text-3xl font-bold text-tertiary-container">318,000 XAF</p>
-            <p className="mt-1 flex items-center gap-1 text-sm text-tertiary-container">
-              <TrendingUp className="size-4" />
-              Up 15% on last month
-            </p>
-            <div className="mt-5 space-y-3 border-t border-outline-variant pt-4">
-              {[
-                ['Nfor Brenda', '2,000 XAF'],
-                ['Fotso Arnaud', '5,000 XAF'],
-                ['Achu Mirabel', '1,000 XAF'],
-              ].map(([name, amount]) => (
-                <div key={name} className="flex items-center gap-3 text-sm">
-                  <Avatar name={name} size="xs" />
-                  <span className="flex-1">{name}</span>
-                  <span className="font-semibold">{amount}</span>
+          {/* How to start teaching: a real sequence, so the steps are numbered */}
+          <ol className="relative mx-auto w-full max-w-sm space-y-4 rounded-2xl bg-surface-container-lowest p-6 text-on-surface shadow-2xl md:mr-0">
+            {TEACH_STEPS.map((step, i) => (
+              <li key={step.title} className="flex gap-4">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-secondary-container">
+                  {i + 1}
+                </span>
+                <div>
+                  <p className="font-semibold">{step.title}</p>
+                  <p className="mt-0.5 text-sm text-on-surface-variant">{step.text}</p>
                 </div>
-              ))}
-            </div>
-          </div>
+              </li>
+            ))}
+          </ol>
         </div>
       </Container>
     </div>

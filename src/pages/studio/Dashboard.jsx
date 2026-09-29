@@ -230,7 +230,7 @@ export default function Dashboard() {
               <h2 className="text-lg font-semibold text-on-surface">Top courses</h2>
               <ul className="mt-4 space-y-3">
                 {[...data.courses]
-                  .sort((a, b) => (b.viewsCount ?? b.likesCount) - (a.viewsCount ?? a.likesCount))
+                  .sort((a, b) => b.likesCount - a.likesCount)
                   .slice(0, 3)
                   .map((course) => (
                     <li key={course.id}>
@@ -238,7 +238,6 @@ export default function Dashboard() {
                         <p className="line-clamp-2 text-sm font-medium text-on-surface">{course.title}</p>
                         <p className="mt-1 text-xs text-on-surface-variant">
                           {[
-                            course.viewsCount != null && `${countLabel(course.viewsCount, "views")}`,
                             `${countLabel(course.likesCount, "likes")}`,
                             `${countLabel(course.commentsCount ?? 0, "comments")}`,
                           ]
