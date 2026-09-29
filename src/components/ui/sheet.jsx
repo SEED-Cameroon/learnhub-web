@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as SheetPrimitive from '@radix-ui/react-dialog'
 
 import { cn } from '@/lib/utils'
-import MaterialIcon from '@/components/icons/MaterialIcon'
+import { X } from 'lucide-react'
 
 function Sheet({ ...props }) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />
@@ -55,7 +55,7 @@ function SheetContent({ className, children, side = 'right', ...props }) {
       >
         {children}
         <SheetPrimitive.Close className="absolute top-4 right-4 rounded-xs text-on-surface-variant opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none">
-          <MaterialIcon name="close" className="text-xl" />
+          <X className="size-5" />
           <span className="sr-only">Close</span>
         </SheetPrimitive.Close>
       </SheetPrimitive.Content>

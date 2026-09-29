@@ -1,8 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "@fontsource-variable/public-sans";
 
 @theme {
-  --font-sans: "Public Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Public Sans Variable", "Public Sans", ui-sans-serif, system-ui, sans-serif;
 
   --color-surface: #f9f9ff;
   --color-surface-dim: #d3daea;
@@ -63,6 +64,43 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-surface text-on-surface font-sans antialiased;
+    font-feature-settings: "tnum" 0;
+  }
+
+  /* One visible focus style for every interactive element (Frontend SRS §6). */
+  :where(a, button, [role="button"], input, select, textarea, summary):focus-visible {
+    outline: 2px solid var(--color-surface-tint);
+    outline-offset: 2px;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-outline);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .interactive-card:hover {
+    transform: none;
+  }
 }
 
 .material-symbols-outlined {
