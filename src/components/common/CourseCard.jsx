@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { BadgeCheck, Play } from 'lucide-react'
 import Avatar from './Avatar'
 import CourseThumbnail from './CourseThumbnail'
-import { formatRelative, formatXaf, countLabel } from '@/lib/format'
+import { formatDuration, formatRelative, formatXaf, countLabel, totalMinutes } from '@/lib/format'
 
 /**
  * Feed tile in the video-platform style: the thumbnail stands on its own,
@@ -10,6 +10,10 @@ import { formatRelative, formatXaf, countLabel } from '@/lib/format'
  * thumbnail and reveals what "open" does.
  */
 export default function CourseCard({ course }) {
+  const lessons = course.lessons ?? []
+  const minutes = totalMinutes(lessons)
+  const playable = lessons.length > 0 || course.previewVideoUrl
+
   return (
     <article className="group relative flex flex-col">
       <div className="relative overflow-hidden rounded-2xl bg-surface-container">
@@ -19,13 +23,18 @@ export default function CourseCard({ course }) {
         />
         <div className="absolute inset-0 flex items-center justify-center bg-on-surface/0 transition-colors duration-300 group-hover:bg-on-surface/35 group-focus-within:bg-on-surface/35">
           <span className="flex translate-y-2 items-center gap-2 rounded-full bg-surface-container-lowest px-4 py-2 text-sm font-semibold text-primary opacity-0 shadow-lg transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:translate-y-0 group-focus-within:opacity-100">
-            {course.previewVideoUrl && <Play className="size-4 fill-primary" aria-hidden="true" />}
-            {course.previewVideoUrl ? 'Watch preview' : 'Open course'}
+            {playable && <Play className="size-4 fill-primary" aria-hidden="true" />}
+            {lessons.length ? `Watch · ${lessons.length} ${lessons.length === 1 ? 'lesson' : 'lessons'}` : course.previewVideoUrl ? 'Watch preview' : 'Open course'}
           </span>
         </div>
         {course.priceXaf > 0 && (
           <span className="absolute right-3 top-3 rounded-full bg-secondary-container px-2.5 py-1 text-xs font-bold text-on-secondary-container">
             {formatXaf(course.priceXaf)}
+          </span>
+        )}
+        {minutes > 0 && (
+          <span className="absolute right-2.5 bottom-2.5 rounded-md bg-on-surface/85 px-1.5 py-0.5 text-xs font-semibold text-white">
+            {formatDuration(minutes)}
           </span>
         )}
       </div>

@@ -48,3 +48,14 @@ export function countLabel(n, plural) {
   const value = n ?? 0
   return `${formatCount(value)} ${value === 1 ? SINGULAR[plural] ?? plural : plural}`
 }
+
+export function totalMinutes(lessons = []) {
+  return lessons.reduce((sum, l) => sum + (l.durationMin ?? 0), 0)
+}
+
+/** 95 -> "1 h 35 min" */
+export function formatDuration(minutes) {
+  const h = Math.floor(minutes / 60)
+  const m = minutes % 60
+  return h ? `${h} h${m ? ` ${m} min` : ''}` : `${m} min`
+}

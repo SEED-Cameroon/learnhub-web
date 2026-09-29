@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { BadgeCheck, Check, HandCoins, Heart, Link2, ListVideo, MessageCircle, Plus } from 'lucide-react'
+import { BadgeCheck, Check, CircleCheck, HandCoins, Heart, Link2, ListVideo, MessageCircle, Play, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import Avatar from '@/components/common/Avatar'
@@ -16,7 +16,8 @@ import { useAuthGate } from '@/hooks/useAuthGate'
 import { addComment, getCourse, listComments, listCourses, setCourseLiked } from '@/services/courses'
 import { getTutor, setFollowing } from '@/services/tutors'
 import { cn } from '@/lib/utils'
-import { formatCount, formatDate, formatRelative, formatXaf, countLabel } from '@/lib/format'
+import { formatCount, formatDate, formatDuration, formatRelative, formatXaf, countLabel, totalMinutes } from '@/lib/format'
+import VideoPlayer from '@/components/course/VideoPlayer'
 
 const COMMENT_MAX = 1000
 
@@ -342,46 +343,109 @@ function SupportAside({ tutor }) {
   )
 }
 
-function Player({ course }) {
-  if (course.previewVideoUrl) {
-    return (
-      <div className="overflow-hidden rounded-2xl bg-black ring-1 ring-white/10">
-        <video
-          controls
-          preload="metadata"
-          poster={course.thumbnailUrl || undefined}
-          src={course.previewVideoUrl}
-          className="aspect-video w-full bg-black"
-        >
-          Your browser can’t play this video.{' '}
-          <a href={course.previewVideoUrl} className="underline">
-            Open it directly
-          </a>
-          .
-        </video>
-      </div>
-    )
-  }
-
-  // No video yet: show the course art without a play button, so nothing looks playable.
+function NoVideo({ course, label = 'No video yet' }) {
+  // No video: show the course art without a play button, so nothing looks playable.
   return (
     <div className="relative overflow-hidden rounded-2xl bg-primary-container ring-1 ring-white/10">
       <CourseThumbnail course={course} />
       <span className="absolute right-4 bottom-4 rounded-full bg-black/45 px-3 py-1 text-xs font-medium text-white backdrop-blur">
-        No video yet
+        {label}
       </span>
     </div>
   )
 }
 
-/** Dark band that frames the course video. */
+function LessonList({ lessons, current, onSelect }) {
+  const minutes = totalMinutes(lessons)
+  return (
+    <div className="flex h-full flex-col overflow-hidden rounded-2xl bg-white/[0.06] ring-1 ring-white/10">
+      <div className="border-b border-white/10 px-5 py-4">
+        <h2 id="lessons-heading" className="font-semibold">
+          Course outline
+        </h2>
+        <p className="mt-0.5 flex items-center gap-1.5 text-sm text-primary-fixed">
+          <ListVideo className="size-4" aria-hidden="true" />
+          {lessons.length} {lessons.length === 1 ? 'lesson' : 'lessons'}
+          {minutes > 0 && ` · ${formatDuration(minutes)}`}
+        </p>
+      </div>
+      <ol className="min-h-0 flex-1 overflow-y-auto p-2" aria-labelledby="lessons-heading">
+        {lessons.map((lesson, i) => {
+          const active = i === current
+          return (
+            <li key={lesson.id}>
+              <button
+                type="button"
+                onClick={() => onSelect(i)}
+                aria-current={active ? 'true' : undefined}
+                className={cn(
+                  'flex w-full items-start gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors',
+                  active ? 'bg-surface-container-lowest text-on-surface' : 'text-primary-fixed hover:bg-white/10 hover:text-white'
+                )}
+              >
+                <span
+                  className={cn(
+                    'mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
+                    active ? 'bg-primary text-on-primary' : 'bg-white/10'
+                  )}
+                >
+                  {active ? <Play className="size-3 fill-current" aria-hidden="true" /> : i + 1}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="line-clamp-2 font-medium">{lesson.title}</span>
+                  {!lesson.videoUrl && <span className={cn('text-xs', active ? 'text-outline' : 'text-primary-fixed-dim')}>No video yet</span>}
+                </span>
+                {lesson.durationMin > 0 && (
+                  <span className={cn('shrink-0 text-xs', active ? 'text-on-surface-variant' : 'text-primary-fixed-dim')}>
+                    {formatDuration(lesson.durationMin)}
+                  </span>
+                )}
+              </button>
+            </li>
+          )
+        })}
+      </ol>
+    </div>
+  )
+}
+
+/** Dark band framing the video, with the course outline beside it. */
 function Theatre({ course }) {
+  const lessons = course.lessons ?? []
+  const [current, setCurrent] = useState(0)
+  const lesson = lessons[current]
+  const videoUrl = lesson ? lesson.videoUrl : course.previewVideoUrl
+  const hasOutline = lessons.length > 0
+
   return (
     <section aria-label="Course video" className="bg-primary text-on-primary">
-      <Container className="py-5 md:py-8">
-        <div className="mx-auto max-w-5xl">
-          <Player course={course} />
+      <Container className={cn('grid gap-5 py-5 md:py-8', hasOutline && 'lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-6')}>
+        <div className={cn('min-w-0', !hasOutline && 'mx-auto w-full max-w-5xl')}>
+          {videoUrl ? (
+            <div className="overflow-hidden rounded-2xl bg-black ring-1 ring-white/10">
+              <VideoPlayer url={videoUrl} title={lesson?.title ?? course.title} poster={course.thumbnailUrl} />
+            </div>
+          ) : (
+            <NoVideo course={course} label={lesson ? 'This lesson has no video yet' : 'No video yet'} />
+          )}
+          {lesson && (
+            <div className="mt-4">
+              <p className="text-sm text-primary-fixed">
+                Lesson {current + 1} of {lessons.length}
+              </p>
+              <h2 className="mt-0.5 text-lg font-semibold">{lesson.title}</h2>
+              {lesson.summary && <p className="mt-1 max-w-[70ch] text-sm leading-relaxed text-primary-fixed">{lesson.summary}</p>}
+              {lesson.videoCredit && <p className="mt-2 text-xs text-primary-fixed-dim">Video: {lesson.videoCredit}</p>}
+            </div>
+          )}
         </div>
+        {hasOutline && (
+          <aside aria-label="Course outline" className="lg:relative">
+            <div className="max-h-[420px] lg:absolute lg:inset-0 lg:max-h-none">
+              <LessonList lessons={lessons} current={current} onSelect={setCurrent} />
+            </div>
+          </aside>
+        )}
       </Container>
     </section>
   )
@@ -431,6 +495,8 @@ export default function CourseDetails() {
               {[
                 c.publishedAt && `Published ${formatDate(c.publishedAt)}`,
                 c.category,
+                c.level,
+                c.viewsCount > 0 && countLabel(c.viewsCount, 'views'),
                 formatXaf(c.priceXaf, { free: true }),
               ]
                 .filter(Boolean)
@@ -450,6 +516,20 @@ export default function CourseDetails() {
                 {countLabel(c.commentsCount, "comments")}
               </a>
             </div>
+
+            {c.outcomes?.length > 0 && (
+              <div className="mt-6 rounded-2xl border border-outline-variant/70 p-5 md:p-6">
+                <h2 className="font-semibold text-on-surface">What you’ll learn</h2>
+                <ul className="mt-3 grid gap-x-6 gap-y-2.5 sm:grid-cols-2">
+                  {c.outcomes.map((o) => (
+                    <li key={o} className="flex gap-2.5 text-sm leading-relaxed text-on-surface">
+                      <CircleCheck className="mt-0.5 size-4 shrink-0 text-tertiary-container" aria-hidden="true" />
+                      {o}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             <div className="mt-6 rounded-2xl bg-surface-container-low p-5 md:p-6">
               <h2 className="text-sm font-semibold text-on-surface">About this course</h2>

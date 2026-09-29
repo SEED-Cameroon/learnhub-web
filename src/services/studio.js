@@ -6,13 +6,24 @@ import { toCourse } from './normalize'
 export const EARNINGS_ENABLED = import.meta.env.VITE_ENABLE_EARNINGS === 'true'
 
 // The fields the API stores for a course.
-export const COURSE_FIELDS = ['title', 'description', 'category', 'priceXaf', 'thumbnailUrl', 'previewVideoUrl', 'status']
+export const COURSE_FIELDS = ['title', 'description', 'category', 'priceXaf', 'thumbnailUrl', 'previewVideoUrl', 'status', 'level', 'outcomes', 'lessons']
 
 /** Page course → API body: only the fields the API stores, with `price` in whole XAF. */
 function toApiCourse(course) {
   const body = {}
-  for (const key of ['title', 'description', 'category', 'thumbnailUrl', 'previewVideoUrl', 'status']) {
+  for (const key of ['title', 'description', 'category', 'thumbnailUrl', 'previewVideoUrl', 'status', 'level', 'outcomes']) {
     if (course[key] !== undefined) body[key] = typeof course[key] === 'string' ? course[key].trim() : course[key]
+  }
+  if (course.lessons !== undefined) {
+    body.lessons = course.lessons.map((l) => ({
+      // Existing lessons keep their id; new ones get one from the API.
+      ...(/^[a-f\d]{24}$/i.test(l.id ?? '') && { _id: l.id }),
+      title: l.title,
+      summary: l.summary ?? '',
+      durationMin: Math.max(0, Math.round(Number(l.durationMin) || 0)),
+      videoUrl: l.videoUrl ?? '',
+      videoCredit: l.videoCredit ?? '',
+    }))
   }
   if (course.priceXaf !== undefined) body.price = Math.max(0, Math.round(Number(course.priceXaf) || 0))
   return body

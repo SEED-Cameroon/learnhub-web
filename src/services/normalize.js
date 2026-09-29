@@ -44,6 +44,17 @@ export function toCourse(c, { tutor } = {}) {
     tutorId: populated?.id || idOf(c.tutor) || tutor?.id || '',
     tutor: populated ?? tutor ?? null,
     likedByMe: Boolean(c.likedByMe),
+    viewsCount: c.viewsCount,
+    level: c.level || '',
+    outcomes: c.outcomes ?? [],
+    lessons: (c.lessons ?? []).map((l, i) => ({
+      id: idOf(l) || `lesson-${i}`,
+      title: l.title ?? '',
+      summary: l.summary ?? '',
+      durationMin: l.durationMin ?? 0,
+      videoUrl: l.videoUrl || '',
+      videoCredit: l.videoCredit || '',
+    })),
   }
 }
 

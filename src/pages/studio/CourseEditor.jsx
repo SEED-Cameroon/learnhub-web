@@ -13,6 +13,7 @@ import CourseCard from '@/components/common/CourseCard'
 import StatusBadge from '@/components/common/StatusBadge'
 import { EmptyState, ErrorState, Skeleton } from '@/components/common/States'
 import Field, { FormBanner, Panel, selectClass } from '@/components/studio/Field'
+import OutlineEditor from '@/components/studio/OutlineEditor'
 
 // The editor shows exactly the fields the API stores for a course.
 const EMPTY_FORM = {
@@ -22,7 +23,12 @@ const EMPTY_FORM = {
   priceXaf: '0',
   thumbnailUrl: '',
   previewVideoUrl: '',
+  level: '',
+  outcomes: [],
+  lessons: [],
 }
+
+const LEVELS = ['Beginner', 'Intermediate', 'Advanced']
 
 const isHttpUrl = (value) => {
   try {
@@ -45,6 +51,16 @@ function validate(form, intent, { isEdit }) {
   for (const field of ['thumbnailUrl', 'previewVideoUrl']) {
     if (form[field].trim() && !isHttpUrl(form[field].trim())) errors[field] = 'Enter a full web address starting with https://'
   }
+
+  // Lessons: a title is required; a video link must be a web address.
+  const lessonErrors = {}
+  for (const lesson of form.lessons) {
+    const e = {}
+    if (!lesson.title.trim()) e.title = 'Give this lesson a title.'
+    if (lesson.videoUrl.trim() && !isHttpUrl(lesson.videoUrl.trim())) e.videoUrl = 'Enter a full link starting with https://'
+    if (Object.keys(e).length) lessonErrors[lesson.id] = e
+  }
+  if (Object.keys(lessonErrors).length) errors.lessons = lessonErrors
 
   const needsBasics = intent === 'publish' || !isEdit
   if (needsBasics) {
@@ -69,6 +85,9 @@ function toPayload(form, status) {
     priceXaf: Number(form.priceXaf) || 0,
     thumbnailUrl: form.thumbnailUrl.trim(),
     previewVideoUrl: form.previewVideoUrl.trim(),
+    level: form.level,
+    outcomes: form.outcomes.map((o) => o.trim()).filter(Boolean),
+    lessons: form.lessons.map((l) => ({ ...l, title: l.title.trim(), summary: l.summary.trim(), videoUrl: l.videoUrl.trim(), videoCredit: l.videoCredit.trim() })),
     status,
   }
 }
@@ -206,6 +225,9 @@ export default function CourseEditor() {
           priceXaf: String(course.priceXaf ?? 0),
           thumbnailUrl: course.thumbnailUrl ?? '',
           previewVideoUrl: course.previewVideoUrl ?? '',
+          level: course.level ?? '',
+          outcomes: course.outcomes ?? [],
+          lessons: (course.lessons ?? []).map((l) => ({ ...l, durationMin: l.durationMin ? String(l.durationMin) : '' })),
         })
         setStatus(course.status ?? 'draft')
         setLoadState((s) => ({ ...s, loading: false }))
@@ -228,7 +250,13 @@ export default function CourseEditor() {
     setErrors(found)
     setFormError('')
     if (Object.keys(found).length > 0) {
-      setFormError(intent === 'publish' ? 'Fix the highlighted fields to publish this course.' : 'Fix the highlighted fields to save this draft.')
+      setFormError(
+        found.lessons && Object.keys(found).length === 1
+          ? 'Some lessons need attention: check the highlighted lessons in the outline.'
+          : intent === 'publish'
+            ? 'Fix the highlighted fields to publish this course.'
+            : 'Fix the highlighted fields to save this draft.'
+      )
       return
     }
 
@@ -284,6 +312,7 @@ export default function CourseEditor() {
     id: id ?? 'preview',
     title: form.title || 'Your course title',
     priceXaf: Number(form.priceXaf) || 0,
+    lessons: form.lessons.map((l) => ({ ...l, durationMin: Number(l.durationMin) || 0 })),
     thumbnailUrl: isHttpUrl(form.thumbnailUrl.trim()) ? form.thumbnailUrl.trim() : '',
     likesCount: 0,
     commentsCount: 0,
@@ -317,7 +346,7 @@ export default function CourseEditor() {
             {(p) => <Textarea {...p} value={form.description} onChange={set('description')} rows={5} />}
           </Field>
 
-          <div className="grid gap-6 sm:grid-cols-2">
+          <div className="grid gap-6 sm:grid-cols-3">
             <Field id="category" label="Category" error={errors.category}>
               {(p) => (
                 <select {...p} value={form.category} onChange={set('category')} className={selectClass}>
@@ -325,6 +354,18 @@ export default function CourseEditor() {
                   {CATEGORIES.map((c) => (
                     <option key={c} value={c}>
                       {c}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </Field>
+            <Field id="level" label="Level" optional>
+              {(p) => (
+                <select {...p} value={form.level} onChange={set('level')} className={selectClass}>
+                  <option value="">Not set</option>
+                  {LEVELS.map((l) => (
+                    <option key={l} value={l}>
+                      {l}
                     </option>
                   ))}
                 </select>
@@ -357,6 +398,21 @@ export default function CourseEditor() {
             onError={setFieldError('previewVideoUrl')}
             onBusy={trackUpload}
           />
+
+          <div className="border-t border-outline-variant/60 pt-6">
+            <h2 className="mb-4 text-base font-semibold text-on-surface">Course outline</h2>
+            <OutlineEditor
+              outcomes={form.outcomes}
+              lessons={form.lessons}
+              errors={errors.lessons}
+              onBusy={trackUpload}
+              onOutcomes={(outcomes) => setForm((f) => ({ ...f, outcomes }))}
+              onLessons={(lessons) => {
+                setForm((f) => ({ ...f, lessons }))
+                setErrors((errs) => ({ ...errs, lessons: undefined }))
+              }}
+            />
+          </div>
 
           <div className="flex flex-col-reverse gap-3 border-t border-outline-variant/60 pt-6 sm:flex-row sm:justify-end">
             {uploads > 0 && <p className="self-center text-sm text-on-surface-variant sm:mr-auto">Wait for the upload to finish before saving.</p>}
