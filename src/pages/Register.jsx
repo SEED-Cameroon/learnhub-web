@@ -1,4 +1,5 @@
 import { startTransition, useState } from 'react'
+import { useSeo } from '@/hooks/useSeo'
 import { useNavigate, useLocation, useSearchParams, Link } from 'react-router-dom'
 import { Check, GraduationCap, Lock, Mail, Presentation, UserRound } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
@@ -119,6 +120,7 @@ function RolePicker({ value, onChange }) {
 }
 
 export default function Register() {
+  useSeo({ title: 'Create your free account', description: 'Join LearnHub Cameroon to follow tutors, like courses and ask questions, or sign up as a tutor to publish your own courses.' })
   const [searchParams, setSearchParams] = useSearchParams()
   const role = searchParams.get('role') === 'tutor' ? 'tutor' : 'student'
   const [form, setForm] = useState({ name: '', email: '', password: '' })

@@ -1,5 +1,6 @@
 import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom'
-import { BookHeart, CreditCard, LayoutDashboard, LogOut, Menu, Settings, UserRound } from 'lucide-react'
+import { LogoMark } from '@/components/brand/Logo'
+import { CreditCard, LayoutDashboard, LogOut, Menu, Settings, UserRound } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetTrigger, SheetContent, SheetTitle, SheetClose } from '@/components/ui/sheet'
@@ -63,7 +64,7 @@ function Layout() {
       <header className="bg-surface/95 backdrop-blur shadow-sm sticky top-0 z-50 px-4 md:px-10 py-3">
         <div className="mx-auto flex max-w-[1280px] items-center justify-between gap-4 md:grid md:grid-cols-[auto_1fr_auto]">
           <Link to="/" className="flex items-center gap-2 text-xl md:text-2xl font-bold text-primary whitespace-nowrap">
-            <BookHeart className="size-7 text-secondary-container" strokeWidth={2.25} aria-hidden="true" />
+            <LogoMark className="size-8" />
             LearnHub Cameroon
           </Link>
 

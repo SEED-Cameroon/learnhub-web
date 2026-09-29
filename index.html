@@ -2,13 +2,87 @@
 <html lang="en" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="description" content="Free courses from Cameroonian tutors. Follow the teachers who help you and support them with MTN Mobile Money or Orange Money." />
-    <meta name="theme-color" content="#00236f" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>LearnHub Cameroon</title>
+
+    <!-- Defaults for every page. Pages update the title, description and
+         social tags as you navigate (src/hooks/useSeo.js). Replace the site
+         URL below if the site moves to its own domain. -->
+    <title>LearnHub Cameroon · Free courses from Cameroonian tutors</title>
+    <meta
+      name="description"
+      content="Free courses in coding, AI, business and languages from Cameroonian tutors. Follow the teachers who help you and support them with MTN Mobile Money or Orange Money."
+    />
+    <link rel="canonical" href="https://learnhub-omega-one.vercel.app/" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#00236f" />
+    <meta name="application-name" content="LearnHub Cameroon" />
+
+    <!-- Icons -->
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- Open Graph (WhatsApp, Facebook, LinkedIn) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="LearnHub Cameroon" />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="og:locale:alternate" content="fr_FR" />
+    <meta property="og:url" content="https://learnhub-omega-one.vercel.app/" />
+    <meta property="og:title" content="LearnHub Cameroon · Free courses from Cameroonian tutors" />
+    <meta
+      property="og:description"
+      content="Coding, AI, business and languages from local tutors. Support the ones who help you with Mobile Money."
+    />
+    <meta property="og:image" content="https://learnhub-omega-one.vercel.app/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="LearnHub Cameroon: learn from Cameroon’s best teachers, free." />
+
+    <!-- X / Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="LearnHub Cameroon · Free courses from Cameroonian tutors" />
+    <meta
+      name="twitter:description"
+      content="Coding, AI, business and languages from local tutors. Support the ones who help you with Mobile Money."
+    />
+    <meta name="twitter:image" content="https://learnhub-omega-one.vercel.app/og-image.png" />
+
+    <!-- The course player loads videos from YouTube and images from Cloudinary. -->
+    <link rel="preconnect" href="https://i.ytimg.com" />
+    <link rel="preconnect" href="https://res.cloudinary.com" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "EducationalOrganization",
+            "@id": "https://learnhub-omega-one.vercel.app/#organization",
+            "name": "LearnHub Cameroon",
+            "url": "https://learnhub-omega-one.vercel.app/",
+            "logo": "https://learnhub-omega-one.vercel.app/icon-512.png",
+            "areaServed": { "@type": "Country", "name": "Cameroon" }
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://learnhub-omega-one.vercel.app/#website",
+            "name": "LearnHub Cameroon",
+            "url": "https://learnhub-omega-one.vercel.app/",
+            "publisher": { "@id": "https://learnhub-omega-one.vercel.app/#organization" },
+            "inLanguage": ["en", "fr"],
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "https://learnhub-omega-one.vercel.app/courses?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
+    <noscript>LearnHub Cameroon needs JavaScript to show courses. Turn it on and reload the page.</noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

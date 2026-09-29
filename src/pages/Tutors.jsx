@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useSeo } from '@/hooks/useSeo'
 import { useSearchParams } from 'react-router-dom'
 import { UserRoundSearch } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -14,6 +15,7 @@ import { CATEGORIES } from '@/lib/constants'
 const GRID = 'grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'
 
 export default function Tutors() {
+  useSeo({ title: 'Find a tutor', description: 'Follow Cameroonian tutors in coding, AI, business, languages and exam prep. See their new courses first and support the ones who help you.' })
   const [params, setParams] = useSearchParams()
   const subject = params.get('subject')
   const q = params.get('q') ?? ''

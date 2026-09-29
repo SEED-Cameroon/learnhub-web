@@ -1,4 +1,5 @@
 import { ArrowDownRight, ArrowUpRight, FlaskConical, Users, Wallet } from 'lucide-react'
+import { useSeo } from '@/hooks/useSeo'
 import { useAsync } from '@/hooks/useAsync'
 import { getEarnings } from '@/services/studio'
 import { PROVIDERS } from '@/services/subscriptions'
@@ -47,6 +48,7 @@ function MonthComparison({ current, previous }) {
 }
 
 export default function Earnings() {
+  useSeo({ title: 'Earnings', noindex: true })
   const { data, error, loading, reload } = useAsync(getEarnings, [])
   const hasTest = data && (data.payments.some((p) => p.testMode) || data.supporters.some((s) => s.testMode))
 

@@ -1,4 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
+import { useSeo } from '@/hooks/useSeo'
+import { SITE_NAME, SITE_URL } from '@/lib/site'
 import { Link, useParams } from 'react-router-dom'
 import { BadgeCheck, Check, ChevronDown, CircleCheck, HandCoins, Heart, Link2, ListVideo, MessageCircle, Play, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -20,6 +22,30 @@ import { formatCount, formatDate, formatDuration, formatRelative, formatXaf, cou
 import VideoPlayer from '@/components/course/VideoPlayer'
 
 const COMMENT_MAX = 1000
+
+/** schema.org Course, so search engines can show the course, tutor and price. */
+function courseJsonLd(c) {
+  const minutes = (c.lessons ?? []).reduce((sum, l) => sum + (l.durationMin || 0), 0)
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Course',
+    name: c.title,
+    description: c.description,
+    url: `${SITE_URL}/courses/${c.id}`,
+    ...(c.thumbnailUrl && { image: c.thumbnailUrl }),
+    inLanguage: 'en',
+    ...(c.level && { educationalLevel: c.level }),
+    ...(c.outcomes?.length && { teaches: c.outcomes }),
+    provider: { '@type': 'Organization', name: SITE_NAME, sameAs: SITE_URL },
+    ...(c.tutor?.name && { instructor: { '@type': 'Person', name: c.tutor.name, url: `${SITE_URL}/tutors/${c.tutor.id}` } }),
+    offers: { '@type': 'Offer', category: c.priceXaf ? 'Paid' : 'Free', price: c.priceXaf || 0, priceCurrency: 'XAF' },
+    hasCourseInstance: {
+      '@type': 'CourseInstance',
+      courseMode: 'Online',
+      ...(minutes > 0 && { courseWorkload: `PT${minutes}M` }),
+    },
+  }
+}
 
 function DetailSkeleton() {
   return (
@@ -469,6 +495,14 @@ function Theatre({ course }) {
 export default function CourseDetails() {
   const { id } = useParams()
   const course = useAsync(() => getCourse(id), [id])
+  const seoCourse = course.data
+  useSeo({
+    title: seoCourse?.title ?? (course.error ? 'Course not found' : 'Course'),
+    description: seoCourse?.description,
+    image: seoCourse?.thumbnailUrl || undefined,
+    noindex: Boolean(course.error),
+    jsonLd: seoCourse && courseJsonLd(seoCourse),
+  })
 
   if (course.loading) return <DetailSkeleton />
 

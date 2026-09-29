@@ -1,5 +1,6 @@
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { BookHeart, ExternalLink, LayoutDashboard, LibraryBig, LogOut, Menu, Settings, UserRoundPen, Wallet } from 'lucide-react'
+import { LogoMark } from '@/components/brand/Logo'
+import { ExternalLink, LayoutDashboard, LibraryBig, LogOut, Menu, Settings, UserRoundPen, Wallet } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
@@ -27,7 +28,7 @@ function StudioNav({ onNavigate }) {
   return (
     <div className="flex h-full flex-col">
       <Link to="/" className="flex items-center gap-2 px-3 pt-1 pb-6 text-lg font-bold text-primary">
-        <BookHeart className="size-6 text-secondary-container" strokeWidth={2.25} aria-hidden="true" />
+        <LogoMark className="size-7" />
         LearnHub Studio
       </Link>
 
@@ -85,7 +86,7 @@ export default function StudioLayout() {
 
       <header className="sticky top-0 z-40 flex items-center justify-between border-b border-outline-variant bg-surface/95 px-4 py-3 backdrop-blur md:hidden">
         <Link to="/dashboard" className="flex items-center gap-2 font-bold text-primary">
-          <BookHeart className="size-6 text-secondary-container" strokeWidth={2.25} aria-hidden="true" />
+          <LogoMark className="size-7" />
           LearnHub Studio
         </Link>
         <Sheet>

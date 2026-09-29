@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useSeo } from '@/hooks/useSeo'
 import { Link } from 'react-router-dom'
 import { Check, ExternalLink, ImageUp } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
@@ -37,6 +38,7 @@ function ImageInput({ id, label, help, error, onSelect }) {
 }
 
 export default function TutorProfileEdit() {
+  useSeo({ title: 'Public profile', noindex: true })
   const { user, login } = useAuth()
   const { data: tutor, error, loading, reload } = useAsync(() => getTutor(user.id), [user?.id])
 

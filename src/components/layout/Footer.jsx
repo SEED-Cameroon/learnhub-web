@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { BookHeart } from 'lucide-react'
+import { LogoMark } from '@/components/brand/Logo'
 
 const COLUMNS = [
   {
@@ -31,7 +31,7 @@ const Footer = () => {
       <div className="mx-auto grid max-w-[1280px] grid-cols-2 gap-8 px-4 py-12 md:grid-cols-[2fr_1fr_1fr_1fr] md:px-10">
         <div className="col-span-2 flex flex-col gap-3 md:col-span-1">
           <Link to="/" className="flex items-center gap-2 text-xl font-bold text-primary">
-            <BookHeart className="size-6 text-secondary-container" strokeWidth={2.25} aria-hidden="true" />
+            <LogoMark className="size-7" />
             LearnHub Cameroon
           </Link>
           <p className="max-w-xs text-sm text-on-surface-variant">

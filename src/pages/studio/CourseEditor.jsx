@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useSeo } from '@/hooks/useSeo'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ChevronLeft, Film, ImageUp, Loader2, X } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
@@ -192,6 +193,7 @@ function EditorSkeleton() {
 }
 
 export default function CourseEditor() {
+  useSeo({ title: 'Course editor', noindex: true })
   const { id } = useParams()
   const isEdit = Boolean(id)
   const navigate = useNavigate()

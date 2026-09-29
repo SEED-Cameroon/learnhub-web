@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useSeo } from '@/hooks/useSeo'
 import { BadgeCheck, MessagesSquare, PlayCircle, Smartphone } from 'lucide-react'
 import heroImage from '../assets/hero.jpg'
 import { Button } from '@/components/ui/button'
@@ -38,6 +39,7 @@ const SUPPORT_STEPS = [
 ]
 
 export default function About() {
+  useSeo({ title: 'About', description: 'LearnHub puts courses from Cameroonian teachers online for free, and lets students support the tutors who help them through MTN Mobile Money or Orange Money.' })
   return (
     <div>
       {/* Mission */}

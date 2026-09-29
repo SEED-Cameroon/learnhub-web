@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSeo } from '@/hooks/useSeo'
 import { Link } from 'react-router-dom'
 import { EyeOff, LibraryBig, Pencil, Plus, Send, Trash2 } from 'lucide-react'
 import { useAsync } from '@/hooks/useAsync'
@@ -57,6 +58,7 @@ function TableSkeleton() {
 }
 
 export default function DashboardCourses() {
+  useSeo({ title: 'My courses', noindex: true })
   const { data: courses, error, loading, reload, setData } = useAsync(listMyCourses, [])
   const [filter, setFilter] = useState('all')
   const [toDelete, setToDelete] = useState(null)

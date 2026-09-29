@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useSeo } from '@/hooks/useSeo'
 import { useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import Container from '@/components/common/Container'
@@ -24,6 +25,12 @@ export default function Courses() {
   // Old ?sort=liked links still work: they mean the same as the default.
   const sort = params.get('sort') === 'newest' ? 'newest' : 'popular'
   const q = params.get('q') ?? ''
+  useSeo({
+    title: category ? `${category} courses` : 'Courses',
+    description: category
+      ? `Free ${category} courses from Cameroonian tutors on LearnHub.`
+      : 'Browse free courses in coding, AI, business, languages and exam prep, made by Cameroonian tutors.',
+  })
 
   // Typing updates the box immediately; the URL (and fetch) follow after a pause.
   const [query, setQuery] = useState(q)
