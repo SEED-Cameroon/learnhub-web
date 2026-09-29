@@ -38,8 +38,9 @@ export function RequireTutor({ children }) {
 // Only for guests (not logged in)
 export function GuestOnly({ children }) {
   const { user, loading } = useAuth()
+  const location = useLocation()
 
   if (loading) return <RouteLoading />
-  if (user) return <Navigate to={homeFor(user)} replace />
+  if (user) return <Navigate to={location.state?.from ?? homeFor(user)} state={location.state} replace />
   return children
 }

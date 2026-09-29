@@ -21,6 +21,7 @@
   --color-primary-fixed-dim: #b6c4ff;
 
   --color-secondary: #855300;
+  --color-on-secondary: #ffffff;
   --color-secondary-container: #fea619;
   --color-on-secondary-container: #684000;
   --color-secondary-fixed: #ffddb8;
@@ -101,14 +102,6 @@
   .interactive-card:hover {
     transform: none;
   }
-}
-
-.material-symbols-outlined {
-  font-variation-settings:
-    "FILL" 0,
-    "wght" 400,
-    "GRAD" 0,
-    "opsz" 24;
 }
 
 .elevation-1 {

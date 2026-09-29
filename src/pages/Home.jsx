@@ -1,194 +1,182 @@
 import { Link } from 'react-router-dom'
+import { HandCoins, MapPin, Smartphone } from 'lucide-react'
 import heroImage from '../assets/hero.jpg'
-import MaterialIcon from '../components/icons/MaterialIcon'
 import { Button } from '@/components/ui/button'
+import Container from '@/components/common/Container'
+import CourseCard from '@/components/common/CourseCard'
+import { CardGridSkeleton, ErrorState } from '@/components/common/States'
+import TutorCard from '@/components/tutors/TutorCard'
+import SectionHeading from '@/components/public/SectionHeading'
+import { useAsync } from '@/hooks/useAsync'
+import { listCourses } from '@/services/courses'
+import { listTutors } from '@/services/tutors'
 
 const FEATURES = [
   {
-    title: 'Local Tutors',
+    title: 'Tutors who know your syllabus',
     description:
-      'Learn from experts who understand your context, local industries, and specific career challenges in Cameroon.',
-    iconBgClass: 'bg-primary-fixed',
-    iconColorClass: 'text-primary-fixed-dim',
-    icon: 'person_raised_hand',
+      'GCE, Baccalauréat, university and job skills, taught by Cameroonian teachers who have sat the same exams and work in the same industries.',
+    iconClass: 'bg-primary-fixed text-primary',
+    Icon: MapPin,
   },
   {
-    title: 'Community First',
+    title: 'Free to watch, yours to support',
     description:
-      'Support creators directly via seamless Mobile Money integration. Build the local creator economy together.',
-    iconBgClass: 'bg-secondary-fixed',
-    iconColorClass: 'text-secondary',
-    icon: 'payments',
+      'Courses are free to watch. If a tutor helps you, support them with MTN Mobile Money or Orange Money. You never pay to unlock a lesson.',
+    iconClass: 'bg-secondary-fixed text-secondary',
+    Icon: HandCoins,
   },
   {
-    title: 'Accessible Learning',
-    description:
-      'Watch high-quality course previews, join vibrant discussions, and learn at your own pace on any device.',
-    iconBgClass: 'bg-tertiary-fixed',
-    iconColorClass: 'text-tertiary',
-    icon: 'devices',
+    title: 'Made for your phone',
+    description: 'Short lessons that load on mobile data. Pick up where you stopped and ask questions in the comments.',
+    iconClass: 'bg-tertiary-fixed text-tertiary',
+    Icon: Smartphone,
   },
 ]
 
-const FEATURED_EDUCATORS = [
-  {
-    name: 'Dr. Foning',
-    subject: 'Advanced Mathematics',
-    followers: '12k',
-    verified: true,
-    avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-  },
-  {
-    name: 'Mbah Junior',
-    subject: 'Web Development',
-    followers: '8.5k',
-    verified: true,
-    avatar: 'https://randomuser.me/api/portraits/men/45.jpg',
-  },
-  {
-    name: 'Amina Bello',
-    subject: 'Business Studies',
-    followers: '15k',
-    verified: true,
-    avatar: 'https://randomuser.me/api/portraits/women/65.jpg',
-  },
-  {
-    name: 'Ngwa Eric',
-    subject: 'Physics & Mechanics',
-    followers: '5.2k',
-    verified: true,
-    avatar: 'https://randomuser.me/api/portraits/men/76.jpg',
-  },
-]
+const COURSE_GRID = 'grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4'
+const TUTOR_GRID = 'grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4'
 
 export default function Home() {
+  const courses = useAsync(() => listCourses({ sort: 'popular' }), [])
+  const tutors = useAsync(() => listTutors(), [])
+
+  const featuredTutors = tutors.data
+    ?.slice()
+    .sort((a, b) => b.followersCount - a.followersCount)
+    .slice(0, 4)
+
   return (
     <div>
       {/* Hero */}
-      <section className="max-w-[1280px] mx-auto px-4 md:px-10 py-16 md:py-24 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-        <div className="md:col-span-6 flex flex-col gap-6">
-          <h1 className="text-[28px] leading-[36px] md:text-[48px] md:leading-[56px] font-extrabold tracking-tight text-on-surface">
-            Empowering Cameroon&apos;s Future Through Knowledge.
+      <Container as="section" className="grid grid-cols-1 items-center gap-10 py-12 md:grid-cols-12 md:gap-6 md:py-20">
+        <div className="flex flex-col gap-6 md:col-span-6">
+          <h1 className="text-[32px] font-extrabold leading-[40px] tracking-tight text-on-surface md:text-[48px] md:leading-[56px]">
+            Learn from Cameroon’s best teachers, for free.
           </h1>
-          <p className="text-lg leading-7 text-on-surface-variant max-w-lg">
-            Join the premier platform connecting local expertise with ambitious learners. Build
-            your skills, advance your career, and support local creators.
+          <p className="max-w-lg text-lg leading-7 text-on-surface-variant">
+            Watch courses from local tutors in maths, coding, business and languages. Follow the ones you like and
+            support them with Mobile Money.
           </p>
 
-          <div className="flex flex-wrap gap-4 mt-4">
+          <div className="mt-2 flex flex-wrap gap-4">
             <Button
               asChild
-              className="h-auto text-sm px-8 py-3 rounded-full hover:bg-primary hover:opacity-90 shadow-none"
+              className="h-auto rounded-full px-8 py-3 text-sm shadow-none hover:bg-primary hover:opacity-90"
             >
-              <Link to="/courses">Browse Courses</Link>
+              <Link to="/courses">Browse courses</Link>
             </Button>
             <Button
               asChild
-              className="h-auto bg-secondary-container text-on-secondary-container text-sm px-8 py-3 rounded-full hover:bg-secondary-container hover:opacity-90 shadow-none"
+              className="h-auto rounded-full bg-secondary-container px-8 py-3 text-sm text-on-secondary-container shadow-none hover:bg-secondary-container hover:opacity-90"
             >
-              <Link to="/register">Become a Tutor</Link>
+              <Link to="/register?role=tutor">Become a tutor</Link>
             </Button>
           </div>
         </div>
 
-        <div className="md:col-span-6 mt-8 md:mt-0 relative h-[400px] md:h-[500px] rounded-xl overflow-hidden elevation-1">
+        <div className="relative h-[260px] overflow-hidden rounded-xl elevation-1 sm:h-[360px] md:col-span-6 md:h-[460px]">
           <img
             src={heroImage}
-            alt="LearnHub Cameroon tutors and students reviewing coursework together"
-            className="absolute inset-0 w-full h-full object-cover"
+            alt="Students working through a lesson together on a tablet"
+            className="absolute inset-0 h-full w-full object-cover"
           />
         </div>
+      </Container>
+
+      {/* Popular courses */}
+      <section aria-labelledby="popular-heading">
+        <Container className="pb-16 md:pb-24">
+          <SectionHeading
+            id="popular-heading"
+            title="Popular courses"
+            description="What students across Cameroon are watching this week."
+            linkTo="/courses"
+            linkLabel="All courses"
+          />
+          {courses.loading ? (
+            <CardGridSkeleton count={4} className={COURSE_GRID} />
+          ) : courses.error ? (
+            <ErrorState error={courses.error} onRetry={courses.reload} title="Courses didn’t load" />
+          ) : (
+            <div className={COURSE_GRID}>
+              {courses.data.slice(0, 4).map((course) => (
+                <CourseCard key={course.id} course={course} />
+              ))}
+            </div>
+          )}
+        </Container>
       </section>
 
-      {/* Why LearnHub Cameroon */}
-      <section id="why" className="bg-surface-container-low">
-        <div className="max-w-[1280px] mx-auto px-4 md:px-10 py-16 md:py-24">
-          <h2 className="text-[32px] leading-[40px] font-bold text-center text-on-surface mb-12">
-            Why LearnHub Cameroon?
+      {/* Why LearnHub */}
+      <section id="why" aria-labelledby="why-heading" className="bg-surface-container-low">
+        <Container className="py-16 md:py-24">
+          <h2
+            id="why-heading"
+            className="mb-12 text-center text-2xl font-bold text-on-surface md:text-[32px] md:leading-10"
+          >
+            Why learn on LearnHub
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {FEATURES.map((feature) => (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            {FEATURES.map(({ title, description, iconClass, Icon }) => (
               <div
-                key={feature.title}
-                className="bg-surface-container-lowest rounded-xl p-8 elevation-1 interactive-card flex flex-col items-start gap-4"
+                key={title}
+                className="flex flex-col items-start gap-4 rounded-xl bg-surface-container-lowest p-8 elevation-1"
               >
-                <div
-                  className={`w-12 h-12 rounded-full flex items-center justify-center ${feature.iconBgClass} ${feature.iconColorClass}`}
-                >
-                  <MaterialIcon name={feature.icon} fill />
+                <div className={`flex size-12 items-center justify-center rounded-full ${iconClass}`}>
+                  <Icon className="size-6" aria-hidden="true" />
                 </div>
-                <h3 className="text-[24px] leading-8 font-semibold text-on-surface">
-                  {feature.title}
-                </h3>
-                <p className="text-base text-on-surface-variant">{feature.description}</p>
+                <h3 className="text-xl font-semibold leading-7 text-on-surface">{title}</h3>
+                <p className="text-base text-on-surface-variant">{description}</p>
               </div>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
 
-      {/* Featured Educators */}
-      <section className="max-w-[1280px] mx-auto px-4 md:px-10 py-16 md:py-24">
-        <div className="flex justify-between items-end mb-12">
-          <div>
-            <h2 className="text-[32px] leading-[40px] font-bold text-on-surface">
-              Featured Educators
-            </h2>
-            <p className="mt-2 text-base text-on-surface-variant">
-              Learn from our top-rated local experts.
+      {/* Featured tutors */}
+      <section aria-labelledby="tutors-heading">
+        <Container className="py-16 md:py-24">
+          <SectionHeading
+            id="tutors-heading"
+            title="Tutors to follow"
+            description="The most-followed teachers on LearnHub right now."
+            linkTo="/tutors"
+            linkLabel="All tutors"
+          />
+          {tutors.loading ? (
+            <CardGridSkeleton count={4} variant="tutor" className={TUTOR_GRID} />
+          ) : tutors.error ? (
+            <ErrorState error={tutors.error} onRetry={tutors.reload} title="Tutors didn’t load" />
+          ) : (
+            <div className={TUTOR_GRID}>
+              {featuredTutors.map((tutor) => (
+                <TutorCard key={tutor.id} tutor={tutor} />
+              ))}
+            </div>
+          )}
+        </Container>
+      </section>
+
+      {/* Tutor call to action */}
+      <Container as="section" className="pb-16 md:pb-24">
+        <div className="flex flex-col items-start gap-6 rounded-xl bg-primary px-6 py-10 text-on-primary md:flex-row md:items-center md:justify-between md:px-12">
+          <div className="max-w-xl">
+            <h2 className="text-2xl font-bold md:text-3xl">Teach what you know</h2>
+            <p className="mt-2 text-primary-fixed">
+              Publish your first course in an afternoon. Students follow you, and supporters send you money every month
+              through Mobile Money.
             </p>
           </div>
-          <Link
-            to="/tutors/all"
-            className="hidden md:flex text-primary text-sm font-semibold items-center gap-1 hover:underline whitespace-nowrap"
-          >
-            View All <MaterialIcon name="arrow_forward" className="text-[16px]" />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-          {FEATURED_EDUCATORS.map((educator) => (
-            <div
-              key={educator.name}
-              className="bg-surface-container-lowest rounded-xl overflow-hidden elevation-1 interactive-card flex flex-col relative"
-            >
-              <div className="h-24 bg-surface-variant w-full" />
-              <div className="px-6 pb-6 pt-0 flex flex-col items-center text-center -mt-12 relative z-10">
-                <div className="w-24 h-24 rounded-full border-4 border-surface-container-lowest overflow-hidden mb-4 relative">
-                  <img
-                    src={educator.avatar}
-                    alt={educator.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <h3 className="text-[24px] leading-8 font-semibold text-on-surface flex items-center justify-center gap-1">
-                  {educator.name}
-                  {educator.verified && (
-                    <MaterialIcon name="verified" className="text-primary text-[18px]" fill />
-                  )}
-                </h3>
-                <p className="text-xs font-medium tracking-wide text-primary-container mt-1">
-                  {educator.subject}
-                </p>
-                <p className="text-xs text-on-surface-variant mt-2">
-                  {educator.followers} Followers
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-8 text-center md:hidden">
           <Button
             asChild
-            variant="secondary"
-            className="h-auto bg-surface-variant text-on-surface-variant text-sm px-6 py-2 rounded-full hover:bg-surface-dim shadow-none"
+            className="h-auto shrink-0 rounded-full bg-secondary-container px-8 py-3 text-sm text-on-secondary-container shadow-none hover:bg-secondary-container hover:opacity-90"
           >
-            <Link to="/tutors/all">View All Tutors</Link>
+            <Link to="/register?role=tutor">Become a tutor</Link>
           </Button>
         </div>
-      </section>
+      </Container>
     </div>
   )
 }

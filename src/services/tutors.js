@@ -1,6 +1,11 @@
 import { apiClient } from './apiClient'
 import { USE_MOCKS, mockResponse, MockNotFoundError } from './mock'
-import { TUTORS } from '@/data/mock'
+import { COURSES, TUTORS } from '@/data/mock'
+
+const withCourseCount = (t) => ({
+  ...t,
+  coursesCount: COURSES.filter((c) => c.tutorId === t.id && c.status === 'published').length,
+})
 
 /** GET /tutors — optionally filtered by subject tag or search text. */
 export function listTutors({ subject, q } = {}) {
@@ -14,7 +19,7 @@ export function listTutors({ subject, q } = {}) {
   const items = TUTORS.filter((t) => !subject || t.subjects.includes(subject)).filter(
     (t) => !needle || t.name.toLowerCase().includes(needle) || t.headline.toLowerCase().includes(needle)
   )
-  return mockResponse(items)
+  return mockResponse(items.map(withCourseCount))
 }
 
 /** GET /tutors/:id */
@@ -22,7 +27,7 @@ export function getTutor(id) {
   if (!USE_MOCKS) return apiClient.get(`/tutors/${id}`)
   const tutor = TUTORS.find((t) => t.id === id)
   if (!tutor) return Promise.reject(new MockNotFoundError('Tutor not found'))
-  return mockResponse(tutor)
+  return mockResponse(withCourseCount(tutor))
 }
 
 /** POST / DELETE /tutors/:id/follow */

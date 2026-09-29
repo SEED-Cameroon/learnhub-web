@@ -1,169 +1,214 @@
+import { Link } from 'react-router-dom'
+import { HandCoins, Mail, MapPin, MessagesSquare, Phone, PlayCircle, Search } from 'lucide-react'
 import heroImage from '../assets/hero.jpg'
-import MaterialIcon from '../components/icons/MaterialIcon'
 import { Button } from '@/components/ui/button'
+import Avatar from '@/components/common/Avatar'
+import Container from '@/components/common/Container'
 
 const HOW_IT_WORKS = [
   {
-    title: 'Browse',
+    title: 'Find a course',
     description:
-      'Explore a wide range of courses tailored to local industry needs, from tech to management.',
-    icon: 'search',
-    iconBgClass: 'bg-primary-fixed',
-    iconColorClass: 'text-primary-fixed-dim',
+      'Browse by subject or search for the exact topic you are revising, from A Level calculus to Excel for work.',
+    Icon: Search,
+    iconClass: 'bg-primary-fixed text-primary',
   },
   {
-    title: 'Learn',
+    title: 'Watch for free',
     description:
-      'Engage with interactive content and expert-led sessions designed for deep skill acquisition.',
-    icon: 'menu_book',
-    iconBgClass: 'bg-secondary-fixed',
-    iconColorClass: 'text-secondary',
+      'Every course is free to watch, on your phone or computer. Pick up where you stopped whenever you come back.',
+    Icon: PlayCircle,
+    iconClass: 'bg-secondary-fixed text-secondary',
   },
   {
-    title: 'Support',
+    title: 'Ask and follow',
     description:
-      'Join our community and get the mentorship you need from local and international experts.',
-    icon: 'diversity_3',
-    iconBgClass: 'bg-tertiary-fixed',
-    iconColorClass: 'text-tertiary',
+      'Ask questions in the comments, like the lessons that helped, and follow tutors to see their new courses first.',
+    Icon: MessagesSquare,
+    iconClass: 'bg-tertiary-fixed text-tertiary',
+  },
+]
+
+// Supporting a tutor is a real sequence, so these steps are numbered.
+const SUPPORT_STEPS = [
+  { title: 'Choose an amount', description: 'Pick 500, 1,000, 2,000 or 5,000 XAF a month, or enter your own.' },
+  {
+    title: 'Pick your provider',
+    description: 'Pay with MTN Mobile Money or Orange Money and enter your phone number.',
+  },
+  {
+    title: 'Approve on your phone',
+    description: 'You get a payment prompt on your phone. Enter your PIN to approve it.',
+  },
+  {
+    title: 'Support is confirmed',
+    description: 'Once your provider confirms, the subscription shows as active. You can cancel at any time.',
   },
 ]
 
 const TEAM = [
-  {
-    name: 'Samuel E.',
-    role: 'Founder & CEO',
-    avatar: 'https://randomuser.me/api/portraits/men/22.jpg',
-  },
-  {
-    name: 'Marie L.',
-    role: 'Head of Education',
-    avatar: 'https://randomuser.me/api/portraits/women/23.jpg',
-  },
-  {
-    name: 'Jean-Paul N.',
-    role: 'Tech Lead',
-    avatar: 'https://randomuser.me/api/portraits/men/24.jpg',
-  },
-  {
-    name: 'Clarisse B.',
-    role: 'Student Success',
-    avatar: 'https://randomuser.me/api/portraits/women/25.jpg',
-  },
+  { name: 'Samuel Etoundi', role: 'Founder' },
+  { name: 'Marie Loga', role: 'Head of education' },
+  { name: 'Jean-Paul Nkeng', role: 'Tech lead' },
+  { name: 'Clarisse Bessala', role: 'Student success' },
 ]
 
 export default function About() {
   return (
     <div>
       {/* Mission */}
-      <section className="max-w-[1280px] mx-auto px-4 md:px-10 py-16 md:py-24 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-        <div className="md:col-span-6 relative h-[280px] md:h-[420px] rounded-xl overflow-hidden elevation-1">
+      <Container as="section" className="grid grid-cols-1 items-center gap-10 py-12 md:grid-cols-12 md:gap-6 md:py-20">
+        <div className="relative h-[240px] overflow-hidden rounded-xl elevation-1 sm:h-[320px] md:col-span-6 md:h-[420px]">
           <img
             src={heroImage}
-            alt="Students collaborating in a bright, modern LearnHub Cameroon classroom"
-            className="absolute inset-0 w-full h-full object-cover"
+            alt="Students working through a lesson together on a tablet"
+            className="absolute inset-0 h-full w-full object-cover"
           />
         </div>
-        <div className="md:col-span-6 flex flex-col gap-6">
-          <h1 className="text-[32px] leading-[40px] md:text-[48px] md:leading-[56px] font-extrabold tracking-tight text-on-surface">
-            Empowering Local Talent and Students
+        <div className="flex flex-col gap-6 md:col-span-6">
+          <h1 className="text-[32px] font-extrabold leading-[40px] tracking-tight text-on-surface md:text-[48px] md:leading-[56px]">
+            Good teaching should reach every student in Cameroon
           </h1>
-          <p className="text-base text-on-surface-variant max-w-lg">
-            LearnHub Cameroon is dedicated to providing accessible, high-quality education and
-            resources to the next generation of Cameroonian leaders and innovators. We bridge the
-            gap between education and industry.
+          <p className="max-w-lg text-base text-on-surface-variant md:text-lg">
+            LearnHub puts courses from Cameroonian teachers online for free, so a student in Garoua can learn from the
+            same tutor as a student in Douala. Tutors earn from the students they help, through Mobile Money.
           </p>
-          <Button
-            asChild
-            className="self-start h-auto text-sm px-8 py-3 rounded-full hover:bg-primary hover:opacity-90 shadow-none"
-          >
-            <a href="#how-it-works">See How It Works</a>
-          </Button>
+          <div className="flex flex-wrap gap-3">
+            <Button
+              asChild
+              className="h-auto rounded-full px-8 py-3 text-sm shadow-none hover:bg-primary hover:opacity-90"
+            >
+              <Link to="/courses">Browse courses</Link>
+            </Button>
+            <Button asChild variant="outline" className="h-auto rounded-full px-8 py-3 text-sm">
+              <a href="#how-it-works">How it works</a>
+            </Button>
+          </div>
         </div>
-      </section>
+      </Container>
 
-      {/* How It Works */}
-      <section id="how-it-works" className="bg-surface-container-low scroll-mt-20">
-        <div className="max-w-[1280px] mx-auto px-4 md:px-10 py-16 md:py-24">
-          <h2 className="text-[32px] leading-[40px] font-bold text-center text-on-surface mb-12">
-            How It Works
+      {/* How it works */}
+      <section id="how-it-works" aria-labelledby="how-heading" className="scroll-mt-20 bg-surface-container-low">
+        <Container className="py-16 md:py-24">
+          <h2
+            id="how-heading"
+            className="mb-12 text-center text-2xl font-bold text-on-surface md:text-[32px] md:leading-10"
+          >
+            How LearnHub works
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {HOW_IT_WORKS.map((step) => (
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            {HOW_IT_WORKS.map(({ title, description, Icon, iconClass }) => (
               <div
-                key={step.title}
-                className="bg-surface-container-lowest rounded-xl p-8 elevation-1 interactive-card flex flex-col items-start gap-4"
+                key={title}
+                className="flex flex-col items-start gap-4 rounded-xl bg-surface-container-lowest p-8 elevation-1"
               >
-                <div
-                  className={`w-12 h-12 rounded-full flex items-center justify-center ${step.iconBgClass} ${step.iconColorClass}`}
-                >
-                  <MaterialIcon name={step.icon} />
+                <div className={`flex size-12 items-center justify-center rounded-full ${iconClass}`}>
+                  <Icon className="size-6" aria-hidden="true" />
                 </div>
-                <h3 className="text-[24px] leading-8 font-semibold text-on-surface">
-                  {step.title}
-                </h3>
-                <p className="text-base text-on-surface-variant">{step.description}</p>
+                <h3 className="text-xl font-semibold leading-7 text-on-surface">{title}</h3>
+                <p className="text-base text-on-surface-variant">{description}</p>
               </div>
             ))}
           </div>
-        </div>
+        </Container>
+      </section>
+
+      {/* Supporting a tutor */}
+      <section id="support" aria-labelledby="support-heading" className="scroll-mt-20">
+        <Container className="py-16 md:py-24">
+          <div className="grid gap-10 md:grid-cols-12">
+            <div className="md:col-span-5">
+              <div className="mb-5 flex size-12 items-center justify-center rounded-full bg-secondary-container text-on-secondary-container">
+                <HandCoins className="size-6" aria-hidden="true" />
+              </div>
+              <h2 id="support-heading" className="text-2xl font-bold text-on-surface md:text-[32px] md:leading-10">
+                How supporting a tutor works
+              </h2>
+              <p className="mt-4 max-w-md text-base text-on-surface-variant">
+                Support is a monthly thank-you to a tutor. It never unlocks or locks lessons: every course stays free to
+                watch whether you support or not.
+              </p>
+              <Button asChild variant="outline" className="mt-6 h-auto rounded-full px-6 py-2.5">
+                <Link to="/tutors">Find a tutor to support</Link>
+              </Button>
+            </div>
+
+            <ol className="grid gap-4 sm:grid-cols-2 md:col-span-7">
+              {SUPPORT_STEPS.map((step, i) => (
+                <li
+                  key={step.title}
+                  className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6"
+                >
+                  <span className="flex size-8 items-center justify-center rounded-full bg-primary text-sm font-bold text-on-primary">
+                    {i + 1}
+                  </span>
+                  <h3 className="mt-4 text-lg font-semibold text-on-surface">{step.title}</h3>
+                  <p className="mt-1 text-on-surface-variant">{step.description}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </Container>
       </section>
 
       {/* Team */}
-      <section className="max-w-[1280px] mx-auto px-4 md:px-10 py-16 md:py-24">
-        <h2 className="text-[32px] leading-[40px] font-bold text-center text-on-surface mb-12">
-          Meet Our Team
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {TEAM.map((member) => (
-            <div key={member.name} className="flex flex-col items-center text-center gap-3">
-              <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-primary-fixed transition-transform duration-300 hover:scale-105">
-                <img
-                  src={member.avatar}
-                  alt={`${member.name}, ${member.role}`}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div>
-                <h3 className="text-on-surface font-semibold text-base">{member.name}</h3>
-                <p className="text-outline text-sm">{member.role}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+      <section aria-labelledby="team-heading" className="bg-surface-container-low">
+        <Container className="py-16 md:py-24">
+          <h2
+            id="team-heading"
+            className="mb-12 text-center text-2xl font-bold text-on-surface md:text-[32px] md:leading-10"
+          >
+            The team
+          </h2>
+          <ul className="grid grid-cols-2 gap-8 md:grid-cols-4">
+            {TEAM.map((member) => (
+              <li key={member.name} className="flex flex-col items-center gap-3 text-center">
+                <Avatar name={member.name} size="lg" />
+                <div>
+                  <h3 className="text-base font-semibold text-on-surface">{member.name}</h3>
+                  <p className="text-sm text-on-surface-variant">{member.role}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </Container>
       </section>
 
       {/* Contact */}
-      <section className="max-w-[1280px] mx-auto px-4 md:px-10 pb-16 md:pb-24">
-        <div className="bg-surface-container rounded-xl p-8 flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="flex-1 text-center md:text-left">
-            <h2 className="text-primary text-2xl font-bold mb-2">Get In Touch</h2>
-            <p className="text-on-surface-variant max-w-md mx-auto md:mx-0">
-              Have questions about our programs or want to partner with us? We&apos;d love to
-              hear from you.
-            </p>
-          </div>
-          <div className="flex flex-col gap-4 w-full md:w-auto">
-            <a
-              href="mailto:contact@learnhub.cm"
-              className="flex items-center justify-center md:justify-start gap-3 text-on-surface hover:text-primary transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-            >
-              <MaterialIcon name="mail" className="text-primary" />
-              <span className="text-sm font-medium">contact@learnhub.cm</span>
-            </a>
-            <div className="flex items-center justify-center md:justify-start gap-3 text-on-surface">
-              <MaterialIcon name="location_on" className="text-primary" />
-              <span className="text-sm font-medium">Bonanjo, Douala, Cameroon</span>
+      <section aria-labelledby="contact-heading">
+        <Container className="py-16 md:py-24">
+          <div className="flex flex-col items-center justify-between gap-8 rounded-xl bg-surface-container p-8 md:flex-row">
+            <div className="flex-1 text-center md:text-left">
+              <h2 id="contact-heading" className="mb-2 text-2xl font-bold text-primary">
+                Get in touch
+              </h2>
+              <p className="mx-auto max-w-md text-on-surface-variant md:mx-0">
+                Questions about a course, a payment, or partnering with us? Write to us and we’ll reply within two
+                working days.
+              </p>
             </div>
-            <a
-              href="tel:+237600000000"
-              className="flex items-center justify-center md:justify-start gap-3 text-on-surface hover:text-primary transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-            >
-              <MaterialIcon name="call" className="text-primary" />
-              <span className="text-sm font-medium">+237 600 000 000</span>
-            </a>
+            <address className="flex w-full flex-col gap-4 not-italic md:w-auto">
+              <a
+                href="mailto:contact@learnhub.cm"
+                className="flex items-center justify-center gap-3 rounded text-on-surface transition-colors hover:text-primary md:justify-start"
+              >
+                <Mail className="size-5 text-primary" aria-hidden="true" />
+                <span className="text-sm font-medium">contact@learnhub.cm</span>
+              </a>
+              <p className="flex items-center justify-center gap-3 text-on-surface md:justify-start">
+                <MapPin className="size-5 text-primary" aria-hidden="true" />
+                <span className="text-sm font-medium">Bonanjo, Douala, Cameroon</span>
+              </p>
+              <a
+                href="tel:+237600000000"
+                className="flex items-center justify-center gap-3 rounded text-on-surface transition-colors hover:text-primary md:justify-start"
+              >
+                <Phone className="size-5 text-primary" aria-hidden="true" />
+                <span className="text-sm font-medium">+237 600 000 000</span>
+              </a>
+            </address>
           </div>
-        </div>
+        </Container>
       </section>
     </div>
   )

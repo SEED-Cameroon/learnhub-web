@@ -77,8 +77,10 @@ function StudioNav({ onNavigate }) {
 export default function StudioLayout() {
   return (
     <div className="min-h-screen bg-surface md:grid md:grid-cols-[256px_1fr]">
-      <aside className="sticky top-0 hidden h-screen border-r border-outline-variant bg-surface-container-low px-3 py-5 md:block">
-        <StudioNav />
+      <aside className="hidden border-r border-outline-variant bg-surface-container-low md:block">
+        <div className="sticky top-0 h-screen px-3 py-5">
+          <StudioNav />
+        </div>
       </aside>
 
       <header className="sticky top-0 z-40 flex items-center justify-between border-b border-outline-variant bg-surface/95 px-4 py-3 backdrop-blur md:hidden">

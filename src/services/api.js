@@ -1,8 +1,8 @@
 import { apiClient } from "./apiClient";
 import { USE_MOCKS, mockResponse } from "./mock";
 
-// Sample sign-in while VITE_API_URL is unset: any password of 8+ characters
-// works, and an email containing "tutor" signs in as a tutor.
+// Sample sign-in while VITE_API_URL is unset: any email and password work,
+// and an email containing "tutor" signs in as a tutor.
 function mockSession({ email, name, role }) {
   const isTutor = role ? role === "tutor" : /tutor/i.test(email);
   const user = {
