@@ -2,11 +2,10 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import Container from '@/components/common/Container'
-import PageHeader from '@/components/common/PageHeader'
 import CourseCard from '@/components/common/CourseCard'
 import { CardGridSkeleton, EmptyState, ErrorState } from '@/components/common/States'
 import FilterChips from '@/components/public/FilterChips'
-import SearchField from '@/components/public/SearchField'
+import { BrowseHero, HeroSearchField, StickyFilterBar } from '@/components/public/BrowseHero'
 import { useAsync } from '@/hooks/useAsync'
 import { listCourses } from '@/services/courses'
 import { CATEGORIES } from '@/data/mock'
@@ -17,7 +16,7 @@ const SORT_OPTIONS = [
   { value: 'liked', label: 'Most liked' },
 ]
 
-const GRID = 'grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+const GRID = 'grid grid-cols-1 gap-x-6 gap-y-9 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
 
 export default function Courses() {
   const [params, setParams] = useSearchParams()
@@ -47,30 +46,37 @@ export default function Courses() {
   const courses = useAsync(() => listCourses({ category, sort, q }), [category, sort, q])
   const hasFilters = Boolean(category || q)
 
+  const count = courses.data?.length
+
   return (
-    <Container className="py-10 md:py-14">
-      <PageHeader
+    <div>
+      <BrowseHero
         title="Courses"
-        description="Free lessons from Cameroonian tutors. Filter by subject or search for a topic."
+        description="Free lessons from Cameroonian tutors, from GCE revision to your first coding job."
+        search={
+          <HeroSearchField
+            id="course-search"
+            label="Search courses"
+            value={query}
+            onChange={setQuery}
+            placeholder="Search for a topic, like calculus or Excel"
+          />
+        }
       />
 
-      <div className="mb-8 flex flex-col gap-4">
-        <SearchField
-          id="course-search"
-          label="Search courses"
-          value={query}
-          onChange={setQuery}
-          placeholder="Search for a topic, like calculus or Excel"
+      <StickyFilterBar>
+        <FilterChips
+          label="Filter by subject"
+          options={CATEGORIES}
+          value={category}
+          allLabel="All subjects"
+          onChange={(value) => update({ category: value })}
         />
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <FilterChips
-            label="Filter by subject"
-            options={CATEGORIES}
-            value={category}
-            allLabel="All subjects"
-            onChange={(value) => update({ category: value })}
-          />
-          <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center justify-between gap-4 lg:justify-end">
+          <p className="text-sm text-on-surface-variant" aria-live="polite">
+            {courses.loading ? 'Loading…' : count != null && `${count} ${count === 1 ? 'course' : 'courses'}`}
+          </p>
+          <div className="flex items-center gap-2">
             <label htmlFor="course-sort" className="text-sm text-on-surface-variant">
               Sort by
             </label>
@@ -88,42 +94,39 @@ export default function Courses() {
             </select>
           </div>
         </div>
-      </div>
+      </StickyFilterBar>
 
-      {courses.loading ? (
-        <CardGridSkeleton count={8} className={GRID} />
-      ) : courses.error ? (
-        <ErrorState error={courses.error} onRetry={courses.reload} title="Courses didn’t load" />
-      ) : courses.data.length === 0 ? (
-        <EmptyState
-          title="No courses match"
-          action={
-            hasFilters && (
-              <Button variant="outline" className="rounded-full" onClick={() => update({ category: null, q: null })}>
-                Clear filters
-              </Button>
-            )
-          }
-        >
-          {q
-            ? `Nothing found for “${q}”${category ? ` in ${category}` : ''}.`
-            : category
-              ? `No ${category} courses yet.`
-              : 'No courses have been published yet.'}{' '}
-          Try another subject or a shorter search.
-        </EmptyState>
-      ) : (
-        <>
-          <p className="mb-4 text-sm text-on-surface-variant" aria-live="polite">
-            {courses.data.length} {courses.data.length === 1 ? 'course' : 'courses'}
-          </p>
+      <Container className="py-10 md:py-12">
+        {courses.loading ? (
+          <CardGridSkeleton count={8} className={GRID} />
+        ) : courses.error ? (
+          <ErrorState error={courses.error} onRetry={courses.reload} title="Courses didn’t load" />
+        ) : courses.data.length === 0 ? (
+          <EmptyState
+            title="No courses match"
+            action={
+              hasFilters && (
+                <Button variant="outline" className="rounded-full" onClick={() => update({ category: null, q: null })}>
+                  Clear filters
+                </Button>
+              )
+            }
+          >
+            {q
+              ? `Nothing found for “${q}”${category ? ` in ${category}` : ''}.`
+              : category
+                ? `No ${category} courses yet.`
+                : 'No courses have been published yet.'}{' '}
+            Try another subject or a shorter search.
+          </EmptyState>
+        ) : (
           <div className={GRID}>
             {courses.data.map((course) => (
               <CourseCard key={course.id} course={course} />
             ))}
           </div>
-        </>
-      )}
-    </Container>
+        )}
+      </Container>
+    </div>
   )
 }

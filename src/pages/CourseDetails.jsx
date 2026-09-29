@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { BadgeCheck, Check, Clock, Eye, HandCoins, Heart, ListVideo, MessageCircle, PlayCircle } from 'lucide-react'
+import { BadgeCheck, Check, Clock, HandCoins, Heart, Link2, ListVideo, MessageCircle, Play, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import Avatar from '@/components/common/Avatar'
@@ -22,17 +22,20 @@ const COMMENT_MAX = 1000
 
 function DetailSkeleton() {
   return (
-    <Container className="py-8 md:py-10">
-      <div role="status" aria-label="Loading course" className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <div className="space-y-5">
-          <Skeleton className="aspect-video w-full rounded-xl" />
-          <Skeleton className="h-8 w-3/4" />
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-24 w-full" />
-        </div>
-        <Skeleton className="h-80 w-full rounded-xl" />
+    <div role="status" aria-label="Loading course">
+      <div className="bg-primary">
+        <Container className="grid gap-6 py-6 md:py-8 lg:grid-cols-[minmax(0,1fr)_360px]">
+          <div className="aspect-video w-full animate-pulse rounded-2xl bg-white/10" />
+          <div className="hidden animate-pulse rounded-2xl bg-white/10 lg:block" />
+        </Container>
       </div>
-    </Container>
+      <Container className="space-y-5 py-8">
+        <Skeleton className="h-9 w-3/4" />
+        <Skeleton className="h-4 w-1/2" />
+        <Skeleton className="h-14 w-full max-w-3xl" />
+        <Skeleton className="h-24 w-full max-w-3xl" />
+      </Container>
+    </div>
   )
 }
 
@@ -48,11 +51,11 @@ function TutorRow({ tutor }) {
 
   return (
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <Link to={`/tutors/${tutor.id}`} className="flex min-w-0 items-center gap-3 rounded-lg">
+      <Link to={`/tutors/${tutor.id}`} className="group flex min-w-0 items-center gap-3 rounded-lg">
         <Avatar name={tutor.name} src={tutor.avatarUrl} size="md" />
         <div className="min-w-0">
           <p className="flex items-center gap-1 font-semibold text-on-surface">
-            <span className="truncate">{tutor.name}</span>
+            <span className="truncate group-hover:text-primary">{tutor.name}</span>
             {tutor.verified && (
               <BadgeCheck className="size-4 shrink-0 fill-primary text-on-primary" aria-label="Verified tutor" />
             )}
@@ -65,13 +68,14 @@ function TutorRow({ tutor }) {
           type="button"
           aria-pressed={follow.on}
           onClick={() => gate(() => follow.toggle(), { type: 'follow', id: tutor.id })}
+          aria-label={`${follow.on ? 'Unfollow' : 'Follow'} ${tutor.name}`}
           className={
             follow.on
-              ? 'h-auto rounded-full border border-outline-variant bg-surface-container-low px-5 py-2.5 text-on-surface-variant shadow-none hover:bg-surface-container'
-              : 'h-auto rounded-full px-5 py-2.5 shadow-none'
+              ? 'h-auto rounded-full bg-surface-container px-5 py-2.5 text-on-surface-variant shadow-none hover:bg-surface-dim/60'
+              : 'h-auto rounded-full border border-primary bg-transparent px-5 py-2.5 text-primary shadow-none hover:bg-primary hover:text-on-primary'
           }
         >
-          {follow.on && <Check aria-hidden="true" />}
+          {follow.on ? <Check aria-hidden="true" /> : <Plus aria-hidden="true" />}
           {follow.on ? 'Following' : 'Follow'}
         </Button>
         <Button
@@ -108,12 +112,13 @@ function LikeButton({ course }) {
         aria-label={`${like.on ? 'Unlike' : 'Like'} this course, ${like.count} likes`}
         onClick={() => gate(() => like.toggle(), { type: 'like' })}
         className={cn(
-          'h-auto rounded-full px-5 py-2.5',
+          'h-auto rounded-full border-outline-variant bg-surface-container-lowest px-5 py-2.5 shadow-none',
           like.on && 'border-primary bg-primary-fixed text-primary hover:bg-primary-fixed',
         )}
       >
         <Heart className={cn(like.on && 'fill-current')} aria-hidden="true" />
         {formatCount(like.count)}
+        <span className="sr-only">likes</span>
       </Button>
       {like.error && (
         <p role="alert" className="mt-2 text-sm text-error">
@@ -241,15 +246,157 @@ function MoreFromTutor({ course }) {
   if (more.loading || more.error || items.length === 0) return null
 
   return (
-    <section aria-labelledby="more-heading" className="mt-16">
-      <h2 id="more-heading" className="mb-6 text-xl font-bold text-on-surface">
+    <section aria-labelledby="more-heading" className="mt-16 border-t border-outline-variant pt-12">
+      <h2 id="more-heading" className="mb-6 text-2xl font-bold tracking-tight text-on-surface">
         More from {course.tutor?.name}
       </h2>
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-x-6 gap-y-9 sm:grid-cols-2 lg:grid-cols-3">
         {items.map((c) => (
           <CourseCard key={c.id} course={c} />
         ))}
       </div>
+    </section>
+  )
+}
+
+function ShareButton({ title }) {
+  const [status, setStatus] = useState('')
+
+  const share = async () => {
+    const url = window.location.href
+    try {
+      await navigator.clipboard.writeText(url)
+      setStatus('Link copied')
+    } catch {
+      setStatus('Copy failed. Copy the address bar instead.')
+    }
+    window.setTimeout(() => setStatus(''), 2500)
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <Button
+        type="button"
+        variant="outline"
+        onClick={share}
+        aria-label={`Copy a link to ${title}`}
+        className="h-auto rounded-full border-outline-variant bg-surface-container-lowest px-5 py-2.5 shadow-none"
+      >
+        {status === 'Link copied' ? <Check aria-hidden="true" /> : <Link2 aria-hidden="true" />}
+        Share
+      </Button>
+      <span role="status" aria-live="polite" className="text-sm text-on-surface-variant">
+        {status}
+      </span>
+    </div>
+  )
+}
+
+/** Desktop sidebar under the lessons: a quiet reminder that support is optional and never unlocks lessons. */
+function SupportAside({ tutor }) {
+  return (
+    <aside aria-labelledby="support-aside-heading" className="hidden lg:block">
+      <div className="sticky top-24 rounded-2xl border border-outline-variant/70 bg-surface-container-lowest p-6">
+        <span className="flex size-11 items-center justify-center rounded-2xl bg-secondary-fixed text-secondary">
+          <HandCoins className="size-5" aria-hidden="true" />
+        </span>
+        <h2 id="support-aside-heading" className="mt-4 text-lg font-semibold text-on-surface">
+          Learning something useful?
+        </h2>
+        <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">
+          Support {tutor.name} with a monthly amount from 500 XAF through MTN Mobile Money or Orange Money. Every lesson
+          stays free either way.
+        </p>
+        <Button
+          asChild
+          className="mt-5 h-auto w-full rounded-full bg-secondary-container py-3 text-on-secondary-container shadow-none hover:bg-secondary-container/85"
+        >
+          <Link to={`/tutors/${tutor.id}/support`}>Support this tutor</Link>
+        </Button>
+        <Link to="/about#support" className="mt-3 block text-center text-sm text-primary hover:underline">
+          How supporting works
+        </Link>
+      </div>
+    </aside>
+  )
+}
+
+/** Dark band that frames the player and the lesson list, like a cinema. */
+function Theatre({ course }) {
+  const [current, setCurrent] = useState(0)
+  const lessons = course.lessons ?? []
+  const minutes = totalMinutes(lessons)
+  const lesson = lessons[current]
+
+  return (
+    <section aria-label="Course player" className="bg-primary text-on-primary">
+      <Container className="grid gap-5 py-5 md:py-8 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-6">
+        <div className="relative overflow-hidden rounded-2xl bg-primary-container ring-1 ring-white/10">
+          <CourseThumbnail course={course} showPlay />
+          {lesson && (
+            <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-end justify-between gap-2 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
+              <p className="text-sm font-medium text-white">
+                <span className="text-white/70">Lesson {current + 1} · </span>
+                {lesson.title}
+              </p>
+              <span className="hidden rounded-full bg-white/15 px-2.5 py-1 text-xs text-white/85 backdrop-blur sm:inline-flex">
+                Video arrives when lessons are uploaded
+              </span>
+            </div>
+          )}
+        </div>
+
+        <aside aria-labelledby="lessons-heading" className="lg:relative">
+          <div className="flex flex-col overflow-hidden rounded-2xl bg-white/[0.06] ring-1 ring-white/10 lg:absolute lg:inset-0">
+            <div className="border-b border-white/10 px-5 py-4">
+              <h2 id="lessons-heading" className="font-semibold">
+                Lessons
+              </h2>
+              <p className="mt-0.5 flex items-center gap-1.5 text-sm text-primary-fixed-dim">
+                <Clock className="size-4" aria-hidden="true" />
+                {lessons.length} lessons · {formatDuration(minutes)}
+              </p>
+            </div>
+            <ol className="max-h-[360px] flex-1 overflow-y-auto p-2 lg:max-h-none">
+              {lessons.map((l, i) => {
+                const active = i === current
+                return (
+                  <li key={l.id}>
+                    <button
+                      type="button"
+                      onClick={() => setCurrent(i)}
+                      aria-current={active ? 'true' : undefined}
+                      className={cn(
+                        'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-colors',
+                        active ? 'bg-white text-primary' : 'text-primary-fixed hover:bg-white/10 hover:text-white',
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          'flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold tabular-nums',
+                          active ? 'bg-primary text-on-primary' : 'bg-white/10',
+                        )}
+                      >
+                        {active ? <Play className="size-3 fill-current" aria-hidden="true" /> : i + 1}
+                      </span>
+                      <span className="min-w-0 flex-1 font-medium">{l.title}</span>
+                      <span className={cn('shrink-0 tabular-nums', active ? 'text-primary/70' : 'text-primary-fixed-dim')}>
+                        {l.durationMin} min
+                      </span>
+                    </button>
+                  </li>
+                )
+              })}
+            </ol>
+            <div className="flex items-center justify-between border-t border-white/10 px-5 py-3.5 text-sm">
+              <span className="text-primary-fixed-dim">Price</span>
+              <span className={course.priceXaf ? 'font-semibold text-white' : 'font-semibold text-tertiary-fixed'}>
+                {formatXaf(course.priceXaf, { free: true })}
+              </span>
+            </div>
+          </div>
+        </aside>
+      </Container>
     </section>
   )
 }
@@ -283,92 +430,48 @@ export default function CourseDetails() {
   }
 
   const c = course.data
-  const minutes = totalMinutes(c.lessons)
 
   return (
-    <Container className="py-8 md:py-10">
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-x-10 lg:gap-y-0">
-        <div className="min-w-0 lg:col-start-1">
-          <div className="overflow-hidden rounded-xl elevation-1">
-            <CourseThumbnail course={c} showPlay />
-          </div>
-          <p className="mt-2 text-xs text-outline">Video playback starts once lessons are uploaded to the server.</p>
+    <div>
+      <Theatre course={c} />
 
-          <h1 className="mt-5 text-2xl font-bold leading-tight tracking-tight text-on-surface md:text-3xl">
-            {c.title}
-          </h1>
-          <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-on-surface-variant">
-            <span className="flex items-center gap-1">
-              <Eye className="size-4" aria-hidden="true" />
-              {formatCount(c.viewsCount)} views
-            </span>
-            <span>{c.category}</span>
-            <span>{c.level}</span>
-            <span>Published {formatDate(c.publishedAt)}</span>
-          </p>
+      <Container className="pt-8 pb-16 md:pt-10 md:pb-24">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_360px] lg:gap-6">
+          <div className="min-w-0">
+            <h1 className="text-[28px] font-bold leading-[1.15] tracking-[-0.015em] text-on-surface text-balance md:text-[36px]">
+              {c.title}
+            </h1>
+            <p className="mt-3 text-sm text-on-surface-variant">
+              {formatCount(c.viewsCount)} views · Published {formatDate(c.publishedAt)} · {c.category} · {c.level}
+            </p>
 
-          <div className="mt-6 flex flex-col gap-5 border-y border-outline-variant py-5">
-            {c.tutor && <TutorRow tutor={c.tutor} />}
+            <div className="mt-6 border-y border-outline-variant py-5">{c.tutor && <TutorRow tutor={c.tutor} />}</div>
+
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <LikeButton course={c} />
+              <ShareButton title={c.title} />
+              <a
+                href="#comments-heading"
+                className="flex items-center gap-1.5 rounded-full px-3 py-2.5 text-sm text-on-surface-variant hover:text-primary"
+              >
+                <MessageCircle className="size-4" aria-hidden="true" />
+                {formatCount(c.commentsCount)} comments
+              </a>
+            </div>
+
+            <div className="mt-6 rounded-2xl bg-surface-container-low p-5 md:p-6">
+              <h2 className="text-sm font-semibold text-on-surface">About this course</h2>
+              <p className="mt-2 max-w-[70ch] whitespace-pre-line leading-relaxed text-on-surface">{c.description}</p>
+            </div>
+
+            <Comments courseId={c.id} initialCount={c.commentsCount} />
           </div>
 
-          <div className="mt-5 flex flex-wrap items-center gap-3">
-            <LikeButton course={c} />
-            <span className="flex items-center gap-1.5 text-sm text-on-surface-variant">
-              <MessageCircle className="size-4" aria-hidden="true" />
-              {formatCount(c.commentsCount)} comments
-            </span>
-          </div>
-
-          <div className="mt-6 rounded-xl bg-surface-container-low p-5">
-            <h2 className="sr-only">About this course</h2>
-            <p className="max-w-[70ch] whitespace-pre-line text-on-surface">{c.description}</p>
-          </div>
+          {c.tutor && <SupportAside tutor={c.tutor} />}
         </div>
 
-        <aside
-          aria-labelledby="lessons-heading"
-          className="lg:sticky lg:top-24 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start"
-        >
-          <div className="overflow-hidden rounded-xl bg-surface-container-lowest elevation-1">
-            <div className="border-b border-outline-variant p-5">
-              <h2 id="lessons-heading" className="text-lg font-bold text-on-surface">
-                Lessons
-              </h2>
-              <p className="mt-1 flex items-center gap-1.5 text-sm text-on-surface-variant">
-                <Clock className="size-4" aria-hidden="true" />
-                {c.lessons.length} lessons, {formatDuration(minutes)} in total
-              </p>
-            </div>
-            <ol className="max-h-[420px] overflow-y-auto p-2">
-              {c.lessons.map((lesson, i) => (
-                <li key={lesson.id} className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm">
-                  <span className="w-5 shrink-0 text-right tabular-nums text-outline">{i + 1}</span>
-                  <PlayCircle className="size-4 shrink-0 text-primary" aria-hidden="true" />
-                  <span className="min-w-0 flex-1 text-on-surface">{lesson.title}</span>
-                  <span className="shrink-0 tabular-nums text-on-surface-variant">{lesson.durationMin} min</span>
-                </li>
-              ))}
-            </ol>
-            <div className="border-t border-outline-variant p-5 text-sm">
-              <p className="flex items-center justify-between">
-                <span className="text-on-surface-variant">Price</span>
-                <span
-                  className={c.priceXaf ? 'font-semibold text-on-surface' : 'font-semibold text-tertiary-container'}
-                >
-                  {formatXaf(c.priceXaf, { free: true })}
-                </span>
-              </p>
-            </div>
-          </div>
-        </aside>
-
-        {/* After the lessons on mobile, under the description on desktop */}
-        <div className="min-w-0 -mt-10 lg:col-start-1 lg:mt-0">
-          <Comments courseId={c.id} initialCount={c.commentsCount} />
-        </div>
-      </div>
-
-      <MoreFromTutor course={c} />
-    </Container>
+        <MoreFromTutor course={c} />
+      </Container>
+    </div>
   )
 }

@@ -3,16 +3,15 @@ import { useSearchParams } from 'react-router-dom'
 import { UserRoundSearch } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Container from '@/components/common/Container'
-import PageHeader from '@/components/common/PageHeader'
 import { CardGridSkeleton, EmptyState, ErrorState } from '@/components/common/States'
 import TutorCard from '@/components/tutors/TutorCard'
 import FilterChips from '@/components/public/FilterChips'
-import SearchField from '@/components/public/SearchField'
+import { BrowseHero, HeroSearchField, StickyFilterBar } from '@/components/public/BrowseHero'
 import { useAsync } from '@/hooks/useAsync'
 import { listTutors } from '@/services/tutors'
 import { CATEGORIES } from '@/data/mock'
 
-const GRID = 'grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+const GRID = 'grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3'
 
 export default function Tutors() {
   const [params, setParams] = useSearchParams()
@@ -39,21 +38,25 @@ export default function Tutors() {
 
   const tutors = useAsync(() => listTutors({ subject, q }), [subject, q])
 
+  const count = tutors.data?.length
+
   return (
-    <Container className="py-10 md:py-14">
-      <PageHeader
+    <div>
+      <BrowseHero
         title="Find a tutor"
         description="Follow tutors to see their new courses first. Support the ones who help you most."
+        search={
+          <HeroSearchField
+            id="tutor-search"
+            label="Search tutors"
+            value={query}
+            onChange={setQuery}
+            placeholder="Search by name or subject"
+          />
+        }
       />
 
-      <div className="mb-8 flex flex-col gap-4">
-        <SearchField
-          id="tutor-search"
-          label="Search tutors"
-          value={query}
-          onChange={setQuery}
-          placeholder="Search by name or subject"
-        />
+      <StickyFilterBar>
         <FilterChips
           label="Filter by subject"
           options={CATEGORIES}
@@ -61,36 +64,41 @@ export default function Tutors() {
           allLabel="All subjects"
           onChange={(value) => update({ subject: value })}
         />
-      </div>
+        <p className="shrink-0 text-sm text-on-surface-variant" aria-live="polite">
+          {tutors.loading ? 'Loading…' : count != null && `${count} ${count === 1 ? 'tutor' : 'tutors'}`}
+        </p>
+      </StickyFilterBar>
 
-      {tutors.loading ? (
-        <CardGridSkeleton count={8} variant="tutor" className={GRID} />
-      ) : tutors.error ? (
-        <ErrorState error={tutors.error} onRetry={tutors.reload} title="Tutors didn’t load" />
-      ) : tutors.data.length === 0 ? (
-        <EmptyState
-          icon={UserRoundSearch}
-          title="No tutors match"
-          action={
-            <Button variant="outline" className="rounded-full" onClick={() => update({ subject: null, q: null })}>
-              Clear filters
-            </Button>
-          }
-        >
-          {q
-            ? `Nobody found for “${q}”${subject ? ` in ${subject}` : ''}.`
-            : subject
-              ? `No ${subject} tutors yet.`
-              : 'No tutors have joined yet.'}{' '}
-          Try another subject or search by name.
-        </EmptyState>
-      ) : (
-        <div className={GRID}>
-          {tutors.data.map((tutor) => (
-            <TutorCard key={tutor.id} tutor={tutor} />
-          ))}
-        </div>
-      )}
-    </Container>
+      <Container className="py-10 md:py-12">
+        {tutors.loading ? (
+          <CardGridSkeleton count={8} variant="tutor" className={GRID} />
+        ) : tutors.error ? (
+          <ErrorState error={tutors.error} onRetry={tutors.reload} title="Tutors didn’t load" />
+        ) : tutors.data.length === 0 ? (
+          <EmptyState
+            icon={UserRoundSearch}
+            title="No tutors match"
+            action={
+              <Button variant="outline" className="rounded-full" onClick={() => update({ subject: null, q: null })}>
+                Clear filters
+              </Button>
+            }
+          >
+            {q
+              ? `Nobody found for “${q}”${subject ? ` in ${subject}` : ''}.`
+              : subject
+                ? `No ${subject} tutors yet.`
+                : 'No tutors have joined yet.'}{' '}
+            Try another subject or search by name.
+          </EmptyState>
+        ) : (
+          <div className={GRID}>
+            {tutors.data.map((tutor) => (
+              <TutorCard key={tutor.id} tutor={tutor} />
+            ))}
+          </div>
+        )}
+      </Container>
+    </div>
   )
 }

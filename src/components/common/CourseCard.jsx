@@ -27,7 +27,7 @@ export default function CourseCard({ course }) {
           </span>
         </div>
         {course.priceXaf > 0 && (
-          <span className="absolute left-3 top-3 rounded-full bg-secondary-container px-2.5 py-1 text-xs font-bold text-on-secondary-container">
+          <span className="absolute right-3 top-3 rounded-full bg-secondary-container px-2.5 py-1 text-xs font-bold text-on-secondary-container">
             {formatXaf(course.priceXaf)}
           </span>
         )}
